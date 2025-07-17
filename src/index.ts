@@ -1,4 +1,19 @@
-// Placeholder for main entry point
-export const VERSION = '0.0.1';
+// Re-export all public types
+export * from './types.js';
 
-console.log(`agent-stream-fmt v${VERSION} - Phase 0`);
+// Re-export parser types
+export type { VendorParser, ParserEntry } from './parsers/types.js';
+export { ParseError } from './parsers/types.js';
+
+// Re-export parser registry
+export { 
+  ParserRegistry, 
+  registry, 
+  registerParser, 
+  getParser, 
+  detectVendor, 
+  listParsers, 
+  selectParser 
+} from './parsers/index.js';
+
+export const VERSION = '0.0.1';

@@ -13,9 +13,15 @@
     "build": "tsup",
     "test": "vitest",
     "test:watch": "vitest --watch",
+    "test:integration": "vitest run tests/comprehensive-integration.test.ts tests/registry-integration.test.ts",
+    "test:performance": "vitest run tests/performance-benchmarks.test.ts",
+    "test:errors": "vitest run tests/error-handling.test.ts",
+    "test:fixtures": "vitest run tests/fixture-validation.test.ts",
+    "test:comprehensive": "tsx scripts/run-test-suite.ts",
     "fixtures:capture": "tsx scripts/capture-fixtures.ts",
     "fixtures:analyze": "tsx scripts/analyze-schemas.ts",
-    "fixtures:validate": "tsx scripts/validate-fixtures.ts"
+    "fixtures:validate": "tsx scripts/validate-fixtures.ts",
+    "validate:comprehensive": "tsx scripts/comprehensive-validate.ts"
   },
   "keywords": ["cli", "jsonl", "streaming", "claude", "gemini", "amp"],
   "author": "",

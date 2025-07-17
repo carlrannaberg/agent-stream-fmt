@@ -1,0 +1,157 @@
+import { VendorParser, ParseError } from './types.js';
+import { AgentEvent, ToolEvent, DebugEvent } from '../types.js';
+
+/**
+ * Amp Code JSONL parser
+ * 
+ * Parses the JSONL output from Amp Code CLI when using the --output jsonl flag.
+ * Handles task phases, output events, and completion events.
+ * 
+ * @example
+ * ```typescript
+ * const parser = new AmpParser();
+ * const events = parser.parse('{"phase":"start","task":"build"}');
+ * ```
+ */
+export class AmpParser implements VendorParser {
+  /** Vendor identifier */
+  vendor = 'amp';
+  
+  /** Parser metadata */
+  metadata = {
+    version: '1.0.0',
+    supportedVersions: ['1.0', '1.1'],
+    documentationUrl: 'https://docs.amp-code.com/cli'
+  };
+  
+  /**
+   * Detect if a line belongs to Amp's JSONL format
+   * 
+   * Fast detection method that checks for Amp-specific event types.
+   * Does not throw errors and returns false for any parsing issues.
+   * 
+   * @param line - Raw JSONL line to test
+   * @returns True if this parser can handle the line
+   */
+  detect(line: string): boolean {
+    try {
+      const obj = JSON.parse(line);
+      
+      // Amp events have phase and task fields
+      return typeof obj.phase === 'string' && 
+             typeof obj.task === 'string' && (
+               obj.phase === 'start' ||
+               obj.phase === 'output' ||
+               obj.phase === 'end'
+             );
+    } catch {
+      return false;
+    }
+  }
+  
+  /**
+   * Parse a single JSONL line into zero or more events
+   * 
+   * Converts Amp's JSONL format into normalized AgentEvent objects.
+   * Handles all known Amp event types and converts unknowns to DebugEvent.
+   * 
+   * @param line - Raw JSONL line to parse
+   * @returns Array of parsed events
+   * @throws {ParseError} When JSON parsing fails
+   */
+  parse(line: string): AgentEvent[] {
+    let obj: any;
+    try {
+      obj = JSON.parse(line);
+    } catch (error) {
+      throw new ParseError(
+        'Invalid JSON',
+        this.vendor,
+        line,
+        error
+      );
+    }
+    
+    const events: AgentEvent[] = [];
+    
+    switch (obj.phase) {
+      case 'start':
+        events.push(this.parseStart(obj));
+        break;
+        
+      case 'output':
+        events.push(this.parseOutput(obj));
+        break;
+        
+      case 'end':
+        events.push(this.parseEnd(obj));
+        break;
+        
+      default:
+        // Unknown phase - emit as debug
+        events.push({
+          t: 'debug',
+          raw: obj
+        });
+    }
+    
+    return events;
+  }
+  
+  /**
+   * Parse a start phase event
+   * 
+   * Converts Amp start events into ToolEvent with start phase.
+   * 
+   * @param obj - Raw start event from Amp
+   * @returns ToolEvent with start phase
+   */
+  private parseStart(obj: any): ToolEvent {
+    return {
+      t: 'tool',
+      name: obj.task || 'unknown',
+      phase: 'start'
+    };
+  }
+  
+  /**
+   * Parse an output phase event
+   * 
+   * Converts Amp output events into ToolEvent with appropriate phase.
+   * 
+   * @param obj - Raw output event from Amp
+   * @returns ToolEvent with stdout or stderr phase
+   */
+  private parseOutput(obj: any): ToolEvent {
+    const phase = obj.type === 'stderr' ? 'stderr' : 'stdout';
+    
+    return {
+      t: 'tool',
+      name: obj.task || 'unknown',
+      phase,
+      text: obj.content || ''
+    };
+  }
+  
+  /**
+   * Parse an end phase event
+   * 
+   * Converts Amp end events into ToolEvent with end phase.
+   * 
+   * @param obj - Raw end event from Amp
+   * @returns ToolEvent with end phase
+   */
+  private parseEnd(obj: any): ToolEvent {
+    return {
+      t: 'tool',
+      name: obj.task || 'unknown',
+      phase: 'end',
+      exitCode: obj.exitCode || 0
+    };
+  }
+}
+
+/**
+ * Singleton instance of Amp parser
+ */
+export const ampParser = new AmpParser();

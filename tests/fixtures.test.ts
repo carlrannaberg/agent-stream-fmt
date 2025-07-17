@@ -34,6 +34,11 @@ describe('Fixture validation', () => {
         }
         
         for (const file of files) {
+          // Skip error-handling files since they intentionally contain invalid JSON
+          if (file.includes('error-handling')) {
+            continue;
+          }
+          
           const filePath = join(fixtureDir, file);
           let content: string;
           

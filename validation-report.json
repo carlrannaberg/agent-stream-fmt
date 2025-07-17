@@ -1,0 +1,829 @@
+{
+  "timestamp": "2025-07-17T08:55:52.029Z",
+  "vendors": [
+    {
+      "vendor": "claude",
+      "hasDirectory": true,
+      "files": [
+        {
+          "vendor": "claude",
+          "filename": "basic-message.jsonl",
+          "totalLines": 3,
+          "validLines": 3,
+          "parseResults": [
+            {
+              "line": "{\"type\":\"message\",\"role\":\"user\",\"content\":\"write a hello world function\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.12366600000000005,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "user",
+                  "text": "write a hello world function"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"message\",\"role\":\"assistant\",\"content\":\"Here's a simple hello world function in JavaScript:\\n\\n```javascript\\nfunction helloWorld() {\\n  console.log('Hello, World!');\\n}\\n\\nhelloWorld();\\n```\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.006208999999998355,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "Here's a simple hello world function in JavaScript:\n\n```javascript\nfunction helloWorld() {\n  console.log('Hello, World!');\n}\n\nhelloWorld();\n```"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"usage\",\"input_tokens\":12,\"output_tokens\":35,\"total_tokens\":47}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.02216699999999605,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "cost",
+                  "deltaUsd": 0.000561
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.05733333333333235,
+          "totalParseTime": 0.17199999999999704,
+          "linesPerSecond": 17441.86046511658,
+          "errors": []
+        },
+        {
+          "vendor": "claude",
+          "filename": "complex-session.jsonl",
+          "totalLines": 9,
+          "validLines": 9,
+          "parseResults": [
+            {
+              "line": "{\"type\":\"message\",\"role\":\"user\",\"content\":\"I need to create a REST API with user authentication\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.0036249999999995453,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "user",
+                  "text": "I need to create a REST API with user authentication"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"message\",\"role\":\"assistant\",\"content\":\"I'll help you create a REST API with user authentication. Let me first understand your requirements.\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.003500000000002501,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "I'll help you create a REST API with user authentication. Let me first understand your requirements."
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"tool_use\",\"id\":\"tool_1\",\"name\":\"create_file\",\"input\":{\"path\":\"server.js\",\"content\":\"const express = require('express');\"}}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.024458999999993125,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "create_file",
+                  "phase": "start",
+                  "text": "{\n  \"path\": \"server.js\",\n  \"content\": \"const express = require('express');\"\n}"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"tool_result\",\"tool_use_id\":\"tool_1\",\"content\":\"File created successfully\"}",
+              "lineNumber": 4,
+              "detected": true,
+              "parseTime": 0.024667000000007988,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "tool_1",
+                  "phase": "end",
+                  "exitCode": 0
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"message\",\"role\":\"assistant\",\"content\":\"I've started creating your REST API. Let me add the authentication middleware.\"}",
+              "lineNumber": 5,
+              "detected": true,
+              "parseTime": 0.0030410000000102855,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "I've started creating your REST API. Let me add the authentication middleware."
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"tool_use\",\"id\":\"tool_2\",\"name\":\"create_file\",\"input\":{\"path\":\"auth.js\",\"content\":\"const jwt = require('jsonwebtoken');\"}}",
+              "lineNumber": 6,
+              "detected": true,
+              "parseTime": 0.011083999999996763,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "create_file",
+                  "phase": "start",
+                  "text": "{\n  \"path\": \"auth.js\",\n  \"content\": \"const jwt = require('jsonwebtoken');\"\n}"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"tool_result\",\"tool_use_id\":\"tool_2\",\"content\":\"File created successfully\"}",
+              "lineNumber": 7,
+              "detected": true,
+              "parseTime": 0.011375000000001023,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "tool_2",
+                  "phase": "end",
+                  "exitCode": 0
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"message\",\"role\":\"assistant\",\"content\":\"Great! I've set up the basic structure with authentication middleware.\"}",
+              "lineNumber": 8,
+              "detected": true,
+              "parseTime": 0.005416999999994232,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "Great! I've set up the basic structure with authentication middleware."
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"usage\",\"input_tokens\":125,\"output_tokens\":245,\"total_tokens\":370}",
+              "lineNumber": 9,
+              "detected": true,
+              "parseTime": 0.00766699999999787,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "cost",
+                  "deltaUsd": 0.00405
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.013411999999999265,
+          "totalParseTime": 0.12070799999999338,
+          "linesPerSecond": 74560.09543692625,
+          "errors": []
+        },
+        {
+          "vendor": "claude",
+          "filename": "error-handling.jsonl",
+          "totalLines": 5,
+          "validLines": 3,
+          "parseResults": [
+            {
+              "line": "{\"type\":\"message\",\"role\":\"user\",\"content\":\"explain this error: TypeError: Cannot read property 'x' of undefined\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.011459000000002106,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "user",
+                  "text": "explain this error: TypeError: Cannot read property 'x' of undefined"
+                }
+              ]
+            },
+            {
+              "line": "{invalid json here",
+              "lineNumber": 2,
+              "detected": false,
+              "parseTime": 0,
+              "eventCount": 0,
+              "error": "Invalid JSON"
+            },
+            {
+              "line": "{\"type\":\"message\",\"role\":\"assistant\",\"content\":\"This error occurs when you try to access a property on an undefined value.\"}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.0039579999999972415,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "This error occurs when you try to access a property on an undefined value."
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"error\",\"level\":\"warning\",\"message\":\"Parsing error detected\"}",
+              "lineNumber": 4,
+              "detected": true,
+              "parseTime": 0.03624999999999545,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "error",
+                  "message": "Parsing error detected"
+                }
+              ]
+            },
+            {
+              "line": "{\"broken\":}",
+              "lineNumber": 5,
+              "detected": false,
+              "parseTime": 0,
+              "eventCount": 0,
+              "error": "Invalid JSON"
+            }
+          ],
+          "averageParseTime": 0.023008400000000505,
+          "totalParseTime": 0.11504200000000253,
+          "linesPerSecond": 43462.387649726974,
+          "errors": [
+            {
+              "vendor": "claude",
+              "file": "error-handling.jsonl",
+              "line": 2,
+              "type": "json",
+              "message": "Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+            },
+            {
+              "vendor": "claude",
+              "file": "error-handling.jsonl",
+              "line": 5,
+              "type": "json",
+              "message": "Invalid JSON: Unexpected token '}', \"{\"broken\":}\" is not valid JSON"
+            }
+          ]
+        },
+        {
+          "vendor": "claude",
+          "filename": "tool-use.jsonl",
+          "totalLines": 5,
+          "validLines": 5,
+          "parseResults": [
+            {
+              "line": "{\"type\":\"message\",\"role\":\"user\",\"content\":\"run npm test and show results\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.005958000000006791,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "user",
+                  "text": "run npm test and show results"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"tool_use\",\"id\":\"tool_123\",\"name\":\"bash\",\"input\":{\"command\":\"npm test\"}}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.007542000000000826,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "bash",
+                  "phase": "start",
+                  "text": "{\n  \"command\": \"npm test\"\n}"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"tool_result\",\"tool_use_id\":\"tool_123\",\"content\":\"stdout\",\"output\":\"Test Suites: 3 passed, 3 total\\nTests: 15 passed, 15 total\\nTime: 2.341s\"}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.005166999999985933,
+              "eventCount": 2,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "tool_123",
+                  "phase": "stdout",
+                  "text": "Test Suites: 3 passed, 3 total\nTests: 15 passed, 15 total\nTime: 2.341s"
+                },
+                {
+                  "t": "tool",
+                  "name": "tool_123",
+                  "phase": "end",
+                  "exitCode": 0
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"message\",\"role\":\"assistant\",\"content\":\"I ran the tests successfully! All 15 tests across 3 test suites passed.\"}",
+              "lineNumber": 4,
+              "detected": true,
+              "parseTime": 0.005915999999999144,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "I ran the tests successfully! All 15 tests across 3 test suites passed."
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"usage\",\"input_tokens\":18,\"output_tokens\":52,\"total_tokens\":70}",
+              "lineNumber": 5,
+              "detected": true,
+              "parseTime": 0.0036249999999995453,
+              "eventCount": 1,
+              "detectedVendor": "claude",
+              "events": [
+                {
+                  "t": "cost",
+                  "deltaUsd": 0.000834
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.007716800000000035,
+          "totalParseTime": 0.038584000000000174,
+          "linesPerSecond": 129587.39373833654,
+          "errors": []
+        }
+      ],
+      "totalLines": 22,
+      "totalParseTime": 0.4463339999999931,
+      "averageLinesPerSecond": 49290.44168716777,
+      "detectionAccuracy": 100,
+      "errors": [
+        {
+          "vendor": "claude",
+          "file": "error-handling.jsonl",
+          "line": 2,
+          "type": "json",
+          "message": "Invalid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+        },
+        {
+          "vendor": "claude",
+          "file": "error-handling.jsonl",
+          "line": 5,
+          "type": "json",
+          "message": "Invalid JSON: Unexpected token '}', \"{\"broken\":}\" is not valid JSON"
+        }
+      ]
+    },
+    {
+      "vendor": "gemini",
+      "hasDirectory": true,
+      "files": [
+        {
+          "vendor": "gemini",
+          "filename": "basic-content.jsonl",
+          "totalLines": 3,
+          "validLines": 3,
+          "parseResults": [
+            {
+              "line": "{\"type\":\"user\",\"content\":\"What is recursion?\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.05283300000000679,
+              "eventCount": 1,
+              "detectedVendor": "gemini",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "user",
+                  "text": "What is recursion?"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"assistant\",\"content\":\"Recursion is a programming concept where a function calls itself to solve a smaller version of the same problem.\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.0037500000000108002,
+              "eventCount": 1,
+              "detectedVendor": "gemini",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "Recursion is a programming concept where a function calls itself to solve a smaller version of the same problem."
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"metadata\",\"usage\":{\"input_tokens\":8,\"output_tokens\":25,\"total_tokens\":33}}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.018583000000006678,
+              "eventCount": 1,
+              "detectedVendor": "gemini",
+              "events": [
+                {
+                  "t": "cost",
+                  "deltaUsd": 0.00008300000000000001
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.027777666666670104,
+          "totalParseTime": 0.08333300000001032,
+          "linesPerSecond": 36000.14400057155,
+          "errors": []
+        },
+        {
+          "vendor": "gemini",
+          "filename": "code-generation.jsonl",
+          "totalLines": 3,
+          "validLines": 3,
+          "parseResults": [
+            {
+              "line": "{\"type\":\"user\",\"content\":\"Create a Python function to calculate factorial\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.007208000000005654,
+              "eventCount": 1,
+              "detectedVendor": "gemini",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "user",
+                  "text": "Create a Python function to calculate factorial"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"assistant\",\"content\":\"```python\\ndef factorial(n):\\n    if n <= 1:\\n        return 1\\n    return n * factorial(n - 1)\\n```\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.005667000000002531,
+              "eventCount": 1,
+              "detectedVendor": "gemini",
+              "events": [
+                {
+                  "t": "msg",
+                  "role": "assistant",
+                  "text": "```python\ndef factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n```"
+                }
+              ]
+            },
+            {
+              "line": "{\"type\":\"metadata\",\"usage\":{\"input_tokens\":12,\"output_tokens\":38,\"total_tokens\":50}}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.0038330000000001974,
+              "eventCount": 1,
+              "detectedVendor": "gemini",
+              "events": [
+                {
+                  "t": "cost",
+                  "deltaUsd": 0.000126
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.007375000000000871,
+          "totalParseTime": 0.022125000000002615,
+          "linesPerSecond": 135593.22033896702,
+          "errors": []
+        }
+      ],
+      "totalLines": 6,
+      "totalParseTime": 0.10545800000001293,
+      "averageLinesPerSecond": 56894.68793262971,
+      "detectionAccuracy": 100,
+      "errors": []
+    },
+    {
+      "vendor": "amp",
+      "hasDirectory": true,
+      "files": [
+        {
+          "vendor": "amp",
+          "filename": "build-process.jsonl",
+          "totalLines": 5,
+          "validLines": 5,
+          "parseResults": [
+            {
+              "line": "{\"phase\":\"start\",\"task\":\"build\",\"timestamp\":\"2024-01-01T10:00:00Z\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.06687499999999602,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "build",
+                  "phase": "start"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"build\",\"type\":\"stdout\",\"content\":\"Running tests...\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.01666699999999821,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "build",
+                  "phase": "stdout",
+                  "text": "Running tests..."
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"build\",\"type\":\"stdout\",\"content\":\"All tests passed\"}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.004374999999996021,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "build",
+                  "phase": "stdout",
+                  "text": "All tests passed"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"build\",\"type\":\"stdout\",\"content\":\"Creating production build...\"}",
+              "lineNumber": 4,
+              "detected": true,
+              "parseTime": 0.004292000000006624,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "build",
+                  "phase": "stdout",
+                  "text": "Creating production build..."
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"end\",\"task\":\"build\",\"timestamp\":\"2024-01-01T10:02:00Z\",\"exitCode\":0}",
+              "lineNumber": 5,
+              "detected": true,
+              "parseTime": 0.013790999999997666,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "build",
+                  "phase": "end",
+                  "exitCode": 0
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.023916800000000647,
+          "totalParseTime": 0.11958400000000324,
+          "linesPerSecond": 41811.61359379067,
+          "errors": []
+        },
+        {
+          "vendor": "amp",
+          "filename": "simple-task.jsonl",
+          "totalLines": 4,
+          "validLines": 4,
+          "parseResults": [
+            {
+              "line": "{\"phase\":\"start\",\"task\":\"compile\",\"timestamp\":\"2024-01-01T10:00:00Z\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.007374999999996135,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "compile",
+                  "phase": "start"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"compile\",\"type\":\"stdout\",\"content\":\"Compiling project...\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.004249999999998977,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "compile",
+                  "phase": "stdout",
+                  "text": "Compiling project..."
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"compile\",\"type\":\"stdout\",\"content\":\"Build successful\"}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.003249999999994202,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "compile",
+                  "phase": "stdout",
+                  "text": "Build successful"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"end\",\"task\":\"compile\",\"timestamp\":\"2024-01-01T10:00:30Z\",\"exitCode\":0}",
+              "lineNumber": 4,
+              "detected": true,
+              "parseTime": 0.004540999999989026,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "compile",
+                  "phase": "end",
+                  "exitCode": 0
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.006177000000000987,
+          "totalParseTime": 0.02470800000000395,
+          "linesPerSecond": 161890.88554311806,
+          "errors": []
+        },
+        {
+          "vendor": "amp",
+          "filename": "test-execution.jsonl",
+          "totalLines": 5,
+          "validLines": 5,
+          "parseResults": [
+            {
+              "line": "{\"phase\":\"start\",\"task\":\"test\",\"timestamp\":\"2024-01-01T10:00:00Z\"}",
+              "lineNumber": 1,
+              "detected": true,
+              "parseTime": 0.00766699999999787,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "test",
+                  "phase": "start"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"test\",\"type\":\"stdout\",\"content\":\"Running unit tests...\"}",
+              "lineNumber": 2,
+              "detected": true,
+              "parseTime": 0.005375000000000796,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "test",
+                  "phase": "stdout",
+                  "text": "Running unit tests..."
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"test\",\"type\":\"stderr\",\"content\":\"Warning: Deprecated API usage\"}",
+              "lineNumber": 3,
+              "detected": true,
+              "parseTime": 0.003249999999994202,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "test",
+                  "phase": "stderr",
+                  "text": "Warning: Deprecated API usage"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"output\",\"task\":\"test\",\"type\":\"stdout\",\"content\":\"15 tests passed\"}",
+              "lineNumber": 4,
+              "detected": true,
+              "parseTime": 0.0028340000000071086,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "test",
+                  "phase": "stdout",
+                  "text": "15 tests passed"
+                }
+              ]
+            },
+            {
+              "line": "{\"phase\":\"end\",\"task\":\"test\",\"timestamp\":\"2024-01-01T10:00:45Z\",\"exitCode\":0}",
+              "lineNumber": 5,
+              "detected": true,
+              "parseTime": 0.00420799999999133,
+              "eventCount": 1,
+              "detectedVendor": "amp",
+              "events": [
+                {
+                  "t": "tool",
+                  "name": "test",
+                  "phase": "end",
+                  "exitCode": 0
+                }
+              ]
+            }
+          ],
+          "averageParseTime": 0.005533199999999283,
+          "totalParseTime": 0.027665999999996416,
+          "linesPerSecond": 180727.24643969667,
+          "errors": []
+        }
+      ],
+      "totalLines": 14,
+      "totalParseTime": 0.1719580000000036,
+      "averageLinesPerSecond": 81415.22930017623,
+      "detectionAccuracy": 100,
+      "errors": []
+    }
+  ],
+  "overallStats": {
+    "totalVendors": 3,
+    "totalFiles": 9,
+    "totalLines": 42,
+    "totalErrors": 2,
+    "averagePerformance": 62533.45297332457,
+    "registrySize": 3,
+    "availableParsers": [
+      "amp",
+      "claude",
+      "gemini"
+    ]
+  },
+  "performanceBenchmarks": {
+    "minLinesPerSecond": 49290.44168716777,
+    "maxLinesPerSecond": 2617287.181836034,
+    "averageLinesPerSecond": 62533.45297332457,
+    "performanceTarget": 1000,
+    "meetsTarget": true
+  }
+}

@@ -1,0 +1,4 @@
+{"phase":"start","task":"compile","timestamp":"2024-01-01T10:00:00Z"}
+{"phase":"output","task":"compile","type":"stdout","content":"Compiling project..."}
+{"phase":"output","task":"compile","type":"stdout","content":"Build successful"}
+{"phase":"end","task":"compile","timestamp":"2024-01-01T10:00:30Z","exitCode":0}
