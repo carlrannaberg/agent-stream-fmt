@@ -310,9 +310,11 @@ agent-stream-fmt/
 │   └── *.test.ts        # Test files
 ├── scripts/              # Development scripts
 │   ├── capture-fixtures.ts   # Capture CLI outputs
-│   ├── analyze-schemas.ts    # Analyze fixture schemas
-│   └── validate-fixtures.ts  # Validate fixture files
-├── reports/              # Phase reports and documentation
+│   ├── analyze-schemas.ts    # Analyze fixture schemas (outputs to fixtures/)
+│   ├── validate-fixtures.ts  # Validate fixture files (outputs to reports/)
+│   ├── comprehensive-validate.ts # Full validation (outputs to reports/)
+│   └── run-test-suite.ts    # Test runner (outputs to reports/)
+├── reports/              # ALL reports and documentation
 │   └── PHASE_*_REPORT.md # Phase completion reports
 ├── specs/                # Specification documents
 └── dist/                 # Built output
@@ -320,37 +322,87 @@ agent-stream-fmt/
 
 ### Report Generation
 
-**Important**: ALL reports should be saved to the `reports/` directory with descriptive names. This includes but is not limited to:
+**CRITICAL**: ALL reports MUST be saved to the `reports/` directory. NEVER save report files to the project root.
+
+**❌ INCORRECT (Root Directory):**
+```
+TEST_COVERAGE_REPORT.md         ❌ Wrong location
+TEST_SUITE_SUMMARY.md          ❌ Wrong location
+validation-report.json         ❌ Wrong location and format
+```
+
+**✅ CORRECT (Reports Directory):**
+```
+reports/TEST_RESULTS_2025-07-17.md       ✅ Correct
+reports/COVERAGE_REPORT_2025-07-17.md    ✅ Correct
+reports/VALIDATION_REPORT_2025-07-17.md  ✅ Correct
+```
 
 **Implementation Reports:**
-- Phase validation: `PHASE_X_VALIDATION_REPORT.md`
-- Implementation summaries: `IMPLEMENTATION_SUMMARY_[FEATURE].md`
-- Feature completion: `FEATURE_[NAME]_REPORT.md`
+- Phase validation: `reports/PHASE_X_VALIDATION_REPORT.md`
+- Implementation summaries: `reports/IMPLEMENTATION_SUMMARY_[FEATURE].md`
+- Feature completion: `reports/FEATURE_[NAME]_REPORT.md`
 
 **Testing & Analysis Reports:**
-- Test results: `TEST_RESULTS_[DATE].md`
-- Coverage reports: `COVERAGE_REPORT_[DATE].md`
-- Schema analysis: `SCHEMA_ANALYSIS_[VENDOR].md`
-- Fixture validation: `FIXTURE_VALIDATION_REPORT.md`
+- Test results: `reports/TEST_RESULTS_[DATE].md`
+- Coverage reports: `reports/COVERAGE_REPORT_[DATE].md`
+- Schema analysis: `reports/SCHEMA_ANALYSIS_[VENDOR].md`
+- Fixture validation: `reports/FIXTURE_VALIDATION_REPORT.md`
 
 **Performance & Benchmarks:**
-- Performance benchmarks: `PERFORMANCE_BENCHMARK_[DATE].md`
-- Memory profiling: `MEMORY_PROFILE_[SCENARIO].md`
-- Load testing: `LOAD_TEST_[VERSION].md`
+- Performance benchmarks: `reports/PERFORMANCE_BENCHMARK_[DATE].md`
+- Memory profiling: `reports/MEMORY_PROFILE_[SCENARIO].md`
+- Load testing: `reports/LOAD_TEST_[VERSION].md`
 
 **Quality & Validation:**
-- Code quality: `CODE_QUALITY_REPORT.md`
-- Security audit: `SECURITY_AUDIT_[DATE].md`
-- Dependency analysis: `DEPENDENCY_REPORT.md`
-- API compatibility: `API_COMPATIBILITY_REPORT.md`
+- Code quality: `reports/CODE_QUALITY_REPORT.md`
+- Security audit: `reports/SECURITY_AUDIT_[DATE].md`
+- Dependency analysis: `reports/DEPENDENCY_REPORT.md`
+- API compatibility: `reports/API_COMPATIBILITY_REPORT.md`
 
-**General Guidelines:**
-- Use descriptive names that indicate report type and scope
-- Include dates where relevant (format: YYYY-MM-DD)
-- Group related reports with common prefixes
-- Keep all reports in Markdown format for consistency
+**Report Creation Checklist:**
+1. ✅ Always use the `reports/` directory
+2. ✅ Use Markdown format (.md) for all reports
+3. ✅ Include dates in YYYY-MM-DD format where applicable
+4. ✅ Use descriptive prefixes to group related reports
+5. ❌ Never save reports to the project root
+6. ❌ Avoid JSON format for human-readable reports
 
 This keeps the project root clean and provides a central location for all project documentation and analysis.
+
+### Important Note
+
+If you find report files in the project root, they were placed incorrectly. Move them to the `reports/` directory to keep the root clean:
+
+```bash
+# Example: moving misplaced reports
+mv TEST_COVERAGE_REPORT.md reports/
+mv TEST_SUITE_SUMMARY.md reports/
+mv validation-report.json reports/
+```
+
+### Script Output Conventions
+
+**All scripts that generate reports MUST output to the correct directories:**
+
+```typescript
+// ✅ CORRECT - Output to reports directory
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+
+const reportPath = join(process.cwd(), 'reports', `TEST_RESULTS_${new Date().toISOString().split('T')[0]}.md`);
+writeFileSync(reportPath, reportContent);
+
+// ❌ INCORRECT - Output to root directory
+writeFileSync('TEST_RESULTS.md', reportContent); // Never do this!
+```
+
+**Directory Rules for Scripts:**
+- **Test results** → Always output to `reports/`
+- **Schema analysis** → Output to `fixtures/` (with the fixtures they analyze)
+- **Coverage reports** → Always output to `reports/`
+- **Validation reports** → Always output to `reports/`
+- **Temporary files** → Use `temp/` directory (create if needed)
 
 ## Temporary Files & Debugging
 
