@@ -1,0 +1,36 @@
+{
+  "name": "agent-stream-fmt",
+  "version": "0.0.1",
+  "description": "Universal JSONL formatter for AI agent CLIs",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "agent-stream-fmt": "dist/cli.js"
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "fixtures:capture": "tsx scripts/capture-fixtures.ts",
+    "fixtures:analyze": "tsx scripts/analyze-schemas.ts",
+    "fixtures:validate": "tsx scripts/validate-fixtures.ts"
+  },
+  "keywords": ["cli", "jsonl", "streaming", "claude", "gemini", "amp"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "kleur": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
