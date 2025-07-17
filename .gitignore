@@ -31,10 +31,18 @@ yarn-error.log*
 .env.local
 .env.*.local
 
-# Temporary files
+# Temporary files and debugging
 *.tmp
 *.temp
 .cache/
+/temp/
+temp/
+**/temp/
+debug-*.js
+test-*.py
+analyze-*.sh
+*-debug.*
+*.debug
 
 # Package manager files
 .npm/

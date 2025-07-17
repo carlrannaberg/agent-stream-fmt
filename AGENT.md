@@ -285,22 +285,100 @@ export async function* streamFormat(opts: StreamFormatOptions): AsyncIterator<st
 
 ### Directory Structure
 ```
-src/
-├── types.ts              # Core type definitions
-├── parsers/              # Vendor-specific parsers
-│   ├── index.ts         # Parser registry
-│   ├── claude.ts        # Claude Code parser
-│   ├── gemini.ts        # Gemini CLI parser
-│   └── amp.ts           # Amp Code parser
-├── render/               # Output formatters
-│   ├── ansi.ts          # Terminal ANSI rendering
-│   └── html.ts          # HTML document rendering
-├── utils/                # Utility functions
-│   ├── line-reader.ts   # Line-by-line stream reader
-│   └── backpressure.ts  # Stream backpressure handling
-├── stream.ts             # Main streaming engine
-├── cli.ts                # Command-line interface
-└── index.ts              # Public API exports
+agent-stream-fmt/
+├── src/                  # Source code
+│   ├── types.ts         # Core type definitions
+│   ├── parsers/         # Vendor-specific parsers
+│   │   ├── index.ts     # Parser registry
+│   │   ├── claude.ts    # Claude Code parser
+│   │   ├── gemini.ts    # Gemini CLI parser
+│   │   └── amp.ts       # Amp Code parser
+│   ├── render/          # Output formatters
+│   │   ├── ansi.ts      # Terminal ANSI rendering
+│   │   └── html.ts      # HTML document rendering
+│   ├── utils/           # Utility functions
+│   │   ├── line-reader.ts   # Line-by-line stream reader
+│   │   └── backpressure.ts  # Stream backpressure handling
+│   ├── stream.ts        # Main streaming engine
+│   ├── cli.ts           # Command-line interface
+│   └── index.ts         # Public API exports
+├── tests/                # Test files and fixtures
+│   ├── fixtures/        # JSONL fixture files
+│   │   ├── claude/      # Claude CLI outputs
+│   │   ├── gemini/      # Gemini CLI outputs
+│   │   └── amp/         # Amp Code outputs
+│   └── *.test.ts        # Test files
+├── scripts/              # Development scripts
+│   ├── capture-fixtures.ts   # Capture CLI outputs
+│   ├── analyze-schemas.ts    # Analyze fixture schemas
+│   └── validate-fixtures.ts  # Validate fixture files
+├── reports/              # Phase reports and documentation
+│   └── PHASE_*_REPORT.md # Phase completion reports
+├── specs/                # Specification documents
+└── dist/                 # Built output
+```
+
+### Report Generation
+
+**Important**: ALL reports should be saved to the `reports/` directory with descriptive names. This includes but is not limited to:
+
+**Implementation Reports:**
+- Phase validation: `PHASE_X_VALIDATION_REPORT.md`
+- Implementation summaries: `IMPLEMENTATION_SUMMARY_[FEATURE].md`
+- Feature completion: `FEATURE_[NAME]_REPORT.md`
+
+**Testing & Analysis Reports:**
+- Test results: `TEST_RESULTS_[DATE].md`
+- Coverage reports: `COVERAGE_REPORT_[DATE].md`
+- Schema analysis: `SCHEMA_ANALYSIS_[VENDOR].md`
+- Fixture validation: `FIXTURE_VALIDATION_REPORT.md`
+
+**Performance & Benchmarks:**
+- Performance benchmarks: `PERFORMANCE_BENCHMARK_[DATE].md`
+- Memory profiling: `MEMORY_PROFILE_[SCENARIO].md`
+- Load testing: `LOAD_TEST_[VERSION].md`
+
+**Quality & Validation:**
+- Code quality: `CODE_QUALITY_REPORT.md`
+- Security audit: `SECURITY_AUDIT_[DATE].md`
+- Dependency analysis: `DEPENDENCY_REPORT.md`
+- API compatibility: `API_COMPATIBILITY_REPORT.md`
+
+**General Guidelines:**
+- Use descriptive names that indicate report type and scope
+- Include dates where relevant (format: YYYY-MM-DD)
+- Group related reports with common prefixes
+- Keep all reports in Markdown format for consistency
+
+This keeps the project root clean and provides a central location for all project documentation and analysis.
+
+## Temporary Files & Debugging
+
+All temporary files, debugging scripts, and test artifacts should be organized in a `/temp` folder:
+
+### Temporary File Organization
+- **Debug scripts**: `temp/debug-*.js`, `temp/analyze-*.py`
+- **Test artifacts**: `temp/test-results/`, `temp/coverage/`
+- **Generated files**: `temp/generated/`, `temp/build-artifacts/`
+- **Logs**: `temp/logs/debug.log`, `temp/logs/error.log`
+
+### Guidelines
+- Never commit files from `/temp` directory
+- Use `/temp` for all debugging and analysis scripts created during development
+- Clean up `/temp` directory regularly or use automated cleanup
+- Include `/temp/` in `.gitignore` to prevent accidental commits
+
+### Example `.gitignore` patterns
+```
+# Temporary files and debugging
+/temp/
+temp/
+**/temp/
+debug-*.js
+test-*.py
+analyze-*.sh
+*-debug.*
+*.debug
 ```
 
 ## Implementation Phases
