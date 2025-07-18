@@ -521,7 +521,7 @@ describe('AnsiRenderer', () => {
 
       const output = renderer.render(event);
       expect(output).toContain('function hello()');
-      expect(output).toContain('\u001b[33m'); // Yellow for code
+      expect(output).toContain('\u001b[2m'); // Dim for code blocks
     });
 
     it('should handle mixed formatting in tool output', () => {
@@ -611,7 +611,7 @@ describe('AnsiRenderer', () => {
       const output = renderer.render(unknownEvent);
       const stripped = stripAnsi(output);
 
-      expect(stripped).toContain('❓ Unknown event:');
+      expect(stripped).toContain('❓ Unknown event type:');
       expect(stripped).toContain('future-event-type');
     });
   });

@@ -59,24 +59,49 @@ export class HtmlRenderer implements Renderer {
   private renderMessage(event: AgentEvent & { t: 'msg' }): string {
     this.context.messageCount++;
     
-    const roleClass = `message-${event.role}`;
+    // Handle missing role
+    const role = event.role || 'unknown';
+    const roleClass = `message-${role}`;
     const roleIcon = {
       'user': '👤',
       'assistant': '🤖',
       'system': '⚙️'
-    }[event.role] || '❓';
+    }[role] || '❓';
 
-    // Escape HTML first, then apply basic markdown-like formatting
-    const content = this.escapeHtml(event.text)
-      .replace(/\n/g, '<br>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    // Escape HTML first, then apply markdown-like formatting with proper nesting support
+    // escapeHtml now handles null/undefined gracefully
+    let content = this.escapeHtml(event.text);
+    
+    // Store code segments to protect them from other formatting
+    const codeSegments: { placeholder: string; content: string }[] = [];
+    content = content.replace(/`([^`]+)`/g, (match, code) => {
+      const placeholder = `__CODE_${codeSegments.length}__`;
+      codeSegments.push({ placeholder, content: `<code>${code}</code>` });
+      return placeholder;
+    });
+    
+    // Handle bold with potential nested content
+    content = content.replace(/\*\*((?:[^*]|\*(?!\*))+)\*\*/g, (_, boldContent) => {
+      // Process italic within bold
+      const withItalic = boldContent.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      return `<strong>${withItalic}</strong>`;
+    });
+    
+    // Handle remaining standalone italic (not within bold)
+    content = content.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+    
+    // Restore code segments
+    codeSegments.forEach(({ placeholder, content: codeContent }) => {
+      content = content.replace(placeholder, codeContent);
+    });
+    
+    // Finally, convert newlines to <br>
+    content = content.replace(/\n/g, '<br>');
 
     return `<div class="message ${roleClass}">
   <div class="message-header">
     <span class="role-icon">${roleIcon}</span>
-    <span class="role-name">${event.role}</span>
+    <span class="role-name">${role}</span>
   </div>
   <div class="message-content">${content}</div>
 </div>
@@ -91,9 +116,10 @@ export class HtmlRenderer implements Renderer {
 
     switch (event.phase) {
       case 'start':
-        // Track the tool in our context
-        this.context.toolStack.set(event.name, {
-          name: event.name,
+        // Track the tool in our context (handle null/undefined name)
+        const toolName = event.name || 'unknown-tool';
+        this.context.toolStack.set(toolName, {
+          name: toolName,
           startTime: Date.now(),
           outputLines: [],
           collapsed: this.options.collapseTools || false
@@ -114,9 +140,11 @@ export class HtmlRenderer implements Renderer {
         const escapedText = this.escapeHtml(event.text || '');
         
         // Track output for potential collapsing
-        const toolState = this.context.toolStack.get(event.name);
-        if (toolState && event.text) {
-          toolState.outputLines.push(event.text);
+        if (event.name) {
+          const toolState = this.context.toolStack.get(event.name);
+          if (toolState && event.text) {
+            toolState.outputLines.push(event.text);
+          }
         }
 
         return `    <div class="tool-${outputClass}">${escapedText}</div>
@@ -126,8 +154,10 @@ export class HtmlRenderer implements Renderer {
         const statusClass = (event.exitCode || 0) === 0 ? 'success' : 'error';
         const statusIcon = (event.exitCode || 0) === 0 ? '✅' : '❌';
 
-        // Remove from tracking
-        this.context.toolStack.delete(event.name);
+        // Remove from tracking if name exists
+        if (event.name) {
+          this.context.toolStack.delete(event.name);
+        }
 
         return `  </div>
   <div class="tool-end ${statusClass}">
@@ -150,9 +180,15 @@ export class HtmlRenderer implements Renderer {
   private renderCost(event: AgentEvent & { t: 'cost' }): string {
     if (this.options.hideCost) return '';
 
+    const costValue = event.deltaUsd == null || isNaN(event.deltaUsd) || !isFinite(event.deltaUsd)
+      ? '0.0000'
+      : event.deltaUsd < 0 
+        ? `-$${Math.abs(event.deltaUsd).toFixed(4)}` 
+        : `$${event.deltaUsd.toFixed(4)}`;
+
     return `<div class="cost-info">
   <span class="cost-icon">💰</span>
-  <span class="cost-amount">$${event.deltaUsd.toFixed(4)}</span>
+  <span class="cost-amount">${costValue}</span>
 </div>
 `;
   }
@@ -174,9 +210,21 @@ export class HtmlRenderer implements Renderer {
   private renderDebug(event: AgentEvent & { t: 'debug' }): string {
     if (this.options.hideDebug) return '';
 
+    let debugText: string;
+    try {
+      debugText = JSON.stringify(event.raw, null, 2);
+    } catch (error) {
+      // Handle circular references or other JSON serialization errors
+      if (error instanceof Error && error.message.includes('circular')) {
+        debugText = '[Circular Reference]';
+      } else {
+        debugText = '[Unserializable Object]';
+      }
+    }
+
     return `<div class="debug-info">
   <span class="debug-icon">🐛</span>
-  <pre class="debug-content">${this.escapeHtml(JSON.stringify(event.raw, null, 2))}</pre>
+  <pre class="debug-content">${this.escapeHtml(debugText)}</pre>
 </div>
 `;
   }
@@ -185,18 +233,36 @@ export class HtmlRenderer implements Renderer {
    * Render an unknown event type (for forward compatibility)
    */
   private renderUnknown(event: AgentEvent): string {
+    // Handle potential circular references
+    let eventContent: string;
+    try {
+      eventContent = JSON.stringify(event, null, 2);
+    } catch (e) {
+      eventContent = `[Non-serializable event of type: ${(event as any)?.t || 'unknown'}]`;
+    }
+    
     return `<div class="unknown-event">
   <span class="unknown-icon">❓</span>
-  <pre class="unknown-content">${this.escapeHtml(JSON.stringify(event, null, 2))}</pre>
+  <pre class="unknown-content">${this.escapeHtml(eventContent)}</pre>
 </div>
 `;
   }
 
   /**
    * Escape HTML entities to prevent XSS
+   * Handles null/undefined gracefully
    */
-  private escapeHtml(text: string): string {
-    return text
+  private escapeHtml(text: string | null | undefined): string {
+    // Handle null/undefined
+    if (text == null) {
+      return '';
+    }
+    
+    // Convert to string if not already
+    const str = String(text);
+    
+    // Use global replace to escape ALL occurrences
+    return str
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')

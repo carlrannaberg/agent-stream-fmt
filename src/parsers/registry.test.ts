@@ -34,7 +34,7 @@ describe('ParserRegistry', () => {
 
       testRegistry.registerParser(mockParser);
       expect(testRegistry.hasParser('test')).toBe(true);
-      expect(testRegistry.getParser('test')).toBe(mockParser);
+      expect(testRegistry.getParser('test' as any)).toBe(mockParser);
     });
 
     it('registers a parser with custom priority', () => {
@@ -64,7 +64,7 @@ describe('ParserRegistry', () => {
       testRegistry.registerParser(parser1);
       testRegistry.registerParser(parser2);
       
-      expect(testRegistry.getParser('test')).toBe(parser2);
+      expect(testRegistry.getParser('test' as any)).toBe(parser2);
       expect(testRegistry.size()).toBe(4); // claude + gemini + amp + test
     });
 

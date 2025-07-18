@@ -10,6 +10,33 @@ import type { AgentEvent, ToolEvent } from '../types.js';
 import type { Renderer, RenderOptions, RenderContext, ToolState } from './types.js';
 
 /**
+ * Safe JSON stringify that handles circular references
+ */
+function safeStringify(obj: any, indent: number = 2): string {
+  const seen = new WeakSet();
+  
+  try {
+    return JSON.stringify(obj, (key, value) => {
+      // Handle primitive types
+      if (typeof value !== 'object' || value === null) {
+        return value;
+      }
+      
+      // Check for circular reference
+      if (seen.has(value)) {
+        return '[Circular]';
+      }
+      
+      seen.add(value);
+      return value;
+    }, indent);
+  } catch (error) {
+    // Fallback for any other JSON.stringify errors
+    return `[Error stringifying object: ${error instanceof Error ? error.message : String(error)}]`;
+  }
+}
+
+/**
  * ANSI terminal renderer implementation
  * 
  * Provides colorful terminal output with icons, formatting, and
@@ -22,8 +49,9 @@ export class AnsiRenderer implements Renderer {
     // Enable colors by default unless explicitly disabled
     if (options.colorDisabled) {
       kleur.enabled = false;
-    } else if (kleur.enabled === undefined) {
-      // Force enable colors if not already set
+    } else {
+      // Always enable colors unless explicitly disabled
+      // This ensures consistent behavior in test environments
       kleur.enabled = true;
     }
     
@@ -64,22 +92,25 @@ export class AnsiRenderer implements Renderer {
   private renderMessage(event: AgentEvent & { t: 'msg' }): string {
     this.context.messageCount++;
     
+    // Handle null/undefined role
+    const role = event.role || 'unknown';
+    
     // Role-based icons
     const roleIcon = {
       'user': '👤',
       'assistant': '🤖',
       'system': '⚙️'
-    }[event.role] || '❓';
+    }[role] || '❓';
     
     // Role-based colors
     const roleColor = {
       'user': kleur.bold().cyan,
       'assistant': kleur.bold().green,
       'system': kleur.bold().yellow
-    }[event.role] || kleur.bold().white;
+    }[role] || kleur.bold().white;
     
-    const header = roleColor(`${roleIcon} ${event.role}:`);
-    const content = this.formatMessageContent(event.text);
+    const header = roleColor(`${roleIcon} ${role}:`);
+    const content = this.formatMessageContent(event.text || '');
     
     // Add extra newline for spacing unless in compact mode
     const spacing = this.options.compactMode ? '\n' : '\n\n';
@@ -120,8 +151,10 @@ export class AnsiRenderer implements Renderer {
     });
     
     const startIcon = kleur.dim().italic('🔧');
-    const toolName = kleur.bold().blue(event.name);
-    const input = event.text ? kleur.dim(` ${event.text}`) : '';
+    // Escape ANSI codes in tool name
+    const escapedName = event.name.replace(/\x1b/g, '\\x1b');
+    const toolName = kleur.bold().blue(escapedName);
+    const input = event.text ? kleur.dim(` ${event.text.replace(/\x1b/g, '\\x1b')}`) : '';
     
     return `${startIcon} ${toolName}${input}\n`;
   }
@@ -163,18 +196,20 @@ export class AnsiRenderer implements Renderer {
     
     // If collapsed, show summary
     if (toolState.collapsed && toolState.outputLines.length > 0) {
+      const lineCount = toolState.outputLines.length;
       const summary = toolState.outputLines.join('\n');
       const truncated = summary.slice(0, 100);
       const suffix = summary.length > 100 ? '...' : '';
-      result += kleur.dim().gray(`  └─ ${truncated}${suffix}\n`);
+      result += kleur.dim().gray(`  └─ ${truncated}${suffix} (${lineCount} lines)\n`);
     }
     
     // Status indicator
     const statusIcon = exitCode === 0 ? '✅' : '❌';
     const statusColor = exitCode === 0 ? kleur.green : kleur.red;
     const durationText = kleur.dim().gray(`(${duration}ms)`);
+    const escapedName = event.name.replace(/\x1b/g, '\\x1b');
     
-    result += `${statusIcon} ${statusColor(event.name)} ${durationText}\n`;
+    result += `${statusIcon} ${statusColor(escapedName)} ${durationText}\n`;
     
     // Clean up tool state
     this.context.toolStack.delete(event.name);
@@ -189,7 +224,10 @@ export class AnsiRenderer implements Renderer {
     if (this.options.hideCost) return '';
     
     const costIcon = '💰';
-    const costText = kleur.dim().yellow(`$${event.deltaUsd.toFixed(4)}`);
+    const costValue = event.deltaUsd < 0 
+      ? `-$${Math.abs(event.deltaUsd).toFixed(4)}` 
+      : `$${event.deltaUsd.toFixed(4)}`;
+    const costText = kleur.dim().yellow(costValue);
     
     return `${costIcon} ${costText}\n`;
   }
@@ -199,7 +237,8 @@ export class AnsiRenderer implements Renderer {
    */
   private renderError(event: AgentEvent & { t: 'error' }): string {
     const errorIcon = '🚨';
-    const errorText = kleur.bold().red(event.message);
+    const message = event.message || 'Unknown error';
+    const errorText = kleur.bold().red(message);
     
     return `${errorIcon} ${errorText}\n`;
   }
@@ -211,7 +250,7 @@ export class AnsiRenderer implements Renderer {
     if (this.options.hideDebug) return '';
     
     const debugIcon = kleur.dim().gray('🐛');
-    const debugText = kleur.dim().gray(JSON.stringify(event.raw, null, 2));
+    const debugText = kleur.dim().gray(safeStringify(event.raw));
     
     return `${debugIcon} ${debugText}\n`;
   }
@@ -227,25 +266,53 @@ export class AnsiRenderer implements Renderer {
    * Format message content with markdown-like formatting
    */
   private formatMessageContent(text: string): string {
-    const lines = text.split('\n');
+    // Handle null/undefined gracefully
+    if (!text) return '  ';
+    
+    // Escape ANSI escape sequences to prevent injection
+    const escapedText = text.replace(/\x1b/g, '\\x1b');
+    
+    const lines = escapedText.split('\n');
+    let inCodeBlock = false;
     
     return lines.map(line => {
-      // Skip code blocks (don't process their content)
+      // Handle code blocks
       if (line.startsWith('```')) {
-        return kleur.dim().gray(line);
+        inCodeBlock = !inCodeBlock;
+        return `  ${kleur.dim(line)}`;
       }
       
-      // Process inline formatting
+      // If we're inside a code block, just dim the content
+      if (inCodeBlock) {
+        return `  ${kleur.dim(line)}`;
+      }
+      
+      // Process inline formatting with a more sophisticated approach
       let formatted = line;
       
-      // Inline code: `code` → yellow
-      formatted = formatted.replace(/`([^`]+)`/g, (_, code) => kleur.yellow(code));
+      // First, handle inline code to protect it from other formatting
+      const codeSegments: { placeholder: string; content: string }[] = [];
+      formatted = formatted.replace(/`([^`]+)`/g, (match, code) => {
+        const placeholder = `__CODE_${codeSegments.length}__`;
+        codeSegments.push({ placeholder, content: kleur.yellow(code) });
+        return placeholder;
+      });
       
-      // Bold: **text** → bold
-      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, (_, text) => kleur.bold(text));
+      // Handle bold with potential nested content using a more specific pattern
+      // This regex looks for ** followed by content that may include * but not **
+      formatted = formatted.replace(/\*\*((?:[^*]|\*(?!\*))+)\*\*/g, (_, content) => {
+        // Process italic within bold
+        const withItalic = content.replace(/\*([^*]+)\*/g, (_: string, text: string) => kleur.italic(text));
+        return kleur.bold(withItalic);
+      });
       
-      // Italic: *text* → italic (but not **text**)
+      // Handle remaining standalone italic (not within bold)
       formatted = formatted.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, (_, text) => kleur.italic(text));
+      
+      // Restore code segments
+      codeSegments.forEach(({ placeholder, content }) => {
+        formatted = formatted.replace(placeholder, content);
+      });
       
       // Indent message content
       return `  ${formatted}`;
