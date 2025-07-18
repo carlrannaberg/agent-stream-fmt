@@ -1,7 +1,9 @@
-import { AgentEvent, StreamEventOptions, Vendor } from './types.js';
+import { AgentEvent, StreamEventOptions, StreamFormatOptions, Vendor } from './types.js';
 import { selectParser } from './parsers/index.js';
 import { createLineReaderWithLineNumbers } from './utils/line-reader.js';
 import { ParseError } from './parsers/types.js';
+import { createRenderer } from './render/factory.js';
+import type { RenderOptions } from './render/types.js';
 
 /**
  * Options for streaming behavior
@@ -157,4 +159,100 @@ export async function collectEvents(
   }
   
   return events;
+}
+
+/**
+ * Extended options for streamFormat that includes filtering
+ */
+export interface ExtendedStreamFormatOptions extends StreamFormatOptions {
+  /** Set of event types to include (if specified, only these types are rendered) */
+  eventFilter?: Set<string>;
+  /** Whether to emit debug events */
+  emitDebugEvents?: boolean;
+}
+
+/**
+ * Stream events with formatting applied
+ * 
+ * This function combines event streaming with rendering, yielding
+ * formatted strings instead of raw events. It automatically handles
+ * renderer initialization and cleanup.
+ * 
+ * @example
+ * ```typescript
+ * // Stream ANSI-formatted output to console
+ * for await (const output of streamFormat({ 
+ *   vendor: 'claude', 
+ *   source: process.stdin,
+ *   format: 'ansi'
+ * })) {
+ *   process.stdout.write(output);
+ * }
+ * 
+ * // Generate HTML output
+ * for await (const output of streamFormat({ 
+ *   vendor: 'gemini', 
+ *   source: stream,
+ *   format: 'html',
+ *   renderOptions: { collapseTools: true }
+ * })) {
+ *   htmlParts.push(output);
+ * }
+ * ```
+ */
+export async function* streamFormat(
+  options: ExtendedStreamFormatOptions
+): AsyncGenerator<string, void, unknown> {
+  const {
+    vendor,
+    source,
+    format = 'ansi',
+    renderOptions = {},
+    eventFilter,
+    emitDebugEvents
+  } = options;
+  
+  // Create renderer with merged options
+  const fullRenderOptions: RenderOptions = {
+    format,
+    ...renderOptions
+  };
+  const renderer = createRenderer(format, fullRenderOptions);
+  
+  // Stream options for the underlying event stream
+  const streamOptions: StreamOptions = {
+    vendor,
+    source,
+    emitDebugEvents,
+    // Pass through any additional options that might be on StreamFormatOptions
+    ...(options as any)
+  };
+  
+  try {
+    // Process events through the renderer
+    for await (const event of streamEvents(streamOptions)) {
+      // Apply event filtering if specified
+      if (eventFilter && !eventFilter.has(event.t)) {
+        continue;
+      }
+      
+      const formatted = renderer.render(event);
+      if (formatted) {
+        yield formatted;
+      }
+    }
+    
+    // Flush any pending output from the renderer
+    const finalOutput = renderer.flush();
+    if (finalOutput) {
+      yield finalOutput;
+    }
+  } catch (error) {
+    // Ensure we flush even on error
+    const errorFlush = renderer.flush();
+    if (errorFlush) {
+      yield errorFlush;
+    }
+    throw error;
+  }
 }

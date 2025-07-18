@@ -82,6 +82,16 @@ export interface StreamEventOptions {
 }
 
 /**
+ * Options for streaming with formatting
+ */
+export interface StreamFormatOptions extends StreamEventOptions {
+  /** Output format (default: 'ansi') */
+  format?: 'ansi' | 'html' | 'json';
+  /** Renderer-specific options */
+  renderOptions?: Partial<import('./render/types.js').RenderOptions>;
+}
+
+/**
  * Options for formatting output
  */
 export interface FmtOptions {

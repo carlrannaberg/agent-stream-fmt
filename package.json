@@ -8,7 +8,10 @@
   "bin": {
     "agent-stream-fmt": "dist/cli.js"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest",
@@ -27,13 +30,21 @@
     "benchmark:memory": "tsx --expose-gc benchmarks/memory.ts",
     "benchmark:all": "./benchmarks/run-benchmarks.sh"
   },
-  "keywords": ["cli", "jsonl", "streaming", "claude", "gemini", "amp"],
+  "keywords": [
+    "cli",
+    "jsonl",
+    "streaming",
+    "claude",
+    "gemini",
+    "amp"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "commander": "^14.0.0",
     "kleur": "^4.1.5"
   },
   "devDependencies": {
