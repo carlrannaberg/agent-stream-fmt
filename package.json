@@ -21,7 +21,11 @@
     "fixtures:capture": "tsx scripts/capture-fixtures.ts",
     "fixtures:analyze": "tsx scripts/analyze-schemas.ts",
     "fixtures:validate": "tsx scripts/validate-fixtures.ts",
-    "validate:comprehensive": "tsx scripts/comprehensive-validate.ts"
+    "validate:comprehensive": "tsx scripts/comprehensive-validate.ts",
+    "benchmark": "tsx benchmarks/throughput.ts",
+    "benchmark:throughput": "tsx benchmarks/throughput.ts",
+    "benchmark:memory": "tsx --expose-gc benchmarks/memory.ts",
+    "benchmark:all": "./benchmarks/run-benchmarks.sh"
   },
   "keywords": ["cli", "jsonl", "streaming", "claude", "gemini", "amp"],
   "author": "",
