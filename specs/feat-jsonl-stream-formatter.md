@@ -13,8 +13,8 @@ The `agent-stream-fmt` package is a pure stream transformer that normalizes JSON
 
 AI agent CLIs have become essential development tools, but each vendor outputs different JSONL formats:
 - Claude Code uses `{"type":"message","role":"assistant","content":"…"}`
-- Gemini CLI uses `{"kind":"content","data":{"role":"user","text":"…"}}`
-- Amp Code uses `{"phase":"tool","name":"npm_test",…}`
+- Gemini CLI uses `{"type":"assistant","content":"…"}` or `{"type":"metadata","usage":{…}}`
+- Amp Code uses `{"phase":"tool","task":"npm_test",…}`
 
 This fragmentation creates several problems:
 1. **Integration complexity**: Each consumer must handle vendor-specific formats
