@@ -1,0 +1,63 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "tools:Write AND file_paths:**/*.ts",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/typecheck.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tools:Write AND file_paths:**/*.{js,ts,tsx,jsx}",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/eslint.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write,Edit,MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-related-tests.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/auto-checkpoint.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-todo-completion.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/project-validation.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/project-validation.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

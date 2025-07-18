@@ -9,47 +9,65 @@ A universal JSONL formatter for AI agent CLIs that normalizes output from Claude
 
 ## Project Status
 
-**Current State**: Planning/Specification phase - no implementation yet  
-**Next Step**: Begin Phase 0 (Project Setup & Fixture Collection)
+**Current State**: Phase 3 (Rendering Engine) completed  
+**Next Step**: Phase 4 (Additional Vendors) - Improve Gemini and Amp parsers
 
 ## Build & Commands
 
-### Current Commands (Pre-Implementation)
+### Development Commands
 ```bash
-# Git operations
-git status                    # Check current state
-git add .                     # Stage changes
-git commit -m "type: message" # Commit with conventional format
-
-# Specification review
-ls specs/                     # List all specification documents
-```
-
-### Planned Commands (After Implementation)
-```bash
-# Development
+# Build
 npm run build                 # Build TypeScript project with tsup
-npm run dev                   # Development mode with watch
 npm run typecheck             # TypeScript type checking
 
 # Testing
 npm test                      # Run all tests with vitest
 npm run test:watch            # Run tests in watch mode
-npm run test:unit             # Run unit tests only
-npm run test:integration      # Run integration tests only
+npm run test:integration      # Run integration tests (comprehensive & registry)
 npm run test:performance      # Run performance benchmarks
+npm run test:errors           # Run error handling tests
+npm run test:fixtures         # Run fixture validation tests
+npm run test:comprehensive    # Run full test suite with reporting
 
 # Test single file
-npm test -- test/path/to/file.test.ts
+npm test -- tests/path/to/file.test.ts
+npm test -- src/parsers/claude.test.ts
 
-# Code Quality
-npm run lint                  # ESLint checking
-npm run format                # Format code with Prettier
-npm run fix                   # Auto-fix linting issues
+# Fixtures Management
+npm run fixtures:capture      # Capture real CLI outputs
+npm run fixtures:analyze      # Analyze fixture schemas
+npm run fixtures:validate     # Validate fixture files
+npm run validate:comprehensive # Full validation with reports
+
+# Performance Benchmarks
+npm run benchmark             # Run throughput benchmark
+npm run benchmark:throughput  # Throughput testing
+npm run benchmark:memory      # Memory usage profiling
+npm run benchmark:all         # All benchmarks
 
 # CLI Usage (after build)
 agent-stream-fmt [options] [file]
+
+# Git operations
+git status                    # Check current state
+git add .                     # Stage changes
+git commit -m "type: message" # Commit with conventional format
 ```
+
+### Script Command Consistency
+**Important**: When modifying npm scripts in package.json, ensure all references are updated:
+- GitHub Actions workflows (.github/workflows/*.yml)
+- README.md documentation
+- Contributing guides
+- Dockerfile/docker-compose.yml
+- CI/CD configuration files
+- Setup/installation scripts
+
+Common places that reference npm scripts:
+- `npm run build` → Check: workflows, README, Dockerfile
+- `npm test` → Check: workflows, contributing docs
+- `npm run typecheck` → Check: pre-commit hooks, workflows
+- `npm start` → Check: README, deployment docs
 
 ## Code Style
 
@@ -139,8 +157,8 @@ try {
 ## Testing
 
 ### Framework & Patterns
-- **Framework**: Vitest (planned)
-- **Test files**: `*.test.ts` in `tests/` directory
+- **Framework**: Vitest
+- **Test files**: `*.test.ts` in `tests/` directory and alongside source files
 - **Fixtures**: Real CLI outputs in `tests/fixtures/`
 - **Coverage**: Aim for >90% coverage
 
@@ -255,8 +273,15 @@ TEST_FIXTURES=/path/to/fixtures  # Custom fixture directory
 
 ### Dependencies
 - **Runtime**: Node.js >=18.0.0
-- **Core dependency**: kleur (ANSI colors)
-- **Dev dependencies**: TypeScript, Vitest, ESLint, Prettier
+- **Core dependencies**: 
+  - `commander` (^14.0.0) - CLI argument parsing
+  - `kleur` (^4.1.5) - ANSI color formatting
+- **Dev dependencies**: 
+  - `typescript` (^5.0.0) - TypeScript compiler
+  - `vitest` (^1.0.0) - Test framework
+  - `tsup` (^8.0.0) - Build tool
+  - `tsx` (^4.0.0) - TypeScript execution
+  - `@types/node` (^20.0.0) - Node.js types
 
 ## Architecture
 
@@ -288,35 +313,45 @@ export async function* streamFormat(opts: StreamFormatOptions): AsyncIterator<st
 agent-stream-fmt/
 ├── src/                  # Source code
 │   ├── types.ts         # Core type definitions
+│   ├── index.ts         # Public API exports
+│   ├── cli.ts           # Command-line interface
+│   ├── stream.ts        # Main streaming engine
 │   ├── parsers/         # Vendor-specific parsers
 │   │   ├── index.ts     # Parser registry
 │   │   ├── claude.ts    # Claude Code parser
 │   │   ├── gemini.ts    # Gemini CLI parser
-│   │   └── amp.ts       # Amp Code parser
+│   │   ├── amp.ts       # Amp Code parser
+│   │   └── *.test.ts    # Parser unit tests
 │   ├── render/          # Output formatters
 │   │   ├── ansi.ts      # Terminal ANSI rendering
-│   │   └── html.ts      # HTML document rendering
+│   │   ├── html.ts      # HTML document rendering
+│   │   ├── json.ts      # JSON output renderer
+│   │   ├── factory.ts   # Renderer factory
+│   │   └── types.ts     # Render type definitions
 │   ├── utils/           # Utility functions
-│   │   ├── line-reader.ts   # Line-by-line stream reader
-│   │   └── backpressure.ts  # Stream backpressure handling
-│   ├── stream.ts        # Main streaming engine
-│   ├── cli.ts           # Command-line interface
-│   └── index.ts         # Public API exports
-├── tests/                # Test files and fixtures
+│   │   └── line-reader.ts   # Line-by-line stream reader
+│   └── __tests__/       # Co-located test files
+├── tests/                # Integration tests and fixtures
 │   ├── fixtures/        # JSONL fixture files
 │   │   ├── claude/      # Claude CLI outputs
 │   │   ├── gemini/      # Gemini CLI outputs
 │   │   └── amp/         # Amp Code outputs
-│   └── *.test.ts        # Test files
+│   ├── render/          # Render test utilities
+│   └── *.test.ts        # Integration test files
 ├── scripts/              # Development scripts
 │   ├── capture-fixtures.ts   # Capture CLI outputs
 │   ├── analyze-schemas.ts    # Analyze fixture schemas (outputs to fixtures/)
 │   ├── validate-fixtures.ts  # Validate fixture files (outputs to reports/)
 │   ├── comprehensive-validate.ts # Full validation (outputs to reports/)
 │   └── run-test-suite.ts    # Test runner (outputs to reports/)
+├── benchmarks/           # Performance benchmarks
+│   ├── throughput.ts    # Throughput testing
+│   ├── memory.ts        # Memory profiling
+│   └── run-benchmarks.sh # Run all benchmarks
 ├── reports/              # ALL reports and documentation
 │   └── PHASE_*_REPORT.md # Phase completion reports
 ├── specs/                # Specification documents
+├── examples/             # Usage examples
 └── dist/                 # Built output
 ```
 
@@ -431,7 +466,33 @@ test-*.py
 analyze-*.sh
 *-debug.*
 *.debug
+
+# Claude settings
+.claude/settings.local.json
+
+# Don't ignore reports directory
+!reports/
+!reports/**
 ```
+
+### Claude Code Settings (.claude Directory)
+
+The `.claude` directory contains Claude Code configuration files with specific version control rules:
+
+#### Version Controlled Files (commit these):
+- `.claude/settings.json` - Shared team settings for hooks, tools, and environment
+- `.claude/commands/*.md` - Custom slash commands available to all team members
+- `.claude/hooks/*.sh` - Hook scripts for automated validations and actions
+
+#### Ignored Files (do NOT commit):
+- `.claude/settings.local.json` - Personal preferences and local overrides
+- Any `*.local.json` files - Personal configuration not meant for sharing
+
+**Important Notes:**
+- Claude Code automatically adds `.claude/settings.local.json` to `.gitignore`
+- The shared `settings.json` should contain team-wide standards (linting, type checking, etc.)
+- Personal preferences or experimental settings belong in `settings.local.json`
+- Hook scripts in `.claude/hooks/` should be executable (`chmod +x`)
 
 ## Implementation Phases
 
@@ -531,3 +592,11 @@ node --inspect --inspect-brk dist/cli.js < large-file.jsonl
 # Performance profiling
 node --prof dist/cli.js < test-data.jsonl
 ```
+
+# Important Instruction Reminders
+
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+Only use emojis if the user explicitly requests it. Avoid adding emojis to files unless asked.
