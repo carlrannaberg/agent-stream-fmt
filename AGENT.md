@@ -593,6 +593,35 @@ node --inspect --inspect-brk dist/cli.js < large-file.jsonl
 node --prof dist/cli.js < test-data.jsonl
 ```
 
+## CLI Tools Reference
+
+Documentation for CLI tools used in this project.
+
+<details>
+<summary><strong>stm</strong> - A simple command-line task management tool</summary>
+
+```
+Usage: stm [options] [command]
+
+A simple command-line task management tool
+
+Options:
+  -h, --help                              display help for command
+  -v, --version                           display version information
+
+Commands:
+  add [options] <title>                   Add a new task
+  export [options]                        Export tasks to a file or stdout
+  grep [options] <pattern>                Search tasks by pattern (supports regular expressions)
+  help [command]                          display help for command
+  init                                    Initialize STM repository in the current directory
+  list [options]                          List tasks with optional filtering
+  show [options] <id>                     Show a specific task
+  update [options] <id> [assignments...]  Update a task with flexible options for metadata, content sections, and editor integration
+```
+
+</details>
+
 # Important Instruction Reminders
 
 Do what has been asked; nothing more, nothing less.
