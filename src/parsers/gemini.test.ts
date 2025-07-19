@@ -273,8 +273,12 @@ describe('GeminiParser', () => {
       expect(allEvents).toHaveLength(3);
       
       // Verify the code content is properly parsed
-      expect((allEvents[1] as any).text).toContain('def hello_world():');
-      expect((allEvents[1] as any).text).toContain('print("Hello, World!")');
+      const messageEvent = allEvents[1];
+      expect(messageEvent.t).toBe('msg');
+      if (messageEvent.t === 'msg') {
+        expect(messageEvent.text).toContain('def hello_world():');
+        expect(messageEvent.text).toContain('print("Hello, World!")');
+      }
       
       // Check cost calculation
       expect(allEvents[2]).toEqual({

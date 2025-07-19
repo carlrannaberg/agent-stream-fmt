@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { AmpParser } from './amp.js';
 import { ParseError } from './types.js';
+import type { ToolEvent } from '../types.js';
 
 describe('AmpParser', () => {
   const parser = new AmpParser();
@@ -423,17 +424,17 @@ describe('AmpParser', () => {
       expect(allEvents).toHaveLength(6);
       
       // Verify each tool maintains its own sequence
-      const buildEvents = allEvents.filter(e => e.t === 'tool' && e.name === 'build');
+      const buildEvents = allEvents.filter((e): e is ToolEvent => e.t === 'tool' && e.name === 'build');
       expect(buildEvents).toHaveLength(3);
-      expect((buildEvents[0] as any).phase).toBe('start');
-      expect((buildEvents[1] as any).phase).toBe('stdout');
-      expect((buildEvents[2] as any).phase).toBe('end');
+      expect(buildEvents[0].phase).toBe('start');
+      expect(buildEvents[1].phase).toBe('stdout');
+      expect(buildEvents[2].phase).toBe('end');
 
-      const testEvents = allEvents.filter(e => e.t === 'tool' && e.name === 'test');
+      const testEvents = allEvents.filter((e): e is ToolEvent => e.t === 'tool' && e.name === 'test');
       expect(testEvents).toHaveLength(3);
-      expect((testEvents[0] as any).phase).toBe('start');
-      expect((testEvents[1] as any).phase).toBe('stdout');
-      expect((testEvents[2] as any).phase).toBe('end');
+      expect(testEvents[0].phase).toBe('start');
+      expect(testEvents[1].phase).toBe('stdout');
+      expect(testEvents[2].phase).toBe('end');
     });
   });
 });
