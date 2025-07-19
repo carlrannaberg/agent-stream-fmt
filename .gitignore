@@ -49,3 +49,9 @@ analyze-*.sh
 .yarn/
 pnpm-lock.yaml
 yarn.lock
+# Simple Task Master - User tasks are git-ignored
+.simple-task-master/tasks/
+.simple-task-master/lock
+
+# Generated API documentation
+docs/api/
