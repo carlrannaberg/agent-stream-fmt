@@ -69,7 +69,10 @@ export class ClaudeParser implements VendorParser {
         'Invalid JSON',
         this.vendor,
         line,
-        error
+        error,
+        {
+          expectedFormat: 'Valid JSON object with "type" field (message, tool_use, tool_result, usage, or error)'
+        }
       );
     }
     

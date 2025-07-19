@@ -67,7 +67,10 @@ export class GeminiParser implements VendorParser {
         'Invalid JSON',
         this.vendor,
         line,
-        error
+        error,
+        {
+          expectedFormat: 'Valid JSON object with "type" field (user, assistant, or metadata)'
+        }
       );
     }
     

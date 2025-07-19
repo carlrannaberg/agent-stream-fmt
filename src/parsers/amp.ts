@@ -68,7 +68,10 @@ export class AmpParser implements VendorParser {
         'Invalid JSON',
         this.vendor,
         line,
-        error
+        error,
+        {
+          expectedFormat: 'Valid JSON object with "phase" and "task" fields (phase: start, output, or end)'
+        }
       );
     }
     

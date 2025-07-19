@@ -91,11 +91,25 @@ export async function* streamEvents(
       } catch (error) {
         consecutiveErrors++;
         
+        // Enhance ParseError with line number if not already present
+        if (error instanceof ParseError && !error.context?.lineNumber) {
+          error = new ParseError(
+            error.message,
+            error.vendor,
+            error.line,
+            error.cause,
+            {
+              ...error.context,
+              lineNumber
+            }
+          );
+        }
+        
         // Create error event
         const errorEvent: AgentEvent = {
           t: 'error',
           message: error instanceof ParseError 
-            ? error.message 
+            ? `Line ${lineNumber}: ${error.message}` 
             : `Line ${lineNumber}: ${error instanceof Error ? error.message : String(error)}`
         };
         

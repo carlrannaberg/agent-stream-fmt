@@ -82,6 +82,75 @@ describe('Parser Types', () => {
       expect(error.cause).toBeUndefined();
     });
 
+    it('should create error with context information', () => {
+      const context = {
+        lineNumber: 42,
+        characterPosition: 15,
+        expectedFormat: 'JSON object with "type" field'
+      };
+      const error = new ParseError('Test error', 'gemini', 'invalid line', undefined, context);
+
+      expect(error.context).toEqual(context);
+      expect(error.context?.lineNumber).toBe(42);
+      expect(error.context?.characterPosition).toBe(15);
+      expect(error.context?.expectedFormat).toBe('JSON object with "type" field');
+    });
+
+    it('should create error with partial context', () => {
+      const context = {
+        lineNumber: 10
+      };
+      const error = new ParseError('Test error', 'amp', 'bad line', undefined, context);
+
+      expect(error.context).toEqual(context);
+      expect(error.context?.lineNumber).toBe(10);
+      expect(error.context?.characterPosition).toBeUndefined();
+      expect(error.context?.expectedFormat).toBeUndefined();
+    });
+
+    it('should serialize to JSON correctly', () => {
+      const context = {
+        lineNumber: 5,
+        characterPosition: 20,
+        expectedFormat: 'Valid JSONL'
+      };
+      const error = new ParseError('Parse failed', 'claude', 'malformed line', undefined, context);
+      const json = error.toJSON();
+
+      expect(json).toEqual({
+        name: 'ParseError',
+        message: 'Parse failed',
+        vendor: 'claude',
+        context: context
+      });
+    });
+
+    it('should serialize to JSON without context', () => {
+      const error = new ParseError('Parse failed', 'gemini', 'bad line');
+      const json = error.toJSON();
+
+      expect(json).toEqual({
+        name: 'ParseError',
+        message: 'Parse failed',
+        vendor: 'gemini',
+        context: undefined
+      });
+    });
+
+    it('should be JSON stringifiable', () => {
+      const error = new ParseError('Test error', 'amp', 'line', undefined, {
+        lineNumber: 100
+      });
+      
+      const jsonString = JSON.stringify(error);
+      const parsed = JSON.parse(jsonString);
+      
+      expect(parsed.name).toBe('ParseError');
+      expect(parsed.message).toBe('Test error');
+      expect(parsed.vendor).toBe('amp');
+      expect(parsed.context.lineNumber).toBe(100);
+    });
+
     it('should be throwable and catchable', () => {
       expect(() => {
         throw new ParseError('Test error', 'claude', 'test line');
@@ -96,6 +165,23 @@ describe('Parser Types', () => {
           expect(error.line).toBe('test line');
         }
       }
+    });
+
+    it('should work with all parameters including cause and context', () => {
+      const cause = new SyntaxError('Invalid JSON');
+      const context = {
+        lineNumber: 25,
+        characterPosition: 42,
+        expectedFormat: 'Object with "method" field'
+      };
+      const error = new ParseError('Failed to parse Gemini output', 'gemini', '{"bad": json', cause, context);
+
+      expect(error.message).toBe('Failed to parse Gemini output');
+      expect(error.vendor).toBe('gemini');
+      expect(error.line).toBe('{"bad": json');
+      expect(error.cause).toBe(cause);
+      expect(error.context).toEqual(context);
+      expect(error.name).toBe('ParseError');
     });
   });
 

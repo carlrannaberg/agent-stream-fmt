@@ -1,4 +1,4 @@
-import { VendorParser, ParserEntry } from './types.js';
+import { VendorParser, ParserEntry, DetectionResult } from './types.js';
 import { claudeParser } from './claude.js';
 import { geminiParser } from './gemini.js';
 import { ampParser } from './amp.js';
@@ -96,8 +96,18 @@ export class ParserRegistry {
   }
   
   /**
+   * Get parsers sorted by priority (highest first)
+   * @returns Array of parser entries sorted by priority
+   */
+  private getSortedParsers(): ParserEntry[] {
+    return Array.from(this.parsers.values())
+      .sort((a, b) => b.priority - a.priority);
+  }
+
+  /**
    * Auto-detect vendor from a line using parser priorities
    * 
+   * Enhanced version with improved error handling and candidate collection.
    * Tries all registered parsers in priority order (highest first).
    * Returns the first parser whose detect() method returns true.
    * 
@@ -118,24 +128,224 @@ export class ParserRegistry {
       return null;
     }
     
-    // Sort parsers by priority (highest first)
-    const sortedEntries = Array.from(this.parsers.values())
-      .sort((a, b) => b.priority - a.priority);
+    // 1. Try all parsers in priority order
+    const sortedParsers = this.getSortedParsers();
     
-    // Try each parser in priority order
-    for (const entry of sortedEntries) {
+    // 2. Collect detection results
+    const candidates: VendorParser[] = [];
+    
+    for (const entry of sortedParsers) {
       try {
         if (entry.parser.detect(line)) {
-          return entry.parser;
+          candidates.push(entry.parser);
         }
       } catch (error) {
-        // Detection should not throw errors, but handle gracefully if it does
-        console.warn(`Parser ${entry.parser.vendor} threw error during detection:`, error);
-        continue;
+        // Log warning but continue - enhanced error handling
+        console.warn(`Parser ${entry.parser.vendor} detection failed:`, error);
       }
     }
     
-    return null;
+    // 3. Return highest priority match
+    return candidates[0] || null;
+  }
+
+  /**
+   * Multi-line vendor detection for better accuracy
+   * 
+   * Analyzes multiple lines to determine the most likely vendor.
+   * This is more reliable than single-line detection for mixed formats.
+   * 
+   * @param lines - Array of JSONL lines to analyze
+   * @returns Detected parser or null if no parser matches consistently
+   * 
+   * @example
+   * ```typescript
+   * const lines = stream.split('\n').slice(0, 10);
+   * const parser = registry.detectVendorMultiLine(lines);
+   * if (parser) {
+   *   console.log(`Detected vendor: ${parser.vendor} (multi-line)`);
+   * }
+   * ```
+   */
+  detectVendorMultiLine(lines: string[]): VendorParser | null {
+    if (!lines || lines.length === 0) {
+      return null;
+    }
+
+    // Try detection on first 10 lines for better accuracy
+    const detectionResults = new Map<string, number>();
+    
+    for (const line of lines.slice(0, 10)) {
+      if (!line || line.trim() === '') {
+        continue; // Skip empty lines
+      }
+
+      const parser = this.detectVendor(line);
+      if (parser) {
+        const count = detectionResults.get(parser.vendor) || 0;
+        detectionResults.set(parser.vendor, count + 1);
+      }
+    }
+    
+    // Return parser with most matches
+    if (detectionResults.size === 0) {
+      return null;
+    }
+
+    const [topVendor] = [...detectionResults.entries()]
+      .sort((a, b) => b[1] - a[1]);
+    
+    return topVendor ? this.getParser(topVendor[0] as Vendor) : null;
+  }
+
+  /**
+   * Vendor detection with confidence scoring
+   * 
+   * Provides confidence metrics for detection results, useful for
+   * debugging and handling ambiguous formats.
+   * 
+   * @param line - Raw JSONL line to analyze
+   * @returns Detection result with confidence score, or null if no match
+   * 
+   * @example
+   * ```typescript
+   * const result = registry.detectVendorWithConfidence(jsonLine);
+   * if (result && result.confidence > 0.8) {
+   *   console.log(`High confidence detection: ${result.parser.vendor}`);
+   *   console.log(`Reason: ${result.reason}`);
+   * }
+   * ```
+   */
+  detectVendorWithConfidence(line: string): DetectionResult | null {
+    if (!line || typeof line !== 'string') {
+      return null;
+    }
+
+    const sortedParsers = this.getSortedParsers();
+    const candidates: Array<{ parser: VendorParser; confidence: number; reason: string }> = [];
+
+    for (const entry of sortedParsers) {
+      try {
+        if (entry.parser.detect(line)) {
+          // Calculate confidence based on format specificity
+          const confidence = this.calculateConfidence(entry.parser, line);
+          const reason = this.generateDetectionReason(entry.parser, line);
+          
+          candidates.push({
+            parser: entry.parser,
+            confidence,
+            reason
+          });
+        }
+      } catch (error) {
+        console.warn(`Parser ${entry.parser.vendor} detection failed:`, error);
+      }
+    }
+
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    // Return candidate with highest confidence
+    const best = candidates.sort((a, b) => b.confidence - a.confidence)[0];
+    return {
+      parser: best.parser,
+      confidence: best.confidence,
+      reason: best.reason
+    };
+  }
+
+  /**
+   * Calculate confidence score for a parser detection
+   * @param parser - The parser that detected the format
+   * @param line - The line being analyzed
+   * @returns Confidence score between 0 and 1
+   */
+  private calculateConfidence(parser: VendorParser, line: string): number {
+    try {
+      const obj = JSON.parse(line);
+      
+      // Base confidence for successful JSON parsing
+      let confidence = 0.5;
+      
+      // Increase confidence based on vendor-specific indicators
+      switch (parser.vendor) {
+        case 'claude':
+          // Claude has very specific type indicators
+          if (obj.type && ['message', 'tool_use', 'tool_result', 'usage', 'error'].includes(obj.type)) {
+            confidence += 0.4;
+          }
+          // Message events with role are highly specific
+          if (obj.type === 'message' && obj.role && ['user', 'assistant'].includes(obj.role)) {
+            confidence += 0.1;
+          }
+          break;
+          
+        case 'gemini':
+          // Gemini format indicators
+          if (obj.type && ['user', 'assistant', 'metadata'].includes(obj.type)) {
+            confidence += 0.3;
+          }
+          // Usage metadata is highly specific
+          if (obj.type === 'metadata' && obj.usage) {
+            confidence += 0.2;
+          }
+          break;
+          
+        case 'amp':
+          // Amp phase-based format
+          if (obj.phase && ['start', 'output', 'end'].includes(obj.phase) && obj.task) {
+            confidence += 0.4;
+          }
+          // Output phases with type are more specific
+          if (obj.phase === 'output' && obj.type && ['stdout', 'stderr'].includes(obj.type)) {
+            confidence += 0.1;
+          }
+          break;
+      }
+      
+      return Math.min(confidence, 1.0);
+    } catch {
+      // If we can't parse JSON, confidence is low even if detection passed
+      return 0.2;
+    }
+  }
+
+  /**
+   * Generate human-readable reason for detection
+   * @param parser - The parser that detected the format
+   * @param line - The line being analyzed
+   * @returns Human-readable detection reason
+   */
+  private generateDetectionReason(parser: VendorParser, line: string): string {
+    try {
+      const obj = JSON.parse(line);
+      
+      switch (parser.vendor) {
+        case 'claude':
+          if (obj.type) {
+            return `Claude format detected: type="${obj.type}"`;
+          }
+          return 'Claude format detected: structure matches';
+          
+        case 'gemini':
+          if (obj.type) {
+            return `Gemini format detected: type="${obj.type}"`;
+          }
+          return 'Gemini format detected: structure matches';
+          
+        case 'amp':
+          if (obj.phase && obj.task) {
+            return `Amp format detected: phase="${obj.phase}", task="${obj.task}"`;
+          }
+          return 'Amp format detected: structure matches';
+          
+        default:
+          return `${parser.vendor} format detected`;
+      }
+    } catch {
+      return `${parser.vendor} format detected (non-JSON)`;
+    }
   }
   
   /**
@@ -257,6 +467,50 @@ export function getParser(vendor: Vendor): VendorParser | null {
  */
 export function detectVendor(line: string): VendorParser | null {
   return registry.detectVendor(line);
+}
+
+/**
+ * Multi-line vendor detection using the default registry
+ * 
+ * Analyzes multiple lines to determine the most likely vendor.
+ * More reliable than single-line detection for mixed formats.
+ * 
+ * @param lines - Array of JSONL lines to analyze
+ * @returns Detected parser or null if no parser matches consistently
+ * 
+ * @example
+ * ```typescript
+ * const lines = stream.split('\n').slice(0, 10);
+ * const parser = detectVendorMultiLine(lines);
+ * if (parser) {
+ *   console.log(`Detected vendor: ${parser.vendor} (multi-line)`);
+ * }
+ * ```
+ */
+export function detectVendorMultiLine(lines: string[]): VendorParser | null {
+  return registry.detectVendorMultiLine(lines);
+}
+
+/**
+ * Vendor detection with confidence scoring using the default registry
+ * 
+ * Provides confidence metrics for detection results, useful for
+ * debugging and handling ambiguous formats.
+ * 
+ * @param line - Raw JSONL line to analyze
+ * @returns Detection result with confidence score, or null if no match
+ * 
+ * @example
+ * ```typescript
+ * const result = detectVendorWithConfidence(jsonLine);
+ * if (result && result.confidence > 0.8) {
+ *   console.log(`High confidence detection: ${result.parser.vendor}`);
+ *   console.log(`Reason: ${result.reason}`);
+ * }
+ * ```
+ */
+export function detectVendorWithConfidence(line: string): DetectionResult | null {
+  return registry.detectVendorWithConfidence(line);
 }
 
 /**

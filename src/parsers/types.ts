@@ -48,6 +48,18 @@ export interface ParserEntry {
 }
 
 /**
+ * Result of vendor detection with confidence scoring
+ */
+export interface DetectionResult {
+  /** The detected parser */
+  parser: VendorParser;
+  /** Confidence score from 0 to 1 (1 = highest confidence) */
+  confidence: number;
+  /** Human-readable reason for the detection result */
+  reason: string;
+}
+
+/**
  * Error thrown when parsing fails
  */
 export class ParseError extends Error {
@@ -57,14 +69,33 @@ export class ParseError extends Error {
    * @param vendor - Vendor that failed to parse
    * @param line - Original line that failed
    * @param cause - Underlying error cause
+   * @param context - Additional context about the error
    */
   constructor(
     message: string,
     public readonly vendor: string,
     public readonly line: string,
-    public readonly cause?: unknown
+    public readonly cause?: unknown,
+    public readonly context?: {
+      lineNumber?: number;
+      characterPosition?: number;
+      expectedFormat?: string;
+    }
   ) {
     super(message);
     this.name = 'ParseError';
+  }
+  
+  /**
+   * Convert error to JSON representation
+   * @returns JSON object with error details
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      vendor: this.vendor,
+      context: this.context
+    };
   }
 }

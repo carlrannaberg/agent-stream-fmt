@@ -29,7 +29,10 @@
     "benchmark": "tsx benchmarks/throughput.ts",
     "benchmark:throughput": "tsx benchmarks/throughput.ts",
     "benchmark:memory": "tsx --expose-gc benchmarks/memory.ts",
-    "benchmark:all": "./benchmarks/run-benchmarks.sh"
+    "benchmark:all": "./benchmarks/run-benchmarks.sh",
+    "release:patch": "./scripts/prepare-release.sh --type patch",
+    "release:minor": "./scripts/prepare-release.sh --type minor",
+    "release:major": "./scripts/prepare-release.sh --type major"
   },
   "keywords": [
     "cli",
@@ -50,6 +53,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.6.1",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
