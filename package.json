@@ -1,22 +1,35 @@
 {
   "name": "agent-stream-fmt",
-  "version": "0.0.1",
-  "description": "Universal JSONL formatter for AI agent CLIs",
+  "version": "0.1.0",
+  "description": "Universal JSONL formatter for AI agent CLIs with beautiful terminal and HTML output",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bin": {
-    "agent-stream-fmt": "dist/cli.js"
+    "agent-stream-fmt": "./dist/cli.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage --run",
+    "coverage:report": "tsx scripts/coverage-report.ts",
     "test:integration": "vitest run tests/comprehensive-integration.test.ts tests/registry-integration.test.ts",
     "test:performance": "vitest run tests/performance-benchmarks.test.ts",
     "test:errors": "vitest run tests/error-handling.test.ts",
@@ -30,22 +43,56 @@
     "benchmark:throughput": "tsx benchmarks/throughput.ts",
     "benchmark:memory": "tsx --expose-gc benchmarks/memory.ts",
     "benchmark:all": "./benchmarks/run-benchmarks.sh",
+    "analyze:bundle": "node scripts/analyze-bundle.js",
+    "docs:api": "typedoc",
     "release:patch": "./scripts/prepare-release.sh --type patch",
     "release:minor": "./scripts/prepare-release.sh --type minor",
-    "release:major": "./scripts/prepare-release.sh --type major"
+    "release:major": "./scripts/prepare-release.sh --type major",
+    "prepublishOnly": "npm run build && npm run test && npm run typecheck",
+    "prepare": "husky install",
+    "preversion": "npm run test",
+    "version": "npm run build && git add -A dist",
+    "postversion": "git push && git push --tags"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "keywords": [
     "cli",
+    "agent",
+    "ai",
+    "formatter",
     "jsonl",
-    "streaming",
+    "stream",
     "claude",
     "gemini",
-    "amp"
+    "amp",
+    "terminal",
+    "ansi",
+    "html"
   ],
-  "author": "",
+  "author": {
+    "name": "Carl Rannaberg",
+    "email": "carl@pipedrive.com",
+    "url": "https://github.com/yourusername"
+  },
   "license": "MIT",
+  "homepage": "https://github.com/yourusername/agent-stream-fmt#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/agent-stream-fmt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/agent-stream-fmt/issues"
+  },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "commander": "^14.0.0",
@@ -53,9 +100,17 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^8.57.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
+    "typedoc": "^0.25.13",
+    "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   }
