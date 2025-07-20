@@ -3,50 +3,61 @@ This file provides guidance to AI coding assistants working in this repository.
 
 **Note:** CLAUDE.md, .clinerules, .cursorrules, .windsurfrules, .replit.md, GEMINI.md, and other AI config files are symlinks to AGENT.md in this project.
 
-# Agent Stream Formatter
+# Agent-IO
 
-A universal JSONL formatter for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
+A universal I/O toolkit for AI agent CLIs that normalizes JSONL output from Claude Code, Gemini CLI, and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
 
 ## Project Status
 
-**Current State**: Phase 3 (Rendering Engine) completed  
-**Next Step**: Phase 4 (Additional Vendors) - Improve Gemini and Amp parsers
+**Current State**: Phase 5 (Package & Documentation) completed  
+**Next Step**: Monorepo fully operational with 4 packages
 
 ## Build & Commands
 
 ### Development Commands
 ```bash
 # Build
-npm run build                 # Build TypeScript project with tsup
-npm run typecheck             # TypeScript type checking
+npm run build                 # Build all packages sequentially 
+npm run build:packages        # Build all packages with workspaces
+npm run build:all            # Clean + build everything
+npm run build:core           # Build @agent-io/core package
+npm run build:jsonl          # Build @agent-io/jsonl package
+npm run build:stream         # Build @agent-io/stream package
+npm run build:invoke         # Build @agent-io/invoke package
+npm run typecheck             # TypeScript type checking across monorepo
+
+# Development
+npm run dev                  # Watch mode for all packages
+npm run dev:packages         # Development mode for workspace packages
+npm run bootstrap            # Fresh install + build all packages
 
 # Testing
 npm test                      # Run all tests with vitest
 npm run test:watch            # Run tests in watch mode
-npm run test:integration      # Run integration tests (comprehensive & registry)
-npm run test:performance      # Run performance benchmarks
-npm run test:errors           # Run error handling tests
-npm run test:fixtures         # Run fixture validation tests
-npm run test:comprehensive    # Run full test suite with reporting
+npm run test:ui              # Run vitest UI
+npm run test:coverage        # Run tests with coverage reporting
+npm run test:integration      # Run integration tests only
+npm run test:packages        # Run tests in all workspace packages
+npm run test:all             # Full test suite across monorepo
 
 # Test single file
 npm test -- tests/path/to/file.test.ts
-npm test -- src/parsers/claude.test.ts
+npm test -- packages/stream/src/parsers/claude.test.ts
 
-# Fixtures Management
-npm run fixtures:capture      # Capture real CLI outputs
-npm run fixtures:analyze      # Analyze fixture schemas
-npm run fixtures:validate     # Validate fixture files
-npm run validate:comprehensive # Full validation with reports
+# Code Quality
+npm run lint                 # ESLint all packages
+npm run lint:fix             # Auto-fix linting issues
+npm run format               # Prettier formatting
+npm run format:check         # Check formatting without fixing
+npm run validate             # Run lint + typecheck + test
 
-# Performance Benchmarks
-npm run benchmark             # Run throughput benchmark
-npm run benchmark:throughput  # Throughput testing
-npm run benchmark:memory      # Memory usage profiling
-npm run benchmark:all         # All benchmarks
+# Release Management (with Changesets)
+npm run changeset            # Create changeset for version bumping
+npm run version              # Update package versions
+npm run release              # Publish packages to npm
 
 # CLI Usage (after build)
-agent-stream-fmt [options] [file]
+agent-stream-fmt [options] [file]  # Main CLI from @agent-io/stream
 
 # Git operations
 git status                    # Check current state
@@ -157,7 +168,7 @@ try {
 ## Testing
 
 ### Framework & Patterns
-- **Framework**: Vitest
+- **Framework**: Vitest with workspace support
 - **Test files**: `*.test.ts` in `tests/` directory and alongside source files
 - **Fixtures**: Real CLI outputs in `tests/fixtures/`
 - **Coverage**: Aim for >90% coverage
@@ -285,6 +296,54 @@ TEST_FIXTURES=/path/to/fixtures  # Custom fixture directory
 
 ## Architecture
 
+### Monorepo Structure
+```
+agent-io/
+├── packages/                 # Monorepo packages
+│   ├── core/                # @agent-io/core - Core types and utilities
+│   │   ├── src/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsup.config.ts
+│   ├── jsonl/               # @agent-io/jsonl - JSONL parsing utilities
+│   │   ├── src/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsup.config.ts
+│   ├── stream/              # @agent-io/stream - Main streaming formatter + CLI
+│   │   ├── src/
+│   │   │   ├── cli.ts       # Command-line interface
+│   │   │   ├── index.ts     # Public API exports
+│   │   │   ├── stream.ts    # Main streaming engine
+│   │   │   ├── parsers/     # Vendor-specific parsers
+│   │   │   ├── render/      # Output formatters
+│   │   │   └── utils/       # Utility functions
+│   │   ├── tests/           # Package-specific tests
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsup.config.ts
+│   └── invoke/              # @agent-io/invoke - CLI invocation tools
+│       ├── src/
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── tsup.config.ts
+├── tests/                   # Integration tests and fixtures
+│   ├── fixtures/            # JSONL fixture files
+│   │   ├── claude/          # Claude CLI outputs
+│   │   ├── gemini/          # Gemini CLI outputs
+│   │   └── amp/             # Amp Code outputs
+│   ├── integration/         # Cross-package integration tests
+│   └── *.test.ts            # Integration test files
+├── reports/                 # ALL reports and documentation
+│   └── *.md                 # Various report types
+├── specs/                   # Specification documents
+├── examples/                # Usage examples
+├── .github/workflows/       # CI/CD workflows
+├── vitest.workspace.ts      # Vitest workspace configuration
+├── tsconfig.json           # Root TypeScript configuration
+└── package.json            # Monorepo root package.json
+```
+
 ### Core Types
 ```typescript
 // Main event union type
@@ -308,53 +367,6 @@ export async function* streamEvents(opts: StreamEventOptions): AsyncIterator<Age
 export async function* streamFormat(opts: StreamFormatOptions): AsyncIterator<string>
 ```
 
-### Directory Structure
-```
-agent-stream-fmt/
-├── src/                  # Source code
-│   ├── types.ts         # Core type definitions
-│   ├── index.ts         # Public API exports
-│   ├── cli.ts           # Command-line interface
-│   ├── stream.ts        # Main streaming engine
-│   ├── parsers/         # Vendor-specific parsers
-│   │   ├── index.ts     # Parser registry
-│   │   ├── claude.ts    # Claude Code parser
-│   │   ├── gemini.ts    # Gemini CLI parser
-│   │   ├── amp.ts       # Amp Code parser
-│   │   └── *.test.ts    # Parser unit tests
-│   ├── render/          # Output formatters
-│   │   ├── ansi.ts      # Terminal ANSI rendering
-│   │   ├── html.ts      # HTML document rendering
-│   │   ├── json.ts      # JSON output renderer
-│   │   ├── factory.ts   # Renderer factory
-│   │   └── types.ts     # Render type definitions
-│   ├── utils/           # Utility functions
-│   │   └── line-reader.ts   # Line-by-line stream reader
-│   └── __tests__/       # Co-located test files
-├── tests/                # Integration tests and fixtures
-│   ├── fixtures/        # JSONL fixture files
-│   │   ├── claude/      # Claude CLI outputs
-│   │   ├── gemini/      # Gemini CLI outputs
-│   │   └── amp/         # Amp Code outputs
-│   ├── render/          # Render test utilities
-│   └── *.test.ts        # Integration test files
-├── scripts/              # Development scripts
-│   ├── capture-fixtures.ts   # Capture CLI outputs
-│   ├── analyze-schemas.ts    # Analyze fixture schemas (outputs to fixtures/)
-│   ├── validate-fixtures.ts  # Validate fixture files (outputs to reports/)
-│   ├── comprehensive-validate.ts # Full validation (outputs to reports/)
-│   └── run-test-suite.ts    # Test runner (outputs to reports/)
-├── benchmarks/           # Performance benchmarks
-│   ├── throughput.ts    # Throughput testing
-│   ├── memory.ts        # Memory profiling
-│   └── run-benchmarks.sh # Run all benchmarks
-├── reports/              # ALL reports and documentation
-│   └── PHASE_*_REPORT.md # Phase completion reports
-├── specs/                # Specification documents
-├── examples/             # Usage examples
-└── dist/                 # Built output
-```
-
 ### Report Generation
 
 **CRITICAL**: ALL reports MUST be saved to the `reports/` directory. NEVER save report files to the project root.
@@ -368,9 +380,9 @@ validation-report.json         ❌ Wrong location and format
 
 **✅ CORRECT (Reports Directory):**
 ```
-reports/TEST_RESULTS_2025-07-17.md       ✅ Correct
-reports/COVERAGE_REPORT_2025-07-17.md    ✅ Correct
-reports/VALIDATION_REPORT_2025-07-17.md  ✅ Correct
+reports/TEST_RESULTS_2025-07-20.md       ✅ Correct
+reports/COVERAGE_REPORT_2025-07-20.md    ✅ Correct
+reports/VALIDATION_REPORT_2025-07-20.md  ✅ Correct
 ```
 
 **Implementation Reports:**
@@ -496,34 +508,35 @@ The `.claude` directory contains Claude Code configuration files with specific v
 
 ## Implementation Phases
 
-### Phase 0: Project Setup & Fixture Collection
+### Phase 0: Project Setup & Fixture Collection ✅
 - Initialize TypeScript project with modern tooling
 - Capture real JSONL outputs from Claude Code, Gemini CLI, Amp Code
 - Set up testing infrastructure with fixtures
 
-### Phase 1: Core Types & Parser Infrastructure
+### Phase 1: Core Types & Parser Infrastructure ✅
 - Define TypeScript types for all event formats
 - Implement extensible parser interface
 - Create Claude parser with comprehensive tests
 
-### Phase 2: Streaming Engine
+### Phase 2: Streaming Engine ✅
 - Build memory-efficient line reader
 - Implement async iterator streaming pipeline
 - Add error handling and recovery
 
-### Phase 3: Rendering Engine
+### Phase 3: Rendering Engine ✅
 - Create ANSI terminal renderer with colors and formatting
 - Implement HTML renderer with semantic structure
 - Build enhanced CLI with filtering options
 
-### Phase 4: Additional Vendors
+### Phase 4: Additional Vendors ✅
 - Add Gemini CLI parser
 - Add Amp Code parser
 - Improve auto-detection logic
 
-### Phase 5: Package & Documentation
-- Complete documentation and examples
-- Set up publishing and CI/CD
+### Phase 5: Package & Documentation ✅
+- Complete monorepo migration with npm workspaces
+- Set up independent package versioning with Changesets
+- Comprehensive CI/CD with GitHub Actions
 - Performance optimization and benchmarking
 
 ## Key Files to Review
@@ -629,3 +642,8 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 Only use emojis if the user explicitly requests it. Avoid adding emojis to files unless asked.
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
