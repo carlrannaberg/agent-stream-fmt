@@ -1,6 +1,6 @@
 {
   "name": "@agent-io/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Core types and utilities for Agent-IO packages",
   "type": "module",
   "exports": {
@@ -13,7 +13,10 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
@@ -23,7 +26,14 @@
     "format": "prettier --write \"src/**/*.{ts,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,json}\""
   },
-  "keywords": ["agent-io", "core", "types", "ai", "agent", "cli"],
+  "keywords": [
+    "agent-io",
+    "core",
+    "types",
+    "ai",
+    "agent",
+    "cli"
+  ],
   "author": {
     "name": "Carl Rannaberg",
     "email": "carl@rannaberg.com",

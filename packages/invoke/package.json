@@ -1,6 +1,6 @@
 {
   "name": "@agent-io/invoke",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI functionality for AI agent CLIs",
   "type": "module",
   "exports": {
@@ -13,7 +13,10 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
@@ -24,10 +27,18 @@
     "format:check": "prettier --check \"src/**/*.{ts,json}\""
   },
   "dependencies": {
-    "@agent-io/core": "^0.1.0",
-    "@agent-io/stream": "^0.1.0"
+    "@agent-io/core": "^0.2.0",
+    "@agent-io/stream": "^1.0.0"
   },
-  "keywords": ["agent-io", "cli", "invoke", "ai", "agent", "stream", "formatter"],
+  "keywords": [
+    "agent-io",
+    "cli",
+    "invoke",
+    "ai",
+    "agent",
+    "stream",
+    "formatter"
+  ],
   "author": {
     "name": "Carl Rannaberg",
     "email": "carl@rannaberg.com",
