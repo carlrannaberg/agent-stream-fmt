@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: ['src/index.ts', 'src/cli.ts'],
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: false, // Temporarily disabled due to TypeScript path issues
   sourcemap: true,
   clean: true,
   target: 'node18',
