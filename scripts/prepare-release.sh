@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Simple Task Master - AI-Powered Release Preparation Script
-# This script automates the release preparation process with AI assistance
-# Optimized with pre-computation and smart diff filtering
+# AI-powered release preparation script for Agent-IO monorepo
+# Handles changeset operations in non-interactive mode
 
 set -euo pipefail
 
@@ -21,7 +20,6 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PACKAGE_JSON="${PROJECT_ROOT}/package.json"
 CHANGELOG_FILE="${PROJECT_ROOT}/CHANGELOG.md"
 README_FILE="${PROJECT_ROOT}/README.md"
-PACKAGE_NAME="simple-task-master"
 
 # Default values
 DRY_RUN=false
@@ -61,7 +59,7 @@ show_usage() {
     cat << EOF
 Usage: $0 [OPTIONS]
 
-AI-powered release preparation script for Simple Task Master.
+AI-powered release preparation script for Agent-IO monorepo.
 
 OPTIONS:
     -t, --type TYPE     Release type: patch, minor, major
@@ -81,17 +79,17 @@ EOF
 # Function to detect available AI CLI
 detect_ai_cli() {
     print_step "Detecting available AI CLI tools..."
-    
+
     if command -v claude &> /dev/null; then
         AI_CLI="claude"
-        AI_MODEL="--model claude-3-5-sonnet-latest"
-        AI_FLAGS="--output-format stream-json --verbose --max-turns 30"
-        print_success "Found Claude CLI with sonnet model"
+        AI_MODEL="--model claude-sonnet-4-20250514"
+        AI_FLAGS='--output-format stream-json --verbose --max-turns 30 --allowedTools "Edit" "MultiEdit" "Read" "Write"'
+        print_success "Found Claude CLI with Sonnet 4 model"
     elif command -v gemini &> /dev/null; then
         AI_CLI="gemini"
-        AI_MODEL="--model gemini-2.0-flash"
-        AI_FLAGS="--include-all"
-        print_success "Found Gemini CLI with gemini-2.0-flash model"
+        AI_MODEL="--model gemini-2.5-flash-exp"
+        AI_FLAGS="--include-all --yolo"
+        print_success "Found Gemini CLI with Flash 2.5 model"
     else
         print_error "No AI CLI found. Install Claude CLI or Gemini CLI to use this script."
         echo "Installation instructions:"
@@ -104,26 +102,26 @@ detect_ai_cli() {
 # Function to validate environment
 validate_environment() {
     print_step "Validating environment..."
-    
+
     # Check if we're in a git repository
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
         print_error "Not a git repository. Please run this script from the project root."
         exit 1
     fi
-    
+
     # Check if package.json exists
     if [[ ! -f "$PACKAGE_JSON" ]]; then
         print_error "package.json not found. Please run this script from the project root."
         exit 1
     fi
-    
+
     # Check for uncommitted changes
     if ! git diff-index --quiet HEAD --; then
         print_error "Uncommitted changes detected. Please commit or stash changes before release."
         git status --short
         exit 1
     fi
-    
+
     # Check if we're on main branch
     current_branch=$(git branch --show-current)
     if [[ "$current_branch" != "main" ]]; then
@@ -135,35 +133,27 @@ validate_environment() {
             fi
         fi
     fi
-    
+
     print_success "Environment validation passed"
 }
 
-# Function to get current version
-get_current_version() {
-    node -p "require('$PACKAGE_JSON').version"
-}
-
-# Function to calculate next version
-calculate_next_version() {
-    local current_version="$1"
-    local release_type="$2"
+# Function to get current version of publishable packages
+get_current_versions() {
+    print_step "Getting current package versions..."
     
-    case "$release_type" in
-        "patch")
-            node -p "const v='$current_version'.split('.').map(Number); v[2]++; v.join('.')"
-            ;;
-        "minor")
-            node -p "const v='$current_version'.split('.').map(Number); v[1]++; v[2]=0; v.join('.')"
-            ;;
-        "major")
-            node -p "const v='$current_version'.split('.').map(Number); v[0]++; v[1]=0; v[2]=0; v.join('.')"
-            ;;
-        *)
-            print_error "Invalid release type: $release_type"
-            exit 1
-            ;;
-    esac
+    # Get @agent-io/stream version (main package)
+    STREAM_VERSION=$(node -p "require('./packages/stream/package.json').version")
+    echo "Current @agent-io/stream version: $STREAM_VERSION"
+    
+    # Check what packages are actually published
+    PUBLISHED_STREAM=$(npm view "@agent-io/stream" version 2>/dev/null || echo "")
+    if [ -n "$PUBLISHED_STREAM" ]; then
+        echo "Latest published @agent-io/stream on NPM: $PUBLISHED_STREAM"
+        LAST_VERSION_TAG="v$PUBLISHED_STREAM"
+    else
+        echo "@agent-io/stream not found on NPM registry"
+        LAST_VERSION_TAG=""
+    fi
 }
 
 # Function to prompt for release type
@@ -171,19 +161,16 @@ prompt_release_type() {
     if [[ -n "$RELEASE_TYPE" ]]; then
         return
     fi
-    
-    local current_version
-    current_version=$(get_current_version)
-    
+
     echo
-    print_info "Current version: $current_version"
+    print_info "Current @agent-io/stream version: $STREAM_VERSION"
     echo
     echo "Select release type:"
-    echo "  1) patch   - $(calculate_next_version "$current_version" "patch") (bug fixes)"
-    echo "  2) minor   - $(calculate_next_version "$current_version" "minor") (new features)"
-    echo "  3) major   - $(calculate_next_version "$current_version" "major") (breaking changes)"
+    echo "  1) patch   - Bug fixes, no breaking changes"
+    echo "  2) minor   - New features, backwards compatible"
+    echo "  3) major   - Breaking changes"
     echo
-    
+
     while true; do
         read -p "Enter choice [1-3]: " -r choice
         case $choice in
@@ -195,52 +182,40 @@ prompt_release_type() {
     done
 }
 
-# Function to run tests
+# Function to run tests and validation
 run_tests() {
-    print_step "Running test suite to ensure code quality..."
-    
+    print_step "Running test suite and validation..."
+
     if [[ "$DRY_RUN" == "true" ]]; then
         print_info "Dry run: Skipping tests"
         return
     fi
-    
-    # Run tests
-    if ! npm test; then
-        print_error "Tests are failing. Please fix the failing tests before preparing a release."
+
+    # Run the validation pipeline
+    if ! npm run validate; then
+        print_error "Validation failed. Please fix the issues before preparing a release."
         exit 1
     fi
-    
-    print_success "All tests passed. Continuing with release preparation..."
+
+    print_success "All tests and validation passed. Continuing with release preparation..."
 }
 
 # Function to pre-compute release data
 pre_compute_release_data() {
     print_step "Pre-computing release data..."
     echo "==========================="
-    
+
     # Fetch latest tags
     git fetch --tags
-    
-    # Get versions
-    CURRENT_VERSION=$(get_current_version)
-    echo "Current version in package.json: $CURRENT_VERSION"
-    
-    # Get published version from NPM
-    PUBLISHED_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || echo "")
-    if [ -n "$PUBLISHED_VERSION" ]; then
-        echo "Latest published version on NPM: $PUBLISHED_VERSION"
-        LAST_VERSION_TAG="v$PUBLISHED_VERSION"
-    else
-        echo "No version found on NPM registry"
-        LAST_VERSION_TAG=""
-    fi
-    
+
+    get_current_versions
+
     # Get the last git tag
     LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
     if [ -z "$LAST_TAG" ]; then
         echo "No previous tags found in git."
         if [ -n "$LAST_VERSION_TAG" ]; then
-            echo "Using NPM version $PUBLISHED_VERSION as reference"
+            echo "Using NPM version $PUBLISHED_STREAM as reference"
             LAST_TAG=$LAST_VERSION_TAG
         else
             echo "This will be the first release."
@@ -249,59 +224,81 @@ pre_compute_release_data() {
     else
         echo "Last git tag: $LAST_TAG"
         # Warn if git tag doesn't match NPM version
-        if [ -n "$PUBLISHED_VERSION" ] && [ "$LAST_TAG" != "v$PUBLISHED_VERSION" ]; then
-            print_warning "Git tag ($LAST_TAG) doesn't match NPM version (v$PUBLISHED_VERSION)"
+        if [ -n "$PUBLISHED_STREAM" ] && [ "$LAST_TAG" != "v$PUBLISHED_STREAM" ]; then
+            print_warning "Git tag ($LAST_TAG) doesn't match NPM version (v$PUBLISHED_STREAM)"
             echo "Using NPM version as the reference for changes"
-            LAST_TAG="v$PUBLISHED_VERSION"
+            LAST_TAG="v$PUBLISHED_STREAM"
         fi
     fi
-    
+
     # Get commit information
     if [ "$LAST_TAG" != "HEAD" ]; then
         COMMIT_COUNT=$(git rev-list ${LAST_TAG}..HEAD --count)
         echo "Found $COMMIT_COUNT commits since $LAST_TAG"
-        
-        # Get recent commits
-        RECENT_COMMITS=$(git log ${LAST_TAG}..HEAD --oneline | head -20)
-        
-        # Get file changes with smart filtering
+
+        # Get recent commits (limit to avoid long output)
+        RECENT_COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --max-count=20)
+
+        # Get file changes with smart filtering for monorepo
         DIFF_STAT=$(git diff ${LAST_TAG}..HEAD --stat)
         ALL_CHANGED_FILES=$(git diff ${LAST_TAG}..HEAD --name-only)
+
+        # Smart filtering for monorepo: Focus on packages/stream and root files
+        FILE_COUNT=$(echo "$ALL_CHANGED_FILES" | wc -l)
+        echo "Total files changed: $FILE_COUNT"
         
-        # Smart filtering: Include code files, exclude documentation/planning
-        CODE_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -v -E '^(docs/|issues/|plans/|specs/|\.github/)' | \
-            grep -E '\.(ts|js|json|yml|yaml|sh|py|css|scss|html|vue|jsx|tsx|mjs|cjs|toml|env|gitignore|nvmrc|dockerignore)$|^(package\.json|tsconfig|vitest\.config|eslint|prettier|babel|webpack|rollup|vite\.config|jest\.config|Dockerfile|Makefile|\.eslintrc|\.prettierrc)' || echo "")
-        
+        if [ "$FILE_COUNT" -gt 200 ]; then
+            echo "Too many files changed ($FILE_COUNT) - skipping detailed diff analysis"
+            CODE_CHANGED_FILES=""
+        else
+            # Filter for relevant files in the monorepo
+            CODE_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -v -E '^(docs/|issues/|plans/|specs/|\.github/|reports/)' | \
+                grep -E '^(packages/stream/|packages/core/).*\.(ts|js|json|yml|yaml)$|^(package\.json|tsconfig|vitest\.config|\.changeset/)' || echo "")
+        fi
+
         if [ -n "$CODE_CHANGED_FILES" ]; then
-            # Create filtered diff
-            FILTERED_DIFF=""
-            for file in $CODE_CHANGED_FILES; do
-                if [ -f "$file" ]; then
-                    FILTERED_DIFF="$FILTERED_DIFF$(git diff ${LAST_TAG}..HEAD -- "$file" 2>/dev/null || echo "")"
-                fi
-            done
+            CODE_FILE_COUNT=$(echo "$CODE_CHANGED_FILES" | wc -l)
+            echo "Relevant monorepo files to analyze: $CODE_FILE_COUNT"
             
-            if [ -n "$FILTERED_DIFF" ]; then
-                DIFF_LINES=$(echo "$FILTERED_DIFF" | wc -l)
-                DIFF_CHARS=$(echo "$FILTERED_DIFF" | wc -c)
-                echo "Filtered diff (code files only): $DIFF_LINES lines, $DIFF_CHARS characters"
-                
-                # Check if diff is too large
-                if [ "$DIFF_LINES" -gt 3000 ] || [ "$DIFF_CHARS" -gt 80000 ]; then
-                    echo "Even filtered diff is large - providing file list only"
-                    DIFF_FULL="[DIFF TOO LARGE - Code files changed: $(echo "$CODE_CHANGED_FILES" | tr '\n' ' ')]"
-                    INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD -- [filename]' to check individual files: $(echo "$CODE_CHANGED_FILES" | head -10 | tr '\n' ' ')"
-                else
-                    DIFF_FULL="$FILTERED_DIFF"
-                    INCLUDE_DIFF_INSTRUCTION=""
-                fi
+            if [ "$CODE_FILE_COUNT" -gt 50 ]; then
+                echo "Too many code files changed ($CODE_FILE_COUNT) - providing file list only"
+                DIFF_FULL="[DIFF TOO LARGE - $CODE_FILE_COUNT relevant files changed: $(echo "$CODE_CHANGED_FILES" | head -20 | tr '\n' ' ')...]"
+                INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD -- packages/stream/' to check main package changes"
             else
-                DIFF_FULL="[NO CODE CHANGES - Only documentation/planning files changed]"
-                INCLUDE_DIFF_INSTRUCTION="No source code changes found. This release contains only documentation updates."
+                # Create filtered diff for packages/stream mainly
+                FILTERED_DIFF=""
+                for file in $CODE_CHANGED_FILES; do
+                    if [ -f "$file" ]; then
+                        FILTERED_DIFF="$FILTERED_DIFF$(git diff ${LAST_TAG}..HEAD -- "$file" 2>/dev/null || echo "")"
+                    fi
+                done
+
+                if [ -n "$FILTERED_DIFF" ]; then
+                    DIFF_LINES=$(echo "$FILTERED_DIFF" | wc -l)
+                    DIFF_CHARS=$(echo "$FILTERED_DIFF" | wc -c)
+                    echo "Filtered diff (relevant files only): $DIFF_LINES lines, $DIFF_CHARS characters"
+
+                    if [ "$DIFF_LINES" -gt 3000 ] || [ "$DIFF_CHARS" -gt 80000 ]; then
+                        echo "Even filtered diff is large - providing file list only"
+                        DIFF_FULL="[DIFF TOO LARGE - Relevant files changed: $(echo "$CODE_CHANGED_FILES" | tr '\n' ' ')]"
+                        INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD -- packages/stream/' to check main package changes"
+                    else
+                        DIFF_FULL="$FILTERED_DIFF"
+                        INCLUDE_DIFF_INSTRUCTION=""
+                    fi
+                else
+                    DIFF_FULL="[NO CODE CHANGES - Only documentation/config files changed]"
+                    INCLUDE_DIFF_INSTRUCTION="No source code changes found. This release contains only documentation updates."
+                fi
             fi
         else
-            DIFF_FULL="[NO CODE CHANGES - Only documentation/planning files changed]"
-            INCLUDE_DIFF_INSTRUCTION="No source code changes found. This release contains only documentation updates."
+            if [ "$FILE_COUNT" -gt 200 ]; then
+                DIFF_FULL="[DIFF TOO LARGE - $FILE_COUNT total files changed - analysis skipped for performance]"
+                INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD --stat' to see file changes"
+            else
+                DIFF_FULL="[NO CODE CHANGES - Only documentation/config files changed]"
+                INCLUDE_DIFF_INSTRUCTION="No source code changes found. This release contains only documentation updates."
+            fi
         fi
     else
         COMMIT_COUNT=0
@@ -311,14 +308,10 @@ pre_compute_release_data() {
         CODE_CHANGED_FILES=""
         INCLUDE_DIFF_INSTRUCTION=""
     fi
-    
+
     # Get current CHANGELOG content
     CHANGELOG_CONTENT=$(head -100 "$CHANGELOG_FILE" 2>/dev/null || echo "# Changelog\n\nAll notable changes to this project will be documented in this file.")
-    
-    # Calculate new version
-    NEW_VERSION=$(calculate_next_version "$CURRENT_VERSION" "$RELEASE_TYPE")
-    
-    echo "New version will be: $NEW_VERSION"
+
     echo "Changes to analyze: $COMMIT_COUNT commits"
     echo
 }
@@ -326,8 +319,12 @@ pre_compute_release_data() {
 # Function to generate AI changelog and update README
 generate_ai_updates() {
     print_ai "Analyzing changes and updating CHANGELOG.md and README.md..."
-    echo "This should be much faster now with pre-computed data and combined updates..."
     
+    if [[ "$DRY_RUN" == "true" ]]; then
+        print_info "Dry run: Skipping AI-powered CHANGELOG and README updates"
+        return
+    fi
+
     # Check if timeout command is available
     if command -v gtimeout >/dev/null 2>&1; then
         TIMEOUT_CMD="gtimeout 180"
@@ -337,29 +334,31 @@ generate_ai_updates() {
         print_warning "No timeout command available. Install coreutils on macOS: brew install coreutils"
         TIMEOUT_CMD=""
     fi
-    
+
     # Temporarily disable exit on error for AI command
     set +e
-    
-    local prompt="You are preparing a new $RELEASE_TYPE release for the $PACKAGE_NAME npm package.
+
+    local prompt="You are preparing a new $RELEASE_TYPE release for the Agent-IO monorepo.
 
 CURRENT SITUATION:
-- Current version in package.json: $CURRENT_VERSION
-- Latest published version on NPM: ${PUBLISHED_VERSION:-"Not published yet"}
+- This is a monorepo with multiple packages
+- Main package: @agent-io/stream (universal JSONL formatter for AI agent CLIs)
+- Current @agent-io/stream version: $STREAM_VERSION
+- Latest published version on NPM: ${PUBLISHED_STREAM:-"Not published yet"}
 - Reference version for changes: ${LAST_TAG#v}
-- New version will be: $NEW_VERSION
+- Release type: $RELEASE_TYPE
 - Date: $(date +%Y-%m-%d)
 
 COMMITS SINCE LAST RELEASE ($COMMIT_COUNT commits):
 $RECENT_COMMITS
 
-CODE FILES CHANGED:
+RELEVANT FILES CHANGED (monorepo filtered):
 $(echo "$CODE_CHANGED_FILES" | tr '\n' ' ')
 
 FILE CHANGES STATISTICS (all files):
 $DIFF_STAT
 
-ACTUAL CODE CHANGES (filtered - code files only):
+ACTUAL CODE CHANGES (filtered - relevant files only):
 $DIFF_FULL
 
 $INCLUDE_DIFF_INSTRUCTION
@@ -370,6 +369,7 @@ $CHANGELOG_CONTENT
 TASKS:
 1. CHANGELOG.md Update:
    - Analyze the ACTUAL CODE CHANGES (not just commit messages)
+   - Focus on changes to packages/stream/ (the main published package)
    - Write accurate changelog entries based on the code changes:
      * Fixed: bug fixes (what was actually fixed in the code)
      * Added: new features (what new functionality was added)
@@ -377,9 +377,10 @@ TASKS:
      * Removed: removed features (what was deleted)
      * Security: security fixes
      * Documentation: documentation only changes
-   - Add a new section for version $NEW_VERSION at the top of CHANGELOG.md
+   - Add a new section at the top of CHANGELOG.md for the upcoming version
    - Follow the Keep a Changelog format with today's date ($(date +%Y-%m-%d))
    - Only include categories that have changes
+   - Since this is a monorepo, focus on user-facing changes to @agent-io/stream
 
 2. README.md Update:
    - Review the new features and changes you're adding to CHANGELOG.md
@@ -389,17 +390,20 @@ TASKS:
      * Ensure usage examples reflect any changed behavior
      * Add any new configuration options or environment variables
    - Maintain consistency with the existing README structure and style
+   - Focus on the main @agent-io/stream package features
 
 IMPORTANT:
-- DO NOT update package.json or create any git commits - those will be handled separately
+- DO NOT update package.json files or create any git commits - those will be handled separately
+- DO NOT modify changeset files - those will be handled by the script
 - Focus on accuracy - changelog entries should reflect actual code changes, not just commit messages
+- Since only @agent-io/stream is published, focus on changes to that package
 - Ensure README.md is comprehensive and up-to-date with all features in the new release"
-    
+
     $TIMEOUT_CMD $AI_CLI $AI_MODEL $AI_FLAGS -p "$prompt"
-    
+
     AI_EXIT_CODE=$?
     set -e  # Re-enable exit on error
-    
+
     if [ $AI_EXIT_CODE -eq 124 ]; then
         print_error "$AI_CLI command timed out after 3 minutes."
         exit 1
@@ -407,51 +411,65 @@ IMPORTANT:
         print_error "$AI_CLI command failed with exit code $AI_EXIT_CODE"
         exit 1
     fi
-    
+
     print_success "CHANGELOG.md and README.md updated successfully!"
 }
 
+# Function to create changeset in non-interactive mode
+create_changeset() {
+    print_step "Creating changeset for $RELEASE_TYPE release..."
 
-# Function to update version in package.json
-update_package_version() {
-    local new_version="$1"
-    
-    print_step "Updating package.json version to $new_version..."
-    
     if [[ "$DRY_RUN" == "true" ]]; then
-        print_info "Dry run: Would update package.json version to $new_version"
+        print_info "Dry run: Would create changeset for $RELEASE_TYPE release"
         return
     fi
-    
-    # Use npm version to update
-    npm version "$new_version" --no-git-tag-version
-    
-    print_success "package.json updated to version $new_version"
+
+    # Get a summary from the recent commits for changeset description
+    local changeset_summary="$RELEASE_TYPE release with improvements and fixes"
+    if [ -n "$RECENT_COMMITS" ]; then
+        # Extract first line of most recent meaningful commit
+        changeset_summary=$(echo "$RECENT_COMMITS" | head -1 | sed 's/^[a-f0-9]* //' || echo "$RELEASE_TYPE release")
+    fi
+
+    # Create changeset file manually since we need non-interactive mode
+    local changeset_id="$(openssl rand -hex 4)"
+    local changeset_file=".changeset/${changeset_id}.md"
+
+    cat > "$changeset_file" << EOF
+---
+"@agent-io/stream": $RELEASE_TYPE
+---
+
+$changeset_summary
+EOF
+
+    print_success "Changeset created: $changeset_file"
 }
 
-# Function to create release commit
-create_release_commit() {
-    local new_version="$1"
-    
-    print_step "Creating release commit..."
-    
+# Function to version and publish via changeset
+version_and_publish() {
+    print_step "Running changeset version and creating release commit..."
+
     if [[ "$DRY_RUN" == "true" ]]; then
-        print_info "Dry run: Would create release commit for version $new_version"
+        print_info "Dry run: Would run changeset version and create commit"
         return
     fi
-    
-    # Add all changes
+
+    # Run changeset version to update package.json and CHANGELOG
+    npm run version
+
+    # Add all changes including the updated CHANGELOG and package.json
     git add .
-    
-    # Create commit with proper message
-    local commit_message="chore: prepare release v$new_version
+
+    # Create release commit
+    local commit_message="chore: prepare release
 
 🤖 Generated with [Claude Code](https://claude.ai/code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
-    
+
     git commit -m "$commit_message"
-    
+
     print_success "Release commit created"
 }
 
@@ -461,22 +479,27 @@ show_release_summary() {
     print_success "Release preparation complete!"
     echo
     echo "📊 Release Summary:"
-    echo "  Previous version: $CURRENT_VERSION"
-    echo "  New version:      $NEW_VERSION"
+    echo "  Previous version: $STREAM_VERSION"
     echo "  Release type:     $RELEASE_TYPE"
     echo "  Commits included: $COMMIT_COUNT"
     echo
-    
+    echo "  Package: @agent-io/stream (main package)"
+    echo
+
     if [[ "$DRY_RUN" == "false" ]]; then
         echo "🚀 Next steps:"
         echo "  1. Review the changes: git diff HEAD~1"
         echo "  2. Push to GitHub: git push origin main"
-        echo "  3. The GitHub Actions will create the tag and publish to npm"
+        echo "  3. GitHub Actions will automatically:"
+        echo "     - Create release PR or publish if PR exists"
+        echo "     - Tag the release"
+        echo "     - Publish to npm"
+        echo "     - Create GitHub release"
         echo
         echo "🔗 Links:"
-        echo "  - GitHub Actions: https://github.com/your-username/$PACKAGE_NAME/actions"
-        echo "  - NPM Package: https://www.npmjs.com/package/$PACKAGE_NAME"
-        echo "  - Releases: https://github.com/your-username/$PACKAGE_NAME/releases"
+        echo "  - GitHub Actions: https://github.com/carlrannaberg/agent-io/actions"
+        echo "  - NPM Package: https://www.npmjs.com/package/@agent-io/stream"
+        echo "  - Releases: https://github.com/carlrannaberg/agent-io/releases"
     else
         echo "💡 This was a dry run. No changes were made."
         echo "   Remove --dry-run to perform the actual release preparation."
@@ -486,7 +509,7 @@ show_release_summary() {
 
 # Function to cleanup temporary files
 cleanup() {
-    rm -f /tmp/stm-*.txt /tmp/stm-*.md
+    rm -f /tmp/agent-io-*.txt /tmp/agent-io-*.md
 }
 
 # Function to handle script interruption
@@ -525,14 +548,14 @@ main() {
                 ;;
         esac
     done
-    
+
     # Set up interrupt handler
     trap handle_interrupt SIGINT SIGTERM
-    
+
     echo
-    print_info "Simple Task Master - AI-Powered Release Preparation"
+    print_info "Agent-IO - AI-Powered Release Preparation"
     echo
-    
+
     # Validate release type if provided
     if [[ -n "$RELEASE_TYPE" ]]; then
         case "$RELEASE_TYPE" in
@@ -544,19 +567,19 @@ main() {
                 ;;
         esac
     fi
-    
+
     # Main workflow
     detect_ai_cli
     validate_environment
     prompt_release_type
     run_tests
-    
+
     # Pre-compute all data for AI
     pre_compute_release_data
-    
-    print_info "Preparing release: $CURRENT_VERSION → $NEW_VERSION"
+
+    print_info "Preparing $RELEASE_TYPE release for @agent-io/stream"
     echo
-    
+
     if [[ "$INTERACTIVE" == "true" ]]; then
         read -p "Continue with release preparation? [Y/n]: " -r
         if [[ $REPLY =~ ^[Nn]$ ]]; then
@@ -564,20 +587,20 @@ main() {
             exit 0
         fi
     fi
-    
+
     # Run the release preparation with AI
     generate_ai_updates
-    
-    # Update version and create commit
-    update_package_version "$NEW_VERSION"
-    create_release_commit "$NEW_VERSION"
-    
+
+    # Create changeset and prepare release
+    create_changeset
+    version_and_publish
+
     # Show summary
     show_release_summary
-    
+
     # Cleanup
     cleanup
-    
+
     print_success "Release preparation script completed successfully!"
 }
 
