@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
@@ -30,7 +31,7 @@ interface ValidationResult {
   errors: ValidationError[];
 }
 
-function formatError(error: ValidationError): string {
+function _formatError(error: ValidationError): string {
   if (error.file && error.line !== undefined) {
     return `${colors.red}✗${colors.reset} ${error.vendor}/${error.file}:${error.line} - ${error.message}`;
   } else if (error.file) {
@@ -129,7 +130,7 @@ function main() {
   // Display results
   let totalErrors = 0;
   let totalFiles = 0;
-  let totalLines = 0;
+  const _totalLines = 0;
   let validVendors = 0;
 
   for (const result of results) {

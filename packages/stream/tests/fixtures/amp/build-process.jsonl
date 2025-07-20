@@ -1,0 +1,5 @@
+{"phase":"start","task":"build","timestamp":"2024-01-01T10:00:00Z"}
+{"phase":"output","task":"build","type":"stdout","content":"Running tests..."}
+{"phase":"output","task":"build","type":"stdout","content":"All tests passed"}
+{"phase":"output","task":"build","type":"stdout","content":"Creating production build..."}
+{"phase":"end","task":"build","timestamp":"2024-01-01T10:02:00Z","exitCode":0}

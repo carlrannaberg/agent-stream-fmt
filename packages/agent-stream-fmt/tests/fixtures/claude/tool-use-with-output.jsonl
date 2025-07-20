@@ -1,0 +1,4 @@
+{"type":"message","role":"user","content":"run ls and show results"}
+{"type":"tool_use","id":"tool_456","name":"bash","input":{"command":"ls"}}
+{"type":"tool_result","tool_use_id":"tool_456","content":"stdout","output":"file1.txt\nfile2.txt\nfile3.txt\nsubdir/\nREADME.md"}
+{"type":"message","role":"assistant","content":"I've listed the directory contents. You have 4 files and 1 subdirectory."}

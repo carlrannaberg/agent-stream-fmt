@@ -11,10 +11,11 @@
  * - Debug output
  * - Markdown-like formatting
  */
+/* eslint-disable no-console */
 
 import { AnsiRenderer } from '../src/render/ansi.js';
 import type { AgentEvent } from '../src/types.js';
-import type { RenderOptions } from '../src/render/types.js';
+// import type { RenderOptions } from '../src/render/types.js';
 
 // Simulate a delay for demo purposes
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

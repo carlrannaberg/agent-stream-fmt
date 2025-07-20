@@ -1,0 +1,3 @@
+{"type":"message","role":"user","content":"write a hello world function"}
+{"type":"message","role":"assistant","content":"Here's a simple hello world function in JavaScript:\n\n```javascript\nfunction helloWorld() {\n  console.log('Hello, World!');\n}\n\nhelloWorld();\n```"}
+{"type":"usage","input_tokens":12,"output_tokens":35,"total_tokens":47}

@@ -2,6 +2,7 @@
  * Throughput benchmark for agent-stream-fmt
  * Tests streaming performance with 100,000 lines
  */
+/* eslint-disable no-console */
 import { streamEvents } from '../src/index.js';
 import { Readable } from 'stream';
 
@@ -18,7 +19,7 @@ async function runBenchmark() {
   let count = 0;
   
   try {
-    for await (const event of streamEvents({
+    for await (const _event of streamEvents({
       vendor: 'claude',
       source: Readable.from(data)
     })) {

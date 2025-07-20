@@ -1,0 +1,3 @@
+{"type":"user","content":"What is recursion?"}
+{"type":"assistant","content":"Recursion is a programming concept where a function calls itself to solve a smaller version of the same problem."}
+{"type":"metadata","usage":{"input_tokens":8,"output_tokens":25,"total_tokens":33}}

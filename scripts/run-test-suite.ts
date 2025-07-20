@@ -1,8 +1,8 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 import { spawn } from 'child_process';
-import { existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

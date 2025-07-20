@@ -5,6 +5,7 @@
  * Demonstrates how the enhanced ParseError provides detailed context
  * about parsing failures, including line numbers and expected formats.
  */
+/* eslint-disable no-console */
 
 import { streamEvents } from '../src/index.js';
 import { PassThrough } from 'stream';

@@ -2,21 +2,61 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
   pull_request:
-    branches: [main]
+    types: [opened, synchronize, reopened]
+
+# Cancel in-progress runs when a new run is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  # First job: Validate code quality
+  quality:
+    name: Code Quality
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+  # Main test job with matrix for Node versions
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: quality
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-
+        node-version: ['18', '20']
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
@@ -25,23 +65,140 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run type checking
-        run: npm run typecheck
+      - name: Build all packages
+        run: npm run build:all
 
-      - name: Run tests
-        run: npm test -- --coverage
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Generate coverage report
+        if: matrix.node-version == '20'
+        run: npm run test:coverage
 
       - name: Upload coverage to Codecov
+        if: matrix.node-version == '20'
         uses: codecov/codecov-action@v3
-        if: matrix.node-version == '20.x'
         with:
-          file: ./coverage/lcov.info
+          files: ./coverage/lcov.info,./packages/*/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
-      - name: Build package
-        run: npm run build
-
-      - name: Test package installation
+      - name: Check coverage threshold
+        if: matrix.node-version == '20'
         run: |
-          npm pack
-          npm install -g *.tgz
-          agent-stream-fmt --version
+          # Find all lcov.info files and merge coverage data
+          TOTAL_LINES=0
+          TOTAL_HITS=0
+          
+          for lcov_file in $(find . -name "lcov.info" -type f | grep -v node_modules); do
+            if [ -f "$lcov_file" ]; then
+              echo "Processing $lcov_file"
+              LINES=$(grep -E '^LF:' "$lcov_file" | awk -F: '{s+=$2} END {print s}')
+              HITS=$(grep -E '^LH:' "$lcov_file" | awk -F: '{s+=$2} END {print s}')
+              TOTAL_LINES=$((TOTAL_LINES + ${LINES:-0}))
+              TOTAL_HITS=$((TOTAL_HITS + ${HITS:-0}))
+            fi
+          done
+          
+          if [ $TOTAL_LINES -gt 0 ]; then
+            PERCENT=$(awk "BEGIN {printf \"%.2f\", $TOTAL_HITS * 100 / $TOTAL_LINES}")
+            echo "Total Coverage: ${PERCENT}% (${TOTAL_HITS}/${TOTAL_LINES} lines)"
+            
+            # Check if coverage meets threshold
+            if (( $(awk "BEGIN {print ($PERCENT < 90)}") )); then
+              echo "::error::Coverage ${PERCENT}% is below 90% threshold"
+              exit 1
+            else
+              echo "::notice::Coverage ${PERCENT}% meets the 90% threshold"
+            fi
+          else
+            echo "::warning::No coverage data found"
+          fi
+
+  # Platform compatibility test
+  platform-test:
+    name: Platform Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: quality
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build:all
+
+      - name: Run smoke tests
+        run: npm test -- --run --reporter=verbose tests/integration/build.test.ts
+
+  # Security audit
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript, typescript
+
+  # Changesets validation for PRs
+  changesets:
+    name: Changesets
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for changeset
+        run: |
+          # Skip changeset check for certain types of PRs
+          if [[ "${{ github.event.pull_request.title }}" =~ ^(chore|docs|ci|test): ]]; then
+            echo "Skipping changeset check for ${{ github.event.pull_request.title }}"
+            exit 0
+          fi
+          
+          # Check if changeset exists
+          npx changeset status --since=origin/main

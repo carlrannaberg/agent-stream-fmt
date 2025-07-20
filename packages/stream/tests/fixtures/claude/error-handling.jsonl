@@ -1,0 +1,5 @@
+{"type":"message","role":"user","content":"explain this error: TypeError: Cannot read property 'x' of undefined"}
+{invalid json here
+{"type":"message","role":"assistant","content":"This error occurs when you try to access a property on an undefined value."}
+{"type":"error","level":"warning","message":"Parsing error detected"}
+{"broken":}

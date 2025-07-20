@@ -1,0 +1,3 @@
+{"type":"user","content":"Create a Python function to calculate factorial"}
+{"type":"assistant","content":"```python\ndef factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n```"}
+{"type":"metadata","usage":{"input_tokens":12,"output_tokens":38,"total_tokens":50}}

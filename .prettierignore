@@ -1,0 +1,27 @@
+# Build outputs
+dist/
+coverage/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+temp/
+*.tmp
+*.log
+
+# Reports (machine-generated)
+reports/test-results.json
+reports/validation-report.json
+
+# Fixtures (preserve original formatting)
+fixtures/**/*.jsonl
+tests/fixtures/**/*.jsonl
+
+# Generated files
+CHANGELOG.md
+.changeset/

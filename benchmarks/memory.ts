@@ -2,6 +2,7 @@
  * Memory benchmark for agent-stream-fmt
  * Verifies bounded memory usage for large files
  */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { streamEvents } from '../src/index.js';
 import { Readable } from 'stream';
 
@@ -42,7 +43,7 @@ async function measureMemoryUsage(lineCount: number): Promise<{
   }, 100); // Sample every 100ms for better coverage
   
   try {
-    for await (const event of streamEvents({
+    for await (const _event of streamEvents({
       vendor: 'claude',
       source: stream
     })) {

@@ -1,105 +1,95 @@
 {
-  "name": "agent-stream-fmt",
+  "name": "@agent-io/monorepo",
   "version": "0.1.0",
-  "description": "Universal JSONL formatter for AI agent CLIs with beautiful terminal and HTML output",
+  "description": "Agent-IO monorepo for universal AI agent toolkit packages",
+  "private": true,
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "agent-stream-fmt": "./dist/cli.js"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
-    "build": "tsup",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage --run",
-    "coverage:report": "tsx scripts/coverage-report.ts",
-    "test:integration": "vitest run tests/comprehensive-integration.test.ts tests/registry-integration.test.ts",
-    "test:performance": "vitest run tests/performance-benchmarks.test.ts",
-    "test:errors": "vitest run tests/error-handling.test.ts",
-    "test:fixtures": "vitest run tests/fixture-validation.test.ts",
-    "test:comprehensive": "tsx scripts/run-test-suite.ts",
-    "fixtures:capture": "tsx scripts/capture-fixtures.ts",
-    "fixtures:analyze": "tsx scripts/analyze-schemas.ts",
-    "fixtures:validate": "tsx scripts/validate-fixtures.ts",
-    "validate:comprehensive": "tsx scripts/comprehensive-validate.ts",
-    "benchmark": "tsx benchmarks/throughput.ts",
-    "benchmark:throughput": "tsx benchmarks/throughput.ts",
-    "benchmark:memory": "tsx --expose-gc benchmarks/memory.ts",
-    "benchmark:all": "./benchmarks/run-benchmarks.sh",
-    "analyze:bundle": "node scripts/analyze-bundle.js",
-    "docs:api": "typedoc",
-    "release:patch": "./scripts/prepare-release.sh --type patch",
-    "release:minor": "./scripts/prepare-release.sh --type minor",
-    "release:major": "./scripts/prepare-release.sh --type major",
-    "prepublishOnly": "npm run build && npm run test && npm run typecheck",
-    "preversion": "npm run test",
-    "version": "npm run build && git add -A dist",
-    "postversion": "git push && git push --tags"
+    "build": "npm-run-all --sequential build:packages",
+    "build:packages": "npm run build --workspaces --if-present",
+    "build:all": "npm-run-all --sequential clean build",
+    "build:core": "npm run build --workspace packages/core",
+    "build:jsonl": "npm run build --workspace packages/jsonl",
+    "build:stream": "npm run build --workspace packages/stream",
+    "build:invoke": "npm run build --workspace packages/invoke",
+    "build:formatter": "npm run build --workspace packages/agent-stream-fmt",
+    "dev": "npm-run-all --parallel dev:*",
+    "dev:packages": "npm run dev --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:workspace": "vitest run --workspace",
+    "test:integration": "vitest run tests/integration",
+    "test:packages": "npm run test --workspaces --if-present",
+    "test:all": "npm-run-all test:packages test:integration",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint:packages": "npm run lint --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm-run-all --parallel lint:packages typecheck test",
+    "bootstrap": "npm install && npm run build:all",
+    "workspace:add": "npm install --workspace",
+    "workspace:run": "npm run --workspace",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish",
+    "prerelease": "npm-run-all validate build:all"
   },
   "keywords": [
-    "cli",
-    "agent",
+    "monorepo",
+    "agent-io",
     "ai",
-    "formatter",
+    "agent",
+    "agents",
+    "cli",
     "jsonl",
     "stream",
+    "formatter",
     "claude",
     "gemini",
     "amp",
-    "terminal",
-    "ansi",
-    "html"
+    "tools",
+    "typescript"
   ],
   "author": {
     "name": "Carl Rannaberg",
-    "email": "carl@pipedrive.com",
-    "url": "https://github.com/yourusername"
+    "email": "carl@rannaberg.com",
+    "url": "https://github.com/carlrannaberg"
   },
   "license": "MIT",
-  "homepage": "https://github.com/yourusername/agent-stream-fmt#readme",
+  "homepage": "https://github.com/carlrannaberg/agent-io#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/agent-stream-fmt.git"
+    "url": "git+https://github.com/carlrannaberg/agent-io.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/agent-stream-fmt/issues"
+    "url": "https://github.com/carlrannaberg/agent-io/issues"
   },
   "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "commander": "^14.0.0",
-    "kleur": "^4.1.5"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "devDependencies": {
+    "@changesets/cli": "2.29.5",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "@vitest/coverage-v8": "^1.6.1",
-    "eslint": "^8.57.1",
-    "prettier": "^3.6.2",
-    "tsup": "^8.0.0",
-    "tsx": "^4.0.0",
-    "typedoc": "^0.25.13",
-    "typedoc-plugin-markdown": "^3.17.1",
+    "@types/tar": "6.1.13",
+    "@typescript-eslint/eslint-plugin": "6.21.0",
+    "@typescript-eslint/parser": "6.21.0",
+    "@vitest/coverage-v8": "1.6.1",
+    "@vitest/ui": "1.6.1",
+    "eslint": "8.57.1",
+    "npm-run-all2": "6.2.6",
+    "prettier": "3.6.2",
+    "tar": "7.4.3",
+    "tsup": "8.5.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "1.6.1"
   }
 }

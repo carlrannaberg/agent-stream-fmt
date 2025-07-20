@@ -1,0 +1,241 @@
+#!/usr/bin/env node
+import { createReadStream, createWriteStream } from 'fs';
+import { streamFormat } from './stream.js';
+import type { ExtendedStreamFormatOptions } from './stream.js';
+import { Vendor } from './types.js';
+import { Command } from 'commander';
+import type { RenderOptions } from './render/types.js';
+
+/**
+ * CLI for formatting JSONL output from AI agent CLIs
+ * Supports Claude Code, Gemini CLI, and Amp Code with beautiful terminal and HTML rendering
+ */
+
+// HTML document wrapper constants
+const HTML_DOCUMENT_START = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Stream Output</title>
+  <style>
+    body { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; line-height: 1.6; margin: 20px; background: #fafafa; color: #333; }
+    .message { margin: 1em 0; padding: 1em; border-radius: 8px; }
+    .message-user { background: #f0f8ff; border-left: 4px solid #007acc; }
+    .message-assistant { background: #f0fff0; border-left: 4px solid #28a745; }
+    .message-system { background: #fffbf0; border-left: 4px solid #ffc107; }
+    .message-header { font-weight: bold; margin-bottom: 0.5em; }
+    .tool-execution { margin: 1em 0; padding: 1em; background: #f8f9fa; border-radius: 4px; }
+    .tool-start { font-weight: bold; color: #007acc; }
+    .tool-output { margin: 0.5em 0; padding: 0.5em; background: #ffffff; border-radius: 4px; font-family: monospace; }
+    .tool-stdout { color: #333; }
+    .tool-stderr { color: #dc3545; }
+    .tool-end.success { color: #28a745; font-weight: bold; }
+    .tool-end.error { color: #dc3545; font-weight: bold; }
+    .error-message { padding: 1em; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24; }
+    .cost-info { display: inline-block; padding: 0.2em 0.5em; background: #fff3cd; border-radius: 4px; font-size: 0.9em; }
+    .debug-info { padding: 0.5em; background: #e9ecef; border-radius: 4px; font-size: 0.8em; font-family: monospace; }
+    pre { white-space: pre-wrap; word-wrap: break-word; margin: 0; }
+    code { background: #f8f9fa; padding: 0.2em 0.4em; border-radius: 3px; }
+  </style>
+</head>
+<body>
+`;
+
+const HTML_DOCUMENT_END = `
+</body>
+</html>
+`;
+
+interface CliOptions {
+  vendor: string;
+  format: string;
+  collapseTools: boolean;
+  hideTools: boolean;
+  hideCost: boolean;
+  hideDebug: boolean;
+  only?: string;
+  output?: string;
+  html: boolean;
+  json: boolean;
+}
+
+async function main() {
+  const program = new Command();
+
+  program
+    .name('agent-stream-fmt')
+    .description(
+      'Format JSONL output from AI agent CLIs with beautiful terminal and HTML rendering',
+    )
+    .version('0.1.0')
+    .argument('[file]', 'input JSONL file (default: stdin)')
+    .option(
+      '-v, --vendor <type>',
+      'vendor type (auto|claude|gemini|amp)',
+      'auto',
+    )
+    .option('-f, --format <type>', 'output format (ansi|html|json)', 'ansi')
+    .option('--collapse-tools', 'collapse tool output sections', false)
+    .option('--hide-tools', 'hide tool execution entirely', false)
+    .option('--hide-cost', 'hide cost information', false)
+    .option('--hide-debug', 'hide debug events (use --no-hide-debug to show)')
+    .option(
+      '--only <types>',
+      'only show specific event types (comma-separated)',
+    )
+    .option('-o, --output <file>', 'output file (default: stdout)')
+    .option('--html', 'shorthand for --format html')
+    .option('--json', 'shorthand for --format json')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  # Auto-detect vendor and format for terminal
+  claude --json "explain recursion" | agent-stream-fmt
+  
+  # Explicit vendor with options
+  gemini --jsonl -i task.md | agent-stream-fmt --vendor gemini --hide-tools
+  
+  # HTML output for web display
+  amp-code run build.yml -j | agent-stream-fmt --html > build-log.html
+  
+  # Filter specific event types
+  cat session.jsonl | agent-stream-fmt --only tool,error --collapse-tools
+  
+  # Read from file
+  agent-stream-fmt output.jsonl --vendor claude
+  
+Event types for --only:
+  msg     - user/assistant/system messages
+  tool    - tool execution (start/stdout/stderr/end)
+  cost    - usage cost information
+  error   - error messages
+  debug   - debug information
+  
+Vendor auto-detection:
+  - Automatically detects format from input
+  - Supports claude, gemini, amp formats
+  - Use --vendor to force specific parser
+`,
+    );
+
+  program.parse(process.argv);
+
+  const opts = program.opts() as CliOptions;
+  const args = program.args;
+  const inputFile = args[0];
+
+  // Handle shorthand options
+  if (opts.html) opts.format = 'html';
+  if (opts.json) opts.format = 'json';
+
+  // Set default for hideDebug if not specified
+  if (opts.hideDebug === undefined) {
+    opts.hideDebug = true;
+  }
+
+  // Validate format
+  if (!['ansi', 'html', 'json'].includes(opts.format)) {
+    process.stderr.write(
+      `Error: Invalid format '${opts.format}'. Must be one of: ansi, html, json\n`,
+    );
+    process.exit(1);
+  }
+
+  // Validate vendor
+  if (!['auto', 'claude', 'gemini', 'amp'].includes(opts.vendor)) {
+    process.stderr.write(
+      `Error: Invalid vendor '${opts.vendor}'. Must be one of: auto, claude, gemini, amp\n`,
+    );
+    process.exit(1);
+  }
+
+  // Setup output stream
+  const output = opts.output ? createWriteStream(opts.output) : process.stdout;
+
+  // Setup event filtering
+  let eventFilter: Set<string> | undefined;
+  if (opts.only) {
+    eventFilter = new Set(opts.only.split(',').map((s: string) => s.trim()));
+    // Validate event types
+    const validTypes = new Set(['msg', 'tool', 'cost', 'error', 'debug']);
+    for (const type of eventFilter) {
+      if (!validTypes.has(type)) {
+        process.stderr.write(
+          `Error: Invalid event type '${type}'. Valid types: ${Array.from(validTypes).join(', ')}\n`,
+        );
+        process.exit(1);
+      }
+    }
+  }
+
+  // Setup render options
+  const renderOptions: RenderOptions = {
+    format: opts.format as 'ansi' | 'html' | 'json',
+    collapseTools: opts.collapseTools,
+    hideTools: opts.hideTools,
+    hideCost: opts.hideCost,
+    hideDebug: opts.hideDebug,
+    // Use compact mode for JSON to ensure JSONL output
+    compactMode: opts.format === 'json',
+  };
+
+  // Add HTML document wrapper for HTML output
+  if (opts.format === 'html') {
+    output.write(HTML_DOCUMENT_START);
+  }
+
+  try {
+    // Create input stream
+    const source = inputFile
+      ? createReadStream(inputFile, { encoding: 'utf8' })
+      : process.stdin;
+
+    // Stream with formatting
+    const formatOptions: ExtendedStreamFormatOptions = {
+      vendor: opts.vendor as Vendor,
+      source,
+      format: opts.format as 'ansi' | 'html' | 'json',
+      renderOptions,
+      eventFilter,
+      emitDebugEvents: !opts.hideDebug,
+    };
+
+    for await (const formatted of streamFormat(formatOptions)) {
+      output.write(formatted);
+    }
+  } catch (error) {
+    if (opts.format === 'html') {
+      // Write error in HTML format
+      output.write(
+        `<div class="error-message">Error: ${error instanceof Error ? error.message : String(error)}</div>`,
+      );
+    } else {
+      process.stderr.write(
+        `\nError: ${error instanceof Error ? error.message : String(error)}\n`,
+      );
+    }
+    process.exit(1);
+  } finally {
+    if (opts.format === 'html') {
+      output.write(HTML_DOCUMENT_END);
+    }
+
+    if (opts.output) {
+      output.end();
+    }
+  }
+}
+
+// Run if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(error => {
+    process.stderr.write(
+      `Fatal error: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exit(1);
+  });
+}
+
+export { main };

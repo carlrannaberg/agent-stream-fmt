@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+/* eslint-disable no-console */
 import { spawn } from 'child_process';
 import { createWriteStream, mkdirSync } from 'fs';
 import { join } from 'path';

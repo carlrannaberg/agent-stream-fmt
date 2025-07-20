@@ -1,0 +1,5 @@
+{"phase":"start","task":"test","timestamp":"2024-01-01T10:00:00Z"}
+{"phase":"output","task":"test","type":"stdout","content":"Running unit tests..."}
+{"phase":"output","task":"test","type":"stderr","content":"Warning: Deprecated API usage"}
+{"phase":"output","task":"test","type":"stdout","content":"15 tests passed"}
+{"phase":"end","task":"test","timestamp":"2024-01-01T10:00:45Z","exitCode":0}

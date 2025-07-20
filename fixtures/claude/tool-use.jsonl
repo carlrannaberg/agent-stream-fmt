@@ -1,0 +1,5 @@
+{"type":"message","role":"user","content":"run npm test and show results"}
+{"type":"tool_use","id":"tool_123","name":"bash","input":{"command":"npm test"}}
+{"type":"tool_result","tool_use_id":"tool_123","content":"stdout","output":"Test Suites: 3 passed, 3 total\nTests: 15 passed, 15 total\nTime: 2.341s"}
+{"type":"message","role":"assistant","content":"I ran the tests successfully! All 15 tests across 3 test suites passed."}
+{"type":"usage","input_tokens":18,"output_tokens":52,"total_tokens":70}

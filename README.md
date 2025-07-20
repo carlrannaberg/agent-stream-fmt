@@ -1,31 +1,55 @@
-# agent-stream-fmt
+# Agent-IO
 
-[![npm version](https://badge.fury.io/js/agent-stream-fmt.svg)](https://www.npmjs.com/package/agent-stream-fmt)
-[![CI Status](https://github.com/yourusername/agent-stream-fmt/workflows/CI/badge.svg)](https://github.com/yourusername/agent-stream-fmt/actions)
-[![codecov](https://codecov.io/gh/yourusername/agent-stream-fmt/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/agent-stream-fmt)
+[![npm version](https://badge.fury.io/js/@agent-io%2Fstream.svg)](https://www.npmjs.com/package/@agent-io/stream)
+[![CI Status](https://github.com/yourusername/agent-io/workflows/CI/badge.svg)](https://github.com/yourusername/agent-io/actions)
+[![codecov](https://codecov.io/gh/yourusername/agent-io/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/agent-io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Universal JSONL formatter for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
+**Agent-IO** is a universal I/O toolkit for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, Amp Code, and other AI assistants into unified event streams with beautiful terminal and HTML rendering.
 
-## Features
+## Overview
 
-- 🚀 **Blazing Fast**: 2-3M lines/second throughput
-- 🎨 **Beautiful Output**: ANSI colors for terminals, semantic HTML for web
-- 🔄 **Universal Format**: Normalizes Claude, Gemini, and Amp outputs
-- 📊 **Streaming Architecture**: Constant memory usage for infinite streams
-- 🎯 **Smart Auto-Detection**: Automatically identifies vendor format
-- 🛠️ **Flexible Filtering**: Show/hide specific event types
-- 📦 **Zero Dependencies**: Only one tiny color library (kleur)
+Working with different AI agent CLIs means dealing with different output formats. Agent-IO solves this by providing:
+
+- 🚀 **Universal Format**: Normalize JSONL outputs from Claude, Gemini, Amp, and more
+- 🎨 **Beautiful Rendering**: ANSI colors for terminals, semantic HTML for web
+- 📊 **High Performance**: 2-3M lines/second throughput with constant memory usage
+- 🔄 **True Streaming**: Process infinite streams without buffering
+- 🛠️ **Modular Architecture**: Pick only the packages you need
 - 🔒 **Type Safe**: Full TypeScript support with comprehensive types
 
-## Installation
+## Monorepo Structure
 
-```bash
-npm install -g agent-stream-fmt  # CLI usage
-npm install agent-stream-fmt     # Programmatic usage
+Agent-IO is organized as a monorepo with focused, composable packages:
+
+```
+agent-io/
+├── packages/
+│   ├── core/           # @agent-io/core - Shared types and utilities
+│   ├── jsonl/          # @agent-io/jsonl - JSONL parsers for AI CLIs
+│   ├── stream/         # @agent-io/stream - Main streaming formatter
+│   └── invoke/         # @agent-io/invoke - CLI invocation tools
+├── docs/               # Documentation
+├── examples/           # Usage examples
+├── fixtures/           # Test fixtures from real CLI outputs
+├── scripts/            # Development and build scripts
+├── specs/              # Technical specifications
+└── tests/              # Integration tests
 ```
 
 ## Quick Start
+
+### Installation
+
+```bash
+# Install the main formatter (includes CLI)
+npm install -g @agent-io/stream
+
+# Or install specific packages
+npm install @agent-io/core      # Core types only
+npm install @agent-io/jsonl     # JSONL parsers
+npm install @agent-io/stream    # Full formatter
+```
 
 ### CLI Usage
 
@@ -43,7 +67,7 @@ amp-code run build.yml -j | agent-stream-fmt --html > report.html
 ### Programmatic Usage
 
 ```typescript
-import { streamEvents, streamFormat } from 'agent-stream-fmt';
+import { streamEvents, streamFormat } from '@agent-io/stream';
 
 // Process events programmatically
 for await (const event of streamEvents({
@@ -65,175 +89,227 @@ for await (const output of streamFormat({
 }
 ```
 
-## CLI Options
+## Packages
 
-```bash
-agent-stream-fmt [options] [file]
+### @agent-io/core
 
-Arguments:
-  file                   Input JSONL file (default: stdin)
-
-Options:
-  -v, --vendor <type>    Vendor type: auto|claude|gemini|amp (default: auto)
-  -f, --format <type>    Output format: ansi|html|json (default: ansi)
-  --collapse-tools       Collapse tool output sections
-  --hide-tools          Hide tool execution entirely
-  --hide-cost           Hide cost information
-  --hide-debug          Hide debug events
-  --only <types>        Show only specific event types (comma-separated)
-  -o, --output <file>   Output file (default: stdout)
-  --html                Shorthand for --format html
-  --json                Shorthand for --format json
-  -h, --help            Display help
-  -V, --version         Display version
-```
-
-## API Reference
-
-### Core Functions
-
-#### `streamEvents(options: StreamEventOptions)`
-
-Stream normalized events from JSONL input.
+Core types and utilities shared across all Agent-IO packages.
 
 ```typescript
-interface StreamEventOptions {
-  vendor: 'auto' | 'claude' | 'gemini' | 'amp';
-  source: NodeJS.ReadableStream | AsyncIterable<string>;
-}
+import { AgentEvent, isMessageEvent } from '@agent-io/core';
 
-// Returns AsyncIterator<AgentEvent>
-```
-
-#### `streamFormat(options: StreamFormatOptions)`
-
-Stream formatted output with rendering.
-
-```typescript
-interface StreamFormatOptions extends StreamEventOptions {
-  format: 'ansi' | 'html' | 'json';
-  renderOptions?: RenderOptions;
-}
-
-interface RenderOptions {
-  collapseTools?: boolean;
-  hideTools?: boolean;
-  hideCost?: boolean;
-  hideDebug?: boolean;
-  only?: string[];
-}
-```
-
-### Event Types
-
-```typescript
-type AgentEvent =
-  | { t: 'msg'; role: 'user' | 'assistant' | 'system'; text: string }
-  | {
-      t: 'tool';
-      name: string;
-      phase: 'start' | 'stdout' | 'stderr' | 'end';
-      text?: string;
-      exitCode?: number;
-    }
-  | { t: 'cost'; deltaUsd: number }
-  | { t: 'error'; message: string }
-  | { t: 'debug'; raw: any };
-```
-
-## Performance
-
-agent-stream-fmt is designed for high-throughput stream processing:
-
-- **Claude format**: ~900K lines/second
-- **Gemini format**: ~668K lines/second
-- **Amp format**: ~797K lines/second
-- **Memory usage**: <20MB for infinite streams
-- **Zero buffering**: True streaming architecture
-
-Benchmarks run on M1 MacBook Pro. Your performance may vary.
-
-**📈 [Full Performance Guide](docs/performance.md)** - Optimization tips, benchmarks, and best practices
-
-## Examples
-
-### Filter specific event types
-
-```bash
-# Show only messages and errors
-cat session.jsonl | agent-stream-fmt --only msg,error
-
-# Hide all tool execution
-claude --json "analyze code.py" | agent-stream-fmt --hide-tools
-```
-
-### Generate HTML reports
-
-```bash
-# Create a formatted HTML report
-gemini --jsonl -i project.md | agent-stream-fmt --html > report.html
-
-# Or use the shorthand
-amp-code run tests.yml -j | agent-stream-fmt --format html -o test-results.html
-```
-
-### Programmatic processing
-
-```typescript
-import { streamEvents } from 'agent-stream-fmt';
-import { createReadStream } from 'fs';
-
-// Process a file
-const source = createReadStream('session.jsonl', 'utf-8');
-
-for await (const event of streamEvents({ vendor: 'auto', source })) {
-  switch (event.t) {
-    case 'msg':
-      console.log(`${event.role}: ${event.text}`);
-      break;
-    case 'tool':
-      if (event.phase === 'end') {
-        console.log(`Tool ${event.name} exited with code ${event.exitCode}`);
-      }
-      break;
-    case 'cost':
-      console.log(`Cost: $${event.deltaUsd.toFixed(4)}`);
-      break;
+// Type-safe event handling
+function handleEvent(event: AgentEvent) {
+  if (isMessageEvent(event)) {
+    console.log(`${event.role}: ${event.text}`);
   }
 }
+```
+
+### @agent-io/jsonl
+
+Vendor-specific JSONL parsers for AI agent CLIs.
+
+```typescript
+import { parseClaudeLine, parseGeminiLine } from '@agent-io/jsonl';
+
+// Parse vendor-specific formats
+const events = parseClaudeLine('{"type":"message","content":"Hello"}');
+```
+
+### @agent-io/stream
+
+The main streaming formatter with rendering capabilities.
+
+```typescript
+import { streamEvents, streamFormat } from '@agent-io/stream';
+
+// Full streaming pipeline with formatting
+const formatted = streamFormat({
+  vendor: 'auto',
+  source: inputStream,
+  format: 'html',
+  renderOptions: {
+    collapseTools: true,
+    hideDebug: true,
+  }
+});
+```
+
+### @agent-io/invoke
+
+CLI invocation utilities for running AI agents programmatically.
+
+```typescript
+import { invokeClaude, invokeGemini } from '@agent-io/invoke';
+
+// Invoke AI agents with proper streaming
+const stream = await invokeClaude({
+  prompt: "Explain quantum computing",
+  json: true,
+});
+
+for await (const event of streamEvents({ vendor: 'claude', source: stream })) {
+  // Process events
+}
+```
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js >= 18.0.0
+- npm >= 9.0.0 (for workspaces support)
+
+### Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/agent-io.git
+cd agent-io
+
+# Install dependencies and build all packages
+npm run bootstrap
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Build all packages
+npm run build
+
+# Type check all packages
+npm run typecheck
+```
+
+### Development Commands
+
+```bash
+# Package-specific commands
+npm run build:core          # Build @agent-io/core
+npm run build:stream        # Build @agent-io/stream
+npm run test:packages       # Test all packages
+npm run test:integration    # Run integration tests
+
+# Development workflow
+npm run dev                 # Watch mode for all packages
+npm run validate            # Lint, typecheck, and test
+npm run changeset           # Create a changeset for version bumps
+
+# Testing
+npm run test:coverage       # Generate coverage report
+npm run test:ui             # Open Vitest UI
+
+# Code quality
+npm run lint                # Lint all packages
+npm run lint:fix            # Fix linting issues
+npm run format              # Format with Prettier
+npm run format:check        # Check formatting
+```
+
+### Working with Workspaces
+
+```bash
+# Add dependency to a specific package
+npm install lodash --workspace packages/stream
+
+# Run script in specific package
+npm run test --workspace packages/core
+
+# Build specific packages
+npm run build:core build:jsonl
+
+# Run command in all packages
+npm run build --workspaces
 ```
 
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### Development Setup
+### Development Workflow
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/agent-stream-fmt.git
-cd agent-stream-fmt
+1. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature
+   ```
 
-# Install dependencies
-npm install
+2. **Make your changes**
+   - Write tests for new functionality
+   - Ensure all tests pass with `npm test`
+   - Check types with `npm run typecheck`
+   - Format code with `npm run format`
 
-# Run tests
-npm test
+3. **Create a changeset**
+   ```bash
+   npm run changeset
+   ```
+   Follow the prompts to describe your changes.
 
-# Build the project
-npm run build
-```
+4. **Submit a pull request**
+   - Ensure all checks pass
+   - Provide a clear description of changes
+   - Link any related issues
+
+### Architecture Decisions
+
+- **Streaming First**: All operations use async iterators for constant memory usage
+- **Vendor Agnostic**: Core types work with any AI CLI format
+- **Progressive Enhancement**: Start with basic parsing, add rendering as needed
+- **Type Safety**: Comprehensive TypeScript types with strict checking
+- **Zero Dependencies**: Minimal external dependencies (only kleur for colors)
+
+### Testing Strategy
+
+- **Unit Tests**: Each package has comprehensive unit tests
+- **Integration Tests**: Cross-package functionality testing
+- **Fixture-Based**: Real CLI outputs captured as test fixtures
+- **Performance Tests**: Benchmarks ensure throughput targets are met
+
+## Performance
+
+Agent-IO is designed for high-throughput stream processing:
+
+| Format | Throughput | Memory Usage |
+|--------|------------|--------------|
+| Claude | ~900K lines/sec | <20MB |
+| Gemini | ~668K lines/sec | <20MB |
+| Amp | ~797K lines/sec | <20MB |
+
+Benchmarks run on M1 MacBook Pro. See [Performance Guide](docs/performance.md) for optimization tips.
+
+## API Documentation
+
+Complete API documentation is available:
+- [API Reference](docs/api/)
+- [Core Types](docs/api/interfaces/)
+- [Streaming Guide](docs/api/modules.md)
+
+## Examples
+
+Explore the [examples/](examples/) directory for:
+- Basic usage patterns
+- Advanced filtering and rendering
+- Integration with web frameworks
+- Custom renderer implementation
+- Performance optimization techniques
 
 ## License
 
-MIT © 2024 agent-stream-fmt contributors
+MIT © 2024 Agent-IO contributors
 
 ## Links
 
-- [Documentation](https://github.com/yourusername/agent-stream-fmt#readme)
-- [Performance Guide](docs/performance.md)
+- [Documentation](https://github.com/yourusername/agent-io#readme)
 - [API Reference](docs/api/)
-- [npm Package](https://www.npmjs.com/package/agent-stream-fmt)
-- [GitHub Repository](https://github.com/yourusername/agent-stream-fmt)
-- [Issue Tracker](https://github.com/yourusername/agent-stream-fmt/issues)
+- [npm Packages](https://www.npmjs.com/org/agent-io)
+- [GitHub Repository](https://github.com/yourusername/agent-io)
+- [Issue Tracker](https://github.com/yourusername/agent-io/issues)
 - [Changelog](CHANGELOG.md)
+- [Contributing Guide](CONTRIBUTING.md)
+
+---
+
+Built with ❤️ for the AI agent community

@@ -1,63 +1,67 @@
-name: Release Package
+name: Release
 
 on:
   push:
     branches:
       - main
-      - master
   workflow_dispatch:
-    inputs:
-      release-type:
-        description: 'Release type (patch, minor, major)'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+
+# Prevent concurrent releases
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: write
+  pull-requests: write
+  issues: write
   packages: write
+  id-token: write
 
 jobs:
-  check-version:
-    name: Check Version and Prepare Release
+  # Create or update release PR
+  release-pr:
+    name: Create Release PR
     runs-on: ubuntu-latest
     outputs:
-      should-release: ${{ steps.check.outputs.should-release }}
-      version: ${{ steps.check.outputs.version }}
-
+      published: ${{ steps.changesets.outputs.published }}
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check if version changed
-        id: check
-        run: |
-          # Get current version from package.json
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Current version: $CURRENT_VERSION"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
-          # Check if tag already exists
-          if git tag | grep -q "^v$CURRENT_VERSION$"; then
-            echo "Tag v$CURRENT_VERSION already exists. Skipping release."
-            echo "should-release=false" >> $GITHUB_OUTPUT
-          else
-            echo "Tag v$CURRENT_VERSION does not exist. Proceeding with release."
-            echo "should-release=true" >> $GITHUB_OUTPUT
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          fi
+      - name: Install dependencies
+        run: npm ci
 
-  release:
-    name: Build and Publish
-    needs: check-version
-    if: needs.check-version.outputs.should-release == 'true'
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+          version: npm run version
+          commit: 'chore: release packages'
+          title: 'chore: release packages'
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Publish packages when release PR is merged
+  publish:
+    name: Publish Packages
     runs-on: ubuntu-latest
-
+    needs: release-pr
+    if: needs.release-pr.outputs.published == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -65,93 +69,66 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: '20'
+          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Build all packages
+        run: npm run build:all
 
-      - name: Build package
-        run: npm run build
-
-      - name: Validate build output
+      - name: Validate packages before publish
         run: |
-          # Check that dist directory exists and contains files
-          if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
-            echo "::error::Build output directory 'dist' is empty or missing"
-            exit 1
-          fi
-
-          # Check that main entry point exists
-          if [ ! -f "dist/index.js" ]; then
-            echo "::error::Main entry point 'dist/index.js' is missing"
-            exit 1
-          fi
-
-          # Check that type definitions exist
-          if [ ! -f "dist/index.d.ts" ]; then
-            echo "::error::Type definitions 'dist/index.d.ts' are missing"
-            exit 1
-          fi
-
-          # Check that CLI entry point exists
-          if [ ! -f "bin/autoagent" ]; then
-            echo "::error::CLI entry point 'bin/autoagent' is missing"
-            exit 1
-          fi
-
-          echo "Build validation passed ✓"
-
-      - name: Create release tag
-        run: |
-          VERSION=${{ needs.check-version.outputs.version }}
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin "v$VERSION"
-
-      - name: Publish to npm
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Check that all packages build successfully
+          npm run validate
+          
+          # Verify package contents
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              echo "Checking $pkg"
+              cd "$pkg"
+              npm pack --dry-run
+              cd -
+            fi
+          done
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        if: needs.release-pr.outputs.publishedPackages != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ needs.check-version.outputs.version }}
-          release_name: Release v${{ needs.check-version.outputs.version }}
-          body: |
-            ## AutoAgent v${{ needs.check-version.outputs.version }}
+        run: |
+          # Parse published packages
+          PACKAGES='${{ needs.release-pr.outputs.publishedPackages }}'
+          echo "Published packages: $PACKAGES"
+          
+          # Create release notes
+          RELEASE_NOTES="## Published Packages\n\n"
+          echo "$PACKAGES" | jq -r '.[] | "- \(.name)@\(.version)"' | while read line; do
+            RELEASE_NOTES="${RELEASE_NOTES}${line}\n"
+          done
+          
+          echo -e "$RELEASE_NOTES"
 
-            ### Installation
-            ```bash
-            npm install -g autoagent@${{ needs.check-version.outputs.version }}
-            ```
-
-            ### What's Changed
-            Please see the [changelog](https://github.com/${{ github.repository }}/compare/v${{ needs.check-version.outputs.version }}...HEAD) for details.
-
-            ### Full Changelog
-            https://github.com/${{ github.repository }}/commits/v${{ needs.check-version.outputs.version }}
-          draft: false
-          prerelease: false
-
+  # Post-release tasks
   post-release:
-    name: Post-Release Actions
-    needs: [check-version, release]
-    if: needs.check-version.outputs.should-release == 'true'
+    name: Post Release Tasks
     runs-on: ubuntu-latest
-
+    needs: [release-pr, publish]
+    if: needs.release-pr.outputs.published == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Notify on failure
-        if: failure()
+      - name: Update documentation
         run: |
-          echo "::error::Release failed! Please check the logs and fix any issues."
+          echo "Release completed successfully!"
+          echo "Published packages: ${{ needs.release-pr.outputs.publishedPackages }}"
+
+      - name: Notify release completed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Could add Slack/Discord notifications here
+          echo "Release notification would be sent here"

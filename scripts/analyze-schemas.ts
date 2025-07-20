@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { writeFileSync } from 'fs';

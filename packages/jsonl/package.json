@@ -1,0 +1,48 @@
+{
+  "name": "@agent-io/jsonl",
+  "version": "0.1.0",
+  "description": "JSONL parsers for AI agent CLIs",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,json}\""
+  },
+  "dependencies": {
+    "@agent-io/core": "^0.1.0"
+  },
+  "keywords": ["agent-io", "jsonl", "parser", "ai", "agent", "cli", "stream", "claude", "gemini", "amp"],
+  "author": {
+    "name": "Carl Rannaberg",
+    "email": "carl@rannaberg.com",
+    "url": "https://github.com/carlrannaberg"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/carlrannaberg/agent-io/tree/main/packages/jsonl#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlrannaberg/agent-io.git",
+    "directory": "packages/jsonl"
+  },
+  "bugs": {
+    "url": "https://github.com/carlrannaberg/agent-io/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

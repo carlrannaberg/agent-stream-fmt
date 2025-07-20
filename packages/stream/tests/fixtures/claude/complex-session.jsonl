@@ -1,0 +1,9 @@
+{"type":"message","role":"user","content":"I need to create a REST API with user authentication"}
+{"type":"message","role":"assistant","content":"I'll help you create a REST API with user authentication. Let me first understand your requirements."}
+{"type":"tool_use","id":"tool_1","name":"create_file","input":{"path":"server.js","content":"const express = require('express');"}}
+{"type":"tool_result","tool_use_id":"tool_1","content":"File created successfully"}
+{"type":"message","role":"assistant","content":"I've started creating your REST API. Let me add the authentication middleware."}
+{"type":"tool_use","id":"tool_2","name":"create_file","input":{"path":"auth.js","content":"const jwt = require('jsonwebtoken');"}}
+{"type":"tool_result","tool_use_id":"tool_2","content":"File created successfully"}
+{"type":"message","role":"assistant","content":"Great! I've set up the basic structure with authentication middleware."}
+{"type":"usage","input_tokens":125,"output_tokens":245,"total_tokens":370}

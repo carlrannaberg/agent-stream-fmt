@@ -1,0 +1,37 @@
+# Build outputs
+dist/
+coverage/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Temporary files
+temp/
+*.tmp
+*.log
+
+# Reports
+reports/
+
+# Configuration files
+*.config.js
+*.config.ts
+*.config.mjs
+
+# Generated files
+CHANGELOG.md
+.changeset/
+
+# Fixtures
+fixtures/
+tests/fixtures/
+
+# Non-TypeScript files
+*.js
+*.cjs
+*.mjs
+*.json
+*.md
+*.yml
+*.yaml

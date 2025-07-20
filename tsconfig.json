@@ -1,20 +1,28 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2022"],
-    "moduleResolution": "bundler",
-    "rootDir": "./src",
-    "outDir": "./dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "paths": {
+      "@agent-io/core": ["./packages/core/src"],
+      "@agent-io/jsonl": ["./packages/jsonl/src"],
+      "@agent-io/stream": ["./packages/stream/src"],
+      "@agent-io/invoke": ["./packages/invoke/src"]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/jsonl" },
+    { "path": "./packages/stream" },
+    { "path": "./packages/invoke" },
+    { "path": "./packages/agent-stream-fmt" }
+  ],
+  "files": []
 }

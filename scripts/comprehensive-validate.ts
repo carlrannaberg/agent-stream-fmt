@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 
 import { readFileSync, readdirSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';

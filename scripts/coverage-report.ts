@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 
 /**
  * Generate comprehensive coverage report

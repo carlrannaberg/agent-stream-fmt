@@ -1,0 +1,115 @@
+{
+  "name": "@agent-io/stream-formatter",
+  "version": "1.0.0",
+  "description": "Universal JSONL formatter for AI agent CLIs with beautiful terminal and HTML output",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "agent-stream-fmt": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,json}\" \"tests/**/*.{ts,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,json}\" \"tests/**/*.{ts,json}\"",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage --run",
+    "coverage:report": "tsx ../../scripts/coverage-report.ts",
+    "test:integration": "vitest run tests/comprehensive-integration.test.ts tests/registry-integration.test.ts",
+    "test:performance": "vitest run tests/performance-benchmarks.test.ts",
+    "test:errors": "vitest run tests/error-handling.test.ts",
+    "test:fixtures": "vitest run tests/fixture-validation.test.ts",
+    "test:comprehensive": "tsx ../../scripts/run-test-suite.ts",
+    "fixtures:capture": "tsx ../../scripts/capture-fixtures.ts",
+    "fixtures:analyze": "tsx ../../scripts/analyze-schemas.ts",
+    "fixtures:validate": "tsx ../../scripts/validate-fixtures.ts",
+    "validate:comprehensive": "tsx ../../scripts/comprehensive-validate.ts",
+    "benchmark": "tsx benchmarks/throughput.ts",
+    "benchmark:throughput": "tsx benchmarks/throughput.ts",
+    "benchmark:memory": "tsx --expose-gc benchmarks/memory.ts",
+    "benchmark:all": "./benchmarks/run-benchmarks.sh",
+    "analyze:bundle": "node ../../scripts/analyze-bundle.js",
+    "docs:api": "typedoc",
+    "release:patch": "../../scripts/prepare-release.sh --type patch",
+    "release:minor": "../../scripts/prepare-release.sh --type minor",
+    "release:major": "../../scripts/prepare-release.sh --type major",
+    "prepublishOnly": "npm run build && npm run test && npm run typecheck",
+    "preversion": "npm run test",
+    "version": "npm run build && git add -A dist",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "agent-io",
+    "cli",
+    "agent",
+    "ai",
+    "formatter",
+    "jsonl",
+    "stream",
+    "claude",
+    "gemini",
+    "amp",
+    "terminal",
+    "ansi",
+    "html"
+  ],
+  "author": {
+    "name": "Carl Rannaberg",
+    "email": "carl@rannaberg.com",
+    "url": "https://github.com/carlrannaberg"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/carlrannaberg/agent-io/tree/main/packages/agent-stream-fmt#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlrannaberg/agent-io.git",
+    "directory": "packages/agent-stream-fmt"
+  },
+  "bugs": {
+    "url": "https://github.com/carlrannaberg/agent-io/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "kleur": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^8.57.1",
+    "prettier": "^3.6.2",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typedoc": "^0.25.13",
+    "typedoc-plugin-markdown": "^3.17.1",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
