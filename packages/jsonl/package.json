@@ -1,6 +1,6 @@
 {
   "name": "@agent-io/jsonl",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "JSONL parsers for AI agent CLIs",
   "type": "module",
   "exports": {

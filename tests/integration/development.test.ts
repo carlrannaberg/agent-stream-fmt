@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { execSync, spawn, ChildProcess } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { execSync } from 'child_process';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -14,8 +14,7 @@ describe('Development Workflow Integration', () => {
     'packages/core',
     'packages/jsonl', 
     'packages/stream',
-    'packages/invoke',
-    'packages/agent-stream-fmt'
+    'packages/invoke'
   ];
 
   beforeAll(() => {
@@ -170,7 +169,7 @@ describe('Development Workflow Integration', () => {
         // Check if coverage directory was created
         const coverageDir = join(rootDir, 'coverage');
         if (existsSync(coverageDir)) {
-          const coverageFiles = require('fs').readdirSync(coverageDir);
+          const coverageFiles = readdirSync(coverageDir);
           expect(coverageFiles.length).toBeGreaterThan(0);
         }
       } catch (error) {
@@ -295,6 +294,7 @@ describe('Development Workflow Integration', () => {
         }
 
         // At least some packages should have dev scripts
+        // eslint-disable-next-line no-console
         console.log(`Found ${packagesWithDev} packages with dev scripts`);
       }
 

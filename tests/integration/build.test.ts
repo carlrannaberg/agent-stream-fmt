@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { execSync, spawn } from 'child_process';
-import { existsSync, readFileSync, rmSync } from 'fs';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { execSync } from 'child_process';
+import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -14,8 +14,7 @@ describe('Build Process Integration', () => {
     { name: 'core', dir: 'packages/core' },
     { name: 'jsonl', dir: 'packages/jsonl' },
     { name: 'stream', dir: 'packages/stream' },
-    { name: 'invoke', dir: 'packages/invoke' },
-    { name: 'agent-stream-fmt', dir: 'packages/agent-stream-fmt' }
+    { name: 'invoke', dir: 'packages/invoke' }
   ];
 
   beforeAll(() => {
@@ -60,6 +59,7 @@ describe('Build Process Integration', () => {
       }
 
       const buildEnd = Date.now();
+      // eslint-disable-next-line no-console
       console.log(`Build completed in ${buildEnd - buildStart}ms`);
 
       // Verify all packages have dist directories
@@ -189,7 +189,7 @@ describe('Build Process Integration', () => {
       for (const pkg of packages) {
         const tsBuildInfoPath = join(rootDir, pkg.dir, 'tsconfig.tsbuildinfo');
         if (existsSync(tsBuildInfoPath)) {
-          const stats = require('fs').statSync(tsBuildInfoPath);
+          const stats = statSync(tsBuildInfoPath);
           expect(stats.isFile()).toBe(true);
         }
       }
@@ -262,6 +262,7 @@ describe('Build Process Integration', () => {
       });
 
       const parallelTime = Date.now() - start;
+      // eslint-disable-next-line no-console
       console.log(`Parallel build time: ${parallelTime}ms`);
       
       // Verify all packages are built

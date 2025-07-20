@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, readFileSync, mkdirSync, rmSync } from 'fs';
+import { existsSync, readFileSync, mkdirSync, rmSync, statSync, readdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import * as tar from 'tar';
 
@@ -16,8 +16,7 @@ describe('Publishing Simulation', () => {
     { name: '@agent-io/core', dir: 'packages/core' },
     { name: '@agent-io/jsonl', dir: 'packages/jsonl' },
     { name: '@agent-io/stream', dir: 'packages/stream' },
-    { name: '@agent-io/invoke', dir: 'packages/invoke' },
-    { name: 'agent-stream-fmt', dir: 'packages/agent-stream-fmt' }
+    { name: '@agent-io/invoke', dir: 'packages/invoke' }
   ];
 
   beforeAll(() => {
@@ -69,7 +68,7 @@ describe('Publishing Simulation', () => {
           expect(existsSync(packagePath), `Package file ${packageFileName} should be created`).toBe(true);
           
           // Verify package file is not empty
-          const stats = require('fs').statSync(packagePath);
+          const stats = statSync(packagePath);
           expect(stats.size).toBeGreaterThan(0);
         } catch (error) {
           console.error(`Failed to pack ${pkg.name}:`, error);
@@ -79,7 +78,7 @@ describe('Publishing Simulation', () => {
     });
 
     it('should include all necessary files in packages', async () => {
-      const packageFiles = require('fs').readdirSync(tempDir).filter((f: string) => f.endsWith('.tgz'));
+      const packageFiles = readdirSync(tempDir).filter((f: string) => f.endsWith('.tgz'));
       
       for (const packageFile of packageFiles) {
         const packagePath = join(tempDir, packageFile);
@@ -102,7 +101,7 @@ describe('Publishing Simulation', () => {
         // Should have dist directory with built files
         const distDir = join(packageContents, 'dist');
         if (existsSync(distDir)) {
-          const distFiles = require('fs').readdirSync(distDir);
+          const distFiles = readdirSync(distDir);
           expect(distFiles.length).toBeGreaterThan(0);
         }
 
@@ -218,13 +217,13 @@ describe('Publishing Simulation', () => {
         dependencies: {}
       };
 
-      require('fs').writeFileSync(
+      writeFileSync(
         join(testInstallDir, 'package.json'),
         JSON.stringify(testPackageJson, null, 2)
       );
 
       // Find a package to install
-      const packageFiles = require('fs').readdirSync(tempDir).filter((f: string) => f.endsWith('.tgz'));
+      const packageFiles = readdirSync(tempDir).filter((f: string) => f.endsWith('.tgz'));
       
       if (packageFiles.length > 0) {
         const packagePath = join(tempDir, packageFiles[0]);
@@ -239,7 +238,7 @@ describe('Publishing Simulation', () => {
           // Verify installation
           expect(existsSync(join(testInstallDir, 'node_modules'))).toBe(true);
           
-          const installedPackages = require('fs').readdirSync(join(testInstallDir, 'node_modules'));
+          const installedPackages = readdirSync(join(testInstallDir, 'node_modules'));
           expect(installedPackages.length).toBeGreaterThan(0);
         } catch (error) {
           console.error('Local installation failed:', error);
@@ -337,6 +336,7 @@ describe('Publishing Simulation', () => {
         });
       } catch (error) {
         // Changeset might not be configured yet, which is OK
+        // eslint-disable-next-line no-console
         console.log('Changeset not configured, skipping changeset workflow test');
       }
     });

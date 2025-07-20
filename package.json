@@ -15,7 +15,6 @@
     "build:jsonl": "npm run build --workspace packages/jsonl",
     "build:stream": "npm run build --workspace packages/stream",
     "build:invoke": "npm run build --workspace packages/invoke",
-    "build:formatter": "npm run build --workspace packages/agent-stream-fmt",
     "dev": "npm-run-all --parallel dev:*",
     "dev:packages": "npm run dev --workspaces --if-present",
     "test": "vitest run",

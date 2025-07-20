@@ -21,8 +21,7 @@
     { "path": "./packages/core" },
     { "path": "./packages/jsonl" },
     { "path": "./packages/stream" },
-    { "path": "./packages/invoke" },
-    { "path": "./packages/agent-stream-fmt" }
+    { "path": "./packages/invoke" }
   ],
   "files": []
 }

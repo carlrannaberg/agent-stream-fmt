@@ -35,7 +35,12 @@ async function runCli(
     
     let stdout = '';
     let stderr = '';
-    let timeoutId: NodeJS.Timeout;
+    
+    // Set timeout
+    const timeoutId = setTimeout(() => {
+      proc.kill('SIGTERM');
+      reject(new Error(`CLI timed out after ${timeout}ms`));
+    }, timeout);
     
     proc.stdout.on('data', (data) => {
       stdout += data.toString();
@@ -64,12 +69,6 @@ async function runCli(
         resolve({ stdout, stderr, exitCode: code });
       }
     });
-    
-    // Set timeout
-    timeoutId = setTimeout(() => {
-      proc.kill('SIGTERM');
-      reject(new Error(`CLI timed out after ${timeout}ms`));
-    }, timeout);
   });
 }
 

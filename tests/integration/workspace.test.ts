@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { execSync, spawn } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { execSync } from 'child_process';
+import { existsSync, readFileSync, lstatSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -14,8 +14,7 @@ describe('Workspace Installation', () => {
     'packages/core',
     'packages/jsonl', 
     'packages/stream',
-    'packages/invoke',
-    'packages/agent-stream-fmt'
+    'packages/invoke'
   ];
 
   beforeAll(() => {
@@ -39,7 +38,6 @@ describe('Workspace Installation', () => {
       expect(workspaceNames).toContain('@agent-io/jsonl');
       expect(workspaceNames).toContain('@agent-io/stream');
       expect(workspaceNames).toContain('@agent-io/invoke');
-      expect(workspaceNames).toContain('agent-stream-fmt');
     });
 
     it('should have valid package.json files for all packages', () => {
@@ -101,7 +99,7 @@ describe('Workspace Installation', () => {
         if (dependencies['@agent-io/core']) {
           const symlinkPath = join(rootDir, 'packages/stream/node_modules/@agent-io/core');
           if (existsSync(symlinkPath)) {
-            const stats = require('fs').lstatSync(symlinkPath);
+            const stats = lstatSync(symlinkPath);
             expect(stats.isSymbolicLink()).toBe(true);
           }
         }
@@ -121,7 +119,7 @@ describe('Workspace Installation', () => {
         expect(lsInfo.workspaces).toBeDefined();
         
         // Verify that workspace dependencies are resolved
-        for (const [workspaceName, workspaceInfo] of Object.entries(lsInfo.workspaces || {})) {
+        for (const [, workspaceInfo] of Object.entries(lsInfo.workspaces || {})) {
           const info = workspaceInfo as any;
           if (info.dependencies) {
             // Check that any @agent-io/* dependencies are properly resolved
