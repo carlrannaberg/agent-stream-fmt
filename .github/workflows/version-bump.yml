@@ -1,0 +1,91 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-type:
+        description: 'Version type to bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      prerelease-id:
+        description: 'Prerelease identifier (e.g., beta, alpha)'
+        required: false
+        default: 'beta'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        run: |
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+
+          # Bump version based on input
+          if [ "${{ inputs.version-type }}" == "prerelease" ]; then
+            npm version prerelease --preid=${{ inputs.prerelease-id }} --no-git-tag-version
+          else
+            npm version ${{ inputs.version-type }} --no-git-tag-version
+          fi
+
+          # Get new version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "New version: $NEW_VERSION"
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: bump version to ${{ steps.bump.outputs.new-version }}'
+          title: 'chore: bump version to ${{ steps.bump.outputs.new-version }}'
+          body: |
+            ## Version Bump
+
+            This PR bumps the version from `${{ steps.bump.outputs.current-version }}` to `${{ steps.bump.outputs.new-version }}`.
+
+            ### Type of change
+            - Version bump: `${{ inputs.version-type }}`
+            ${{ inputs.version-type == 'prerelease' && format('- Prerelease ID: `{0}`', inputs.prerelease-id) || '' }}
+
+            ### Checklist
+            - [ ] Version number follows semantic versioning
+            - [ ] No breaking changes (or they are documented)
+            - [ ] Ready for release after merge
+
+            ---
+            *This PR was automatically created by the Version Bump workflow.*
+          branch: version-bump-${{ steps.bump.outputs.new-version }}
+          delete-branch: true
+          labels: |
+            version-bump
+            automated-pr
