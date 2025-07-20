@@ -102,9 +102,9 @@ describe('CLI', () => {
       const result = await runCli(['--help']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('agent-stream-fmt');
+      expect(result.stdout).toContain('aio-stream');
       expect(result.stdout).toContain('Format JSONL output from AI agent CLIs');
-      expect(result.stdout).toContain('Usage: agent-stream-fmt [options] [file]');
+      expect(result.stdout).toContain('Usage: aio-stream [options] [file]');
       expect(result.stdout).toContain('-v, --vendor <type>');
       expect(result.stdout).toContain('-f, --format <type>');
       expect(result.stdout).toContain('--collapse-tools');
@@ -121,7 +121,7 @@ describe('CLI', () => {
       const result = await runCli(['-h']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('agent-stream-fmt');
+      expect(result.stdout).toContain('aio-stream');
       expect(result.stdout).toContain('Format JSONL output from AI agent CLIs');
     });
   });

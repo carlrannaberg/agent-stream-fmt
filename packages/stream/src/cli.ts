@@ -64,7 +64,7 @@ async function main() {
   const program = new Command();
 
   program
-    .name('agent-stream-fmt')
+    .name('aio-stream')
     .description(
       'Format JSONL output from AI agent CLIs with beautiful terminal and HTML rendering',
     )
@@ -92,19 +92,19 @@ async function main() {
       `
 Examples:
   # Auto-detect vendor and format for terminal
-  claude --json "explain recursion" | agent-stream-fmt
+  claude --json "explain recursion" | aio-stream
   
   # Explicit vendor with options
-  gemini --jsonl -i task.md | agent-stream-fmt --vendor gemini --hide-tools
+  gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
   
   # HTML output for web display
-  amp-code run build.yml -j | agent-stream-fmt --html > build-log.html
+  amp-code run build.yml -j | aio-stream --html > build-log.html
   
   # Filter specific event types
-  cat session.jsonl | agent-stream-fmt --only tool,error --collapse-tools
+  cat session.jsonl | aio-stream --only tool,error --collapse-tools
   
   # Read from file
-  agent-stream-fmt output.jsonl --vendor claude
+  aio-stream output.jsonl --vendor claude
   
 Event types for --only:
   msg     - user/assistant/system messages

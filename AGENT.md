@@ -57,7 +57,7 @@ npm run version              # Update package versions
 npm run release              # Publish packages to npm
 
 # CLI Usage (after build)
-agent-stream-fmt [options] [file]  # Main CLI from @agent-io/stream
+aio-stream [options] [file]  # Main CLI from @agent-io/stream
 
 # Git operations
 git status                    # Check current state
@@ -275,7 +275,7 @@ function safeParse(line: string): unknown {
 ```bash
 # Development
 NODE_ENV=development          # Enable debug logging
-DEBUG=agent-stream-fmt:*     # Debug namespace
+DEBUG=aio-stream:*     # Debug namespace
 
 # Testing
 TEST_LIVE=true               # Enable live CLI testing
@@ -560,16 +560,16 @@ Before implementing, review these specification documents:
 ### Basic Usage
 ```bash
 # Auto-detect vendor and format for terminal
-claude --json "explain recursion" | agent-stream-fmt
+claude --json "explain recursion" | aio-stream
 
 # Explicit vendor with options
-gemini --jsonl -i task.md | agent-stream-fmt --vendor gemini --hide-tools
+gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
 
 # HTML output for web display
-amp-code run build.yml -j | agent-stream-fmt --html > build-log.html
+amp-code run build.yml -j | aio-stream --html > build-log.html
 
 # Filter specific event types
-cat session.jsonl | agent-stream-fmt --only tool,error --collapse-tools
+cat session.jsonl | aio-stream --only tool,error --collapse-tools
 ```
 
 ### Options
@@ -597,7 +597,7 @@ cat session.jsonl | agent-stream-fmt --only tool,error --collapse-tools
 ### Debug Commands
 ```bash
 # Debug parsing issues
-DEBUG=agent-stream-fmt:parser npm test
+DEBUG=aio-stream:parser npm test
 
 # Memory profiling
 node --inspect --inspect-brk dist/cli.js < large-file.jsonl

@@ -58,10 +58,10 @@
   import { streamEvents, streamFormat } from '@agent-io/stream';
   ```
 
-  The CLI command remains the same:
+  The CLI command is now:
 
   ```bash
-  agent-stream-fmt [options] [file]
+  aio-stream [options] [file]
   ```
 
   ## Features
