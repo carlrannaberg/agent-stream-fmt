@@ -1,17 +1,20 @@
 /**
  * HTML renderer implementation for AgentEvents
- * 
+ *
  * This module provides HTML rendering functionality for agent events,
  * generating semantic HTML with appropriate CSS classes for styling.
  * All user content is properly escaped to prevent XSS attacks.
  */
 
 import type { AgentEvent } from '../types.js';
-import type { Renderer, RenderContext, RenderOptions, ToolState } from './types.js';
+import type { Renderer, RenderContext, RenderOptions } from './types.js';
 
 /**
  * HTML renderer that converts AgentEvents to semantic HTML
- * 
+ *
+ * Generates well-structured HTML with semantic elements and CSS classes
+ * for easy styling. All user content is properly escaped to prevent XSS.
+ *
  * Features:
  * - Proper HTML escaping for all user content
  * - Semantic structure with CSS classes
@@ -19,6 +22,30 @@ import type { Renderer, RenderContext, RenderOptions, ToolState } from './types.
  * - Tool execution tracking with phases
  * - Cost and error formatting
  * - Debug information in pre-formatted blocks
+ *
+ * @example
+ * ```typescript
+ * // Create standalone HTML document
+ * const renderer = new HtmlRenderer({
+ *   standalone: true,
+ *   theme: 'light',
+ *   title: 'AI Agent Session'
+ * });
+ *
+ * // Render to HTML fragments
+ * const parts = [];
+ * parts.push(renderer.start());
+ * for (const event of events) {
+ *   const html = renderer.render(event);
+ *   if (html) parts.push(html);
+ * }
+ * parts.push(renderer.end());
+ *
+ * const document = parts.join('');
+ * ```
+ *
+ * @category Renderers
+ * @since 0.1.0
  */
 export class HtmlRenderer implements Renderer {
   private context: RenderContext;
@@ -27,7 +54,7 @@ export class HtmlRenderer implements Renderer {
     this.context = {
       toolStack: new Map(),
       messageCount: 0,
-      renderStartTime: Date.now()
+      renderStartTime: Date.now(),
     };
   }
 
@@ -58,20 +85,21 @@ export class HtmlRenderer implements Renderer {
    */
   private renderMessage(event: AgentEvent & { t: 'msg' }): string {
     this.context.messageCount++;
-    
+
     // Handle missing role
     const role = event.role || 'unknown';
     const roleClass = `message-${role}`;
-    const roleIcon = {
-      'user': '👤',
-      'assistant': '🤖',
-      'system': '⚙️'
-    }[role] || '❓';
+    const roleIcon =
+      {
+        user: '👤',
+        assistant: '🤖',
+        system: '⚙️',
+      }[role] || '❓';
 
     // Escape HTML first, then apply markdown-like formatting with proper nesting support
     // escapeHtml now handles null/undefined gracefully
     let content = this.escapeHtml(event.text);
-    
+
     // Store code segments to protect them from other formatting
     const codeSegments: { placeholder: string; content: string }[] = [];
     content = content.replace(/`([^`]+)`/g, (match, code) => {
@@ -79,22 +107,25 @@ export class HtmlRenderer implements Renderer {
       codeSegments.push({ placeholder, content: `<code>${code}</code>` });
       return placeholder;
     });
-    
+
     // Handle bold with potential nested content
-    content = content.replace(/\*\*((?:[^*]|\*(?!\*))+)\*\*/g, (_, boldContent) => {
-      // Process italic within bold
-      const withItalic = boldContent.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-      return `<strong>${withItalic}</strong>`;
-    });
-    
+    content = content.replace(
+      /\*\*((?:[^*]|\*(?!\*))+)\*\*/g,
+      (_, boldContent) => {
+        // Process italic within bold
+        const withItalic = boldContent.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        return `<strong>${withItalic}</strong>`;
+      },
+    );
+
     // Handle remaining standalone italic (not within bold)
     content = content.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
-    
+
     // Restore code segments
     codeSegments.forEach(({ placeholder, content: codeContent }) => {
       content = content.replace(placeholder, codeContent);
     });
-    
+
     // Finally, convert newlines to <br>
     content = content.replace(/\n/g, '<br>');
 
@@ -115,14 +146,14 @@ export class HtmlRenderer implements Renderer {
     if (this.options.hideTools) return '';
 
     switch (event.phase) {
-      case 'start':
+      case 'start': {
         // Track the tool in our context (handle null/undefined name)
         const toolName = event.name || 'unknown-tool';
         this.context.toolStack.set(toolName, {
           name: toolName,
           startTime: Date.now(),
           outputLines: [],
-          collapsed: this.options.collapseTools || false
+          collapsed: this.options.collapseTools || false,
         });
 
         return `<div class="tool-execution" data-tool="${this.escapeHtml(event.name)}">
@@ -133,12 +164,13 @@ export class HtmlRenderer implements Renderer {
   </div>
   <div class="tool-output">
 `;
+      }
 
       case 'stdout':
-      case 'stderr':
+      case 'stderr': {
         const outputClass = event.phase === 'stderr' ? 'stderr' : 'stdout';
         const escapedText = this.escapeHtml(event.text || '');
-        
+
         // Track output for potential collapsing
         if (event.name) {
           const toolState = this.context.toolStack.get(event.name);
@@ -149,8 +181,9 @@ export class HtmlRenderer implements Renderer {
 
         return `    <div class="tool-${outputClass}">${escapedText}</div>
 `;
+      }
 
-      case 'end':
+      case 'end': {
         const statusClass = (event.exitCode || 0) === 0 ? 'success' : 'error';
         const statusIcon = (event.exitCode || 0) === 0 ? '✅' : '❌';
 
@@ -167,6 +200,7 @@ export class HtmlRenderer implements Renderer {
   </div>
 </div>
 `;
+      }
 
       default:
         return `<div class="tool-${event.phase}">${this.escapeHtml(event.text || '')}</div>
@@ -180,11 +214,14 @@ export class HtmlRenderer implements Renderer {
   private renderCost(event: AgentEvent & { t: 'cost' }): string {
     if (this.options.hideCost) return '';
 
-    const costValue = event.deltaUsd == null || isNaN(event.deltaUsd) || !isFinite(event.deltaUsd)
-      ? '0.0000'
-      : event.deltaUsd < 0 
-        ? `-$${Math.abs(event.deltaUsd).toFixed(4)}` 
-        : `$${event.deltaUsd.toFixed(4)}`;
+    const costValue =
+      event.deltaUsd == null ||
+      isNaN(event.deltaUsd) ||
+      !isFinite(event.deltaUsd)
+        ? '0.0000'
+        : event.deltaUsd < 0
+          ? `-$${Math.abs(event.deltaUsd).toFixed(4)}`
+          : `$${event.deltaUsd.toFixed(4)}`;
 
     return `<div class="cost-info">
   <span class="cost-icon">💰</span>
@@ -240,7 +277,7 @@ export class HtmlRenderer implements Renderer {
     } catch (e) {
       eventContent = `[Non-serializable event of type: ${(event as any)?.t || 'unknown'}]`;
     }
-    
+
     return `<div class="unknown-event">
   <span class="unknown-icon">❓</span>
   <pre class="unknown-content">${this.escapeHtml(eventContent)}</pre>
@@ -257,10 +294,10 @@ export class HtmlRenderer implements Renderer {
     if (text == null) {
       return '';
     }
-    
+
     // Convert to string if not already
     const str = String(text);
-    
+
     // Use global replace to escape ALL occurrences
     return str
       .replace(/&/g, '&amp;')
@@ -283,13 +320,15 @@ export class HtmlRenderer implements Renderer {
   flush(): string {
     // Close any open tool executions
     const openTools = Array.from(this.context.toolStack.values())
-      .map(tool => `  </div>
+      .map(
+        tool => `  </div>
   <div class="tool-interrupted">
     <span class="interrupted-icon">⚠️</span>
     <span class="interrupted-text">Tool interrupted: ${this.escapeHtml(tool.name)}</span>
   </div>
 </div>
-`)
+`,
+      )
       .join('');
 
     // Clear the tool stack

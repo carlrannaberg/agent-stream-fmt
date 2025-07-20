@@ -2,7 +2,7 @@
 import { createReadStream, createWriteStream } from 'fs';
 import { streamFormat } from './stream.js';
 import type { ExtendedStreamFormatOptions } from './stream.js';
-import { Vendor, AgentEvent } from './types.js';
+import { Vendor } from './types.js';
 import { Command } from 'commander';
 import type { RenderOptions } from './render/types.js';
 
@@ -62,23 +62,34 @@ interface CliOptions {
 
 async function main() {
   const program = new Command();
-  
+
   program
     .name('agent-stream-fmt')
-    .description('Format JSONL output from AI agent CLIs with beautiful terminal and HTML rendering')
-    .version('0.0.1')
+    .description(
+      'Format JSONL output from AI agent CLIs with beautiful terminal and HTML rendering',
+    )
+    .version('0.1.0')
     .argument('[file]', 'input JSONL file (default: stdin)')
-    .option('-v, --vendor <type>', 'vendor type (auto|claude|gemini|amp)', 'auto')
+    .option(
+      '-v, --vendor <type>',
+      'vendor type (auto|claude|gemini|amp)',
+      'auto',
+    )
     .option('-f, --format <type>', 'output format (ansi|html|json)', 'ansi')
     .option('--collapse-tools', 'collapse tool output sections', false)
     .option('--hide-tools', 'hide tool execution entirely', false)
     .option('--hide-cost', 'hide cost information', false)
     .option('--hide-debug', 'hide debug events (use --no-hide-debug to show)')
-    .option('--only <types>', 'only show specific event types (comma-separated)')
+    .option(
+      '--only <types>',
+      'only show specific event types (comma-separated)',
+    )
     .option('-o, --output <file>', 'output file (default: stdout)')
     .option('--html', 'shorthand for --format html')
     .option('--json', 'shorthand for --format json')
-    .addHelpText('after', `
+    .addHelpText(
+      'after',
+      `
 Examples:
   # Auto-detect vendor and format for terminal
   claude --json "explain recursion" | agent-stream-fmt
@@ -106,40 +117,43 @@ Vendor auto-detection:
   - Automatically detects format from input
   - Supports claude, gemini, amp formats
   - Use --vendor to force specific parser
-`);
-    
+`,
+    );
+
   program.parse(process.argv);
-  
+
   const opts = program.opts() as CliOptions;
   const args = program.args;
   const inputFile = args[0];
-  
+
   // Handle shorthand options
   if (opts.html) opts.format = 'html';
   if (opts.json) opts.format = 'json';
-  
+
   // Set default for hideDebug if not specified
   if (opts.hideDebug === undefined) {
     opts.hideDebug = true;
   }
-  
+
   // Validate format
   if (!['ansi', 'html', 'json'].includes(opts.format)) {
-    process.stderr.write(`Error: Invalid format '${opts.format}'. Must be one of: ansi, html, json\n`);
+    process.stderr.write(
+      `Error: Invalid format '${opts.format}'. Must be one of: ansi, html, json\n`,
+    );
     process.exit(1);
   }
-  
+
   // Validate vendor
   if (!['auto', 'claude', 'gemini', 'amp'].includes(opts.vendor)) {
-    process.stderr.write(`Error: Invalid vendor '${opts.vendor}'. Must be one of: auto, claude, gemini, amp\n`);
+    process.stderr.write(
+      `Error: Invalid vendor '${opts.vendor}'. Must be one of: auto, claude, gemini, amp\n`,
+    );
     process.exit(1);
   }
-  
+
   // Setup output stream
-  const output = opts.output 
-    ? createWriteStream(opts.output)
-    : process.stdout;
-  
+  const output = opts.output ? createWriteStream(opts.output) : process.stdout;
+
   // Setup event filtering
   let eventFilter: Set<string> | undefined;
   if (opts.only) {
@@ -148,12 +162,14 @@ Vendor auto-detection:
     const validTypes = new Set(['msg', 'tool', 'cost', 'error', 'debug']);
     for (const type of eventFilter) {
       if (!validTypes.has(type)) {
-        process.stderr.write(`Error: Invalid event type '${type}'. Valid types: ${Array.from(validTypes).join(', ')}\n`);
+        process.stderr.write(
+          `Error: Invalid event type '${type}'. Valid types: ${Array.from(validTypes).join(', ')}\n`,
+        );
         process.exit(1);
       }
     }
   }
-  
+
   // Setup render options
   const renderOptions: RenderOptions = {
     format: opts.format as 'ansi' | 'html' | 'json',
@@ -162,20 +178,20 @@ Vendor auto-detection:
     hideCost: opts.hideCost,
     hideDebug: opts.hideDebug,
     // Use compact mode for JSON to ensure JSONL output
-    compactMode: opts.format === 'json'
+    compactMode: opts.format === 'json',
   };
-  
+
   // Add HTML document wrapper for HTML output
   if (opts.format === 'html') {
     output.write(HTML_DOCUMENT_START);
   }
-  
+
   try {
     // Create input stream
-    const source = inputFile 
+    const source = inputFile
       ? createReadStream(inputFile, { encoding: 'utf8' })
       : process.stdin;
-    
+
     // Stream with formatting
     const formatOptions: ExtendedStreamFormatOptions = {
       vendor: opts.vendor as Vendor,
@@ -183,26 +199,29 @@ Vendor auto-detection:
       format: opts.format as 'ansi' | 'html' | 'json',
       renderOptions,
       eventFilter,
-      emitDebugEvents: !opts.hideDebug
+      emitDebugEvents: !opts.hideDebug,
     };
-    
+
     for await (const formatted of streamFormat(formatOptions)) {
       output.write(formatted);
     }
-    
   } catch (error) {
     if (opts.format === 'html') {
       // Write error in HTML format
-      output.write(`<div class="error-message">Error: ${error instanceof Error ? error.message : String(error)}</div>`);
+      output.write(
+        `<div class="error-message">Error: ${error instanceof Error ? error.message : String(error)}</div>`,
+      );
     } else {
-      process.stderr.write(`\nError: ${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(
+        `\nError: ${error instanceof Error ? error.message : String(error)}\n`,
+      );
     }
     process.exit(1);
   } finally {
     if (opts.format === 'html') {
       output.write(HTML_DOCUMENT_END);
     }
-    
+
     if (opts.output) {
       output.end();
     }
@@ -212,7 +231,9 @@ Vendor auto-detection:
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(error => {
-    process.stderr.write(`Fatal error: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `Fatal error: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
     process.exit(1);
   });
 }

@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/carl/agent-stream-fmt#readme
+    about: Check the README for usage examples and API documentation
+  - name: 💬 Discussions
+    url: https://github.com/carl/agent-stream-fmt/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🤝 Contributing Guide
+    url: https://github.com/carl/agent-stream-fmt/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to the project
+  - name: 🗺️ Project Roadmap
+    url: https://github.com/carl/agent-stream-fmt/projects
+    about: View the project roadmap and planned features

@@ -1,6 +1,6 @@
 /**
  * JSON renderer implementation
- * 
+ *
  * Outputs events as JSON, either as individual JSON lines or pretty-printed.
  * This renderer is useful for processing output programmatically or for
  * debugging purposes.
@@ -11,6 +11,33 @@ import type { Renderer, RenderOptions, RenderContext } from './types.js';
 
 /**
  * JSON renderer that outputs events as JSON strings
+ *
+ * Provides raw JSON output of AgentEvents, useful for programmatic
+ * processing, logging, or integration with other tools. Supports
+ * both compact and pretty-printed output.
+ *
+ * @example
+ * ```typescript
+ * // Compact JSON output
+ * const renderer = new JsonRenderer({
+ *   pretty: false
+ * });
+ *
+ * // Pretty-printed JSON
+ * const prettyRenderer = new JsonRenderer({
+ *   pretty: true
+ * });
+ *
+ * // Stream to JSONL file
+ * const output = fs.createWriteStream('events.jsonl');
+ * for (const event of events) {
+ *   const json = renderer.render(event);
+ *   if (json) output.write(json);
+ * }
+ * ```
+ *
+ * @category Renderers
+ * @since 0.1.0
  */
 export class JsonRenderer implements Renderer {
   private readonly options: RenderOptions;
@@ -20,15 +47,15 @@ export class JsonRenderer implements Renderer {
   constructor(options: Partial<RenderOptions> = {}) {
     this.options = {
       format: 'json',
-      ...options
+      ...options,
     };
-    
+
     this.context = {
       toolStack: new Map(),
       messageCount: 0,
-      renderStartTime: Date.now()
+      renderStartTime: Date.now(),
     };
-    
+
     // Enable pretty printing if compact mode is disabled
     this.prettyPrint = !this.options.compactMode;
   }
@@ -64,7 +91,7 @@ export class JsonRenderer implements Renderer {
   renderBatch(events: AgentEvent[]): string {
     // Filter events
     const filteredEvents = events.filter(event => !this.shouldHideEvent(event));
-    
+
     if (filteredEvents.length === 0) {
       return '';
     }
@@ -76,7 +103,7 @@ export class JsonRenderer implements Renderer {
     const eventsWithMetadata = this.options.showTimestamps
       ? filteredEvents.map(event => ({
           ...event,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }))
       : filteredEvents;
 
@@ -85,9 +112,10 @@ export class JsonRenderer implements Renderer {
       return JSON.stringify(eventsWithMetadata, null, 2) + '\n';
     } else {
       // In compact mode, still output as JSONL (one per line) for streaming
-      return eventsWithMetadata
-        .map(event => JSON.stringify(event))
-        .join('\n') + (eventsWithMetadata.length > 0 ? '\n' : '');
+      return (
+        eventsWithMetadata.map(event => JSON.stringify(event)).join('\n') +
+        (eventsWithMetadata.length > 0 ? '\n' : '')
+      );
     }
   }
 
@@ -133,7 +161,7 @@ export class JsonRenderer implements Renderer {
           name: event.name,
           startTime: Date.now(),
           outputLines: [],
-          collapsed: false
+          collapsed: false,
         });
       } else if (event.phase === 'end') {
         this.context.toolStack.delete(event.name);

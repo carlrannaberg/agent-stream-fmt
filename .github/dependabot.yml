@@ -1,0 +1,80 @@
+# Dependabot configuration for automated dependency updates
+# This config provides weekly updates with grouped dev dependencies to manage PR volume
+version: 2
+
+updates:
+  # Production dependencies - updated individually for careful review
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'yourusername' # Replace with actual GitHub username
+    assignees:
+      - 'yourusername' # Replace with actual GitHub username
+    commit-message:
+      prefix: 'deps'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'production'
+    ignore:
+      # Ignore major version updates for production dependencies to prevent breaking changes
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  # Development dependencies - grouped together for efficient review
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'tuesday'
+      time: '09:00'
+    open-pull-requests-limit: 3
+    groups:
+      dev-dependencies:
+        patterns:
+          - '@types/*'
+          - '@vitest/*'
+          - 'husky'
+          - 'lint-staged'
+          - 'tsup'
+          - 'tsx'
+          - 'typedoc*'
+          - 'typescript'
+          - 'vitest'
+        update-types:
+          - 'minor'
+          - 'patch'
+    reviewers:
+      - 'yourusername' # Replace with actual GitHub username
+    assignees:
+      - 'yourusername' # Replace with actual GitHub username
+    commit-message:
+      prefix: 'deps(dev)'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'development'
+    # Allow major updates for dev dependencies since they're less risky
+    ignore: []
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'wednesday'
+      time: '09:00'
+    open-pull-requests-limit: 2
+    reviewers:
+      - 'yourusername' # Replace with actual GitHub username
+    commit-message:
+      prefix: 'ci'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'github-actions'

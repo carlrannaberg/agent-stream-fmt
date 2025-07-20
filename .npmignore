@@ -1,0 +1,34 @@
+# Source files
+src/
+tests/
+benchmarks/
+specs/
+scripts/
+examples/src/
+
+# Config files
+.github/
+.vscode/
+.claude/
+tsconfig.json
+vitest.config.ts
+.eslintrc.json
+.prettierrc
+
+# Development files
+*.log
+*.tgz
+.DS_Store
+temp/
+coverage/
+.nyc_output/
+
+# Documentation source
+docs/src/
+CONTRIBUTING.md
+
+# Keep these
+!dist/
+!README.md
+!LICENSE
+!CHANGELOG.md
