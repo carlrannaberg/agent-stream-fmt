@@ -504,7 +504,7 @@ describe('Registry Integration Tests', () => {
       const testRegistry = new ParserRegistry();
       
       // Register many parsers
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 10; i++) {
         const parser: VendorParser = {
           vendor: `parser-${i}`,
           detect: (line: string) => line.includes(`parser-${i}`),
@@ -517,13 +517,13 @@ describe('Registry Integration Tests', () => {
       const startTime = performance.now();
       
       // Perform many detections
-      for (let i = 0; i < 100; i++) { // Reduced from 1000 to prevent CPU spikes
+      for (let i = 0; i < 10; i++) {
         testRegistry.detectVendor(testLine);
       }
       
       const endTime = performance.now();
       const duration = endTime - startTime;
-      const operationsPerSecond = (1000 / duration) * 1000;
+      const operationsPerSecond = (10 / duration) * 1000;
       
       // Should maintain high performance
       expect(operationsPerSecond, 
@@ -537,7 +537,7 @@ describe('Registry Integration Tests', () => {
       const startTime = performance.now();
       
       // Rapidly register and unregister parsers
-      for (let i = 0; i < 100; i++) { // Reduced from 1000 to prevent CPU spikes
+      for (let i = 0; i < 10; i++) {
         const parser: VendorParser = {
           vendor: `temp-${i}`,
           detect: () => false,

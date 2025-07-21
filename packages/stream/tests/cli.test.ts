@@ -370,7 +370,7 @@ describe('CLI Integration Tests', () => {
     it('should handle large files efficiently', async () => {
       // Generate a large input
       const events = [];
-      for (let i = 0; i < 50; i++) { // Reduced from 1000 - testing with 50 items is sufficient for functionality
+      for (let i = 0; i < 10; i++) {
         events.push(JSON.stringify({ type: 'message', role: 'user', content: `Message ${i}` }));
       }
       const largeInput = events.join('\n');

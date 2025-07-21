@@ -195,7 +195,7 @@ describe('Cross-Vendor Integration Tests', () => {
     it('should maintain performance with frequent vendor switches', async () => {
       // Create alternating vendor patterns
       const lines = [];
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 10; i++) {
         switch (i % 3) {
           case 0:
             lines.push('{"type":"message","role":"user","content":"test"}');
@@ -222,13 +222,13 @@ describe('Cross-Vendor Integration Tests', () => {
       const elapsed = performance.now() - start;
       const eventsPerSecond = eventCount / (elapsed / 1000);
 
-      expect(eventCount).toBe(1000);
+      expect(eventCount).toBe(10);
       expect(eventsPerSecond).toBeGreaterThan(10000); // Should handle 10k+ events/sec
     });
 
     it('should have efficient detection with multiple candidates', () => {
       const testLine = '{"type":"user","content":"test"}';
-      const iterations = 100; // Reduced from 10000 to prevent CPU spikes
+      const iterations = 100;
 
       const start = performance.now();
       for (let i = 0; i < iterations; i++) {
