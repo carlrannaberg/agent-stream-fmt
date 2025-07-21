@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import { createReadStream, createWriteStream } from 'fs';
+import { createReadStream, createWriteStream, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { streamFormat } from './stream.js';
 import type { ExtendedStreamFormatOptions } from './stream.js';
 import { Vendor } from './types.js';
@@ -47,6 +49,14 @@ const HTML_DOCUMENT_END = `
 </html>
 `;
 
+// Get package version
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8')
+);
+const packageVersion = packageJson.version;
+
 interface CliOptions {
   vendor: string;
   format: string;
@@ -68,7 +78,7 @@ async function main() {
     .description(
       'Format JSONL output from AI agent CLIs with beautiful terminal and HTML rendering',
     )
-    .version('0.1.0')
+    .version(packageVersion)
     .argument('[file]', 'input JSONL file (default: stdin)')
     .option(
       '-v, --vendor <type>',
