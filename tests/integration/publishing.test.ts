@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import { existsSync, readFileSync, mkdirSync, rmSync, statSync, readdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import * as tar from 'tar';
+import { getSharedSetup, getRootDir, type IntegrationSetupResults } from './shared-setup.js';
 
 /**
  * Integration tests for publishing workflow simulation
@@ -10,7 +11,7 @@ import * as tar from 'tar';
  */
 
 describe('Publishing Simulation', () => {
-  const rootDir = join(__dirname, '../..');
+  const rootDir = getRootDir();
   const tempDir = join(rootDir, 'temp/publishing-test');
   const packages = [
     { name: '@agent-io/core', dir: 'packages/core' },
@@ -18,8 +19,9 @@ describe('Publishing Simulation', () => {
     { name: '@agent-io/stream', dir: 'packages/stream' },
     { name: '@agent-io/invoke', dir: 'packages/invoke' }
   ];
+  let setupResults: IntegrationSetupResults;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Tests will use cwd option in execSync instead of process.chdir
     // since process.chdir is not supported in Vitest workers
     
@@ -29,17 +31,13 @@ describe('Publishing Simulation', () => {
     }
     mkdirSync(tempDir, { recursive: true });
 
-    // Ensure packages are built
-    try {
-      execSync('npm run build:packages', {
-        cwd: rootDir,
-        stdio: 'pipe',
-        timeout: 60000
-      });
-    } catch (error) {
-      console.warn('Build failed during setup, continuing with existing builds');
+    // Use shared setup that caches build across all integration tests
+    setupResults = await getSharedSetup();
+    
+    if (!setupResults.buildPassed) {
+      throw new Error('Shared setup build failed - publishing tests require successful build');
     }
-  });
+  }, 120000);
 
   afterAll(() => {
     // Clean up temp directory
@@ -71,6 +69,7 @@ describe('Publishing Simulation', () => {
           const stats = statSync(packagePath);
           expect(stats.size).toBeGreaterThan(0);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error(`Failed to pack ${pkg.name}:`, error);
           throw error;
         }
@@ -84,11 +83,13 @@ describe('Publishing Simulation', () => {
         const packagePath = join(tempDir, packageFile);
         const extractDir = join(tempDir, packageFile.replace('.tgz', '-extracted'));
         
-        // Extract package to verify contents
+        // Create extraction directory and extract package to verify contents
+        if (!existsSync(extractDir)) {
+          mkdirSync(extractDir, { recursive: true });
+        }
         await tar.extract({
           file: packagePath,
-          cwd: tempDir,
-          prefix: packageFile.replace('.tgz', '-extracted')
+          cwd: extractDir
         });
 
         const packageContents = join(extractDir, 'package');
@@ -241,6 +242,7 @@ describe('Publishing Simulation', () => {
           const installedPackages = readdirSync(join(testInstallDir, 'node_modules'));
           expect(installedPackages.length).toBeGreaterThan(0);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Local installation failed:', error);
           throw error;
         }
@@ -251,6 +253,9 @@ describe('Publishing Simulation', () => {
       // This test would require creating a more complex test setup
       // For now, we verify that packages have correct entry points
       
+      // Ensure build completed successfully before checking entry points
+      expect(setupResults.buildPassed, 'Build must pass before checking entry points').toBe(true);
+      
       for (const pkg of packages) {
         const packageJsonPath = join(rootDir, pkg.dir, 'package.json');
         if (!existsSync(packageJsonPath)) continue;
@@ -260,6 +265,29 @@ describe('Publishing Simulation', () => {
         // Verify entry points exist in built package
         if (packageJson.main) {
           const mainPath = join(rootDir, pkg.dir, packageJson.main);
+          
+          // If main entry doesn't exist, try to rebuild the specific package
+          if (!existsSync(mainPath)) {
+            const distDir = join(rootDir, pkg.dir, 'dist');
+            const distExists = existsSync(distDir);
+            
+            if (!distExists) {
+              // eslint-disable-next-line no-console
+              console.warn(`Dist directory missing for ${pkg.name}, attempting rebuild...`);
+              try {
+                // Run build for this specific package
+                execSync(`npm run build --workspace ${pkg.name}`, {
+                  cwd: rootDir,
+                  stdio: 'pipe',
+                  timeout: 30000
+                });
+              } catch (buildError) {
+                // eslint-disable-next-line no-console
+                console.error(`Failed to rebuild ${pkg.name}:`, buildError);
+              }
+            }
+          }
+          
           expect(existsSync(mainPath), `${pkg.name} main entry should exist`).toBe(true);
         }
 
@@ -307,6 +335,7 @@ describe('Publishing Simulation', () => {
         } catch (error) {
           // Check if it's a real error or just a warning
           if (error instanceof Error && error.message.includes('npm ERR!')) {
+            // eslint-disable-next-line no-console
             console.error(`Publish dry-run failed for ${pkg.name}:`, error.message);
             throw error;
           }

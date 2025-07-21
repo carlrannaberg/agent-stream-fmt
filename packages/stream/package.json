@@ -19,7 +19,6 @@
   },
   "files": [
     "dist",
-    "src",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -32,7 +31,7 @@
     "lint:fix": "eslint src tests --ext .ts --fix",
     "format": "prettier --write \"src/**/*.{ts,json}\" \"tests/**/*.{ts,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,json}\" \"tests/**/*.{ts,json}\"",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage --run",
     "test:integration": "vitest run tests/comprehensive-integration.test.ts tests/registry-integration.test.ts",

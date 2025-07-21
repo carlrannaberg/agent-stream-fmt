@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, lstatSync } from 'fs';
 import { join } from 'path';
+import { getSharedSetup, getPackages, getRootDir, type IntegrationSetupResults } from './shared-setup.js';
 
 /**
  * Integration tests for workspace installation and management
@@ -9,35 +10,33 @@ import { join } from 'path';
  */
 
 describe('Workspace Installation', () => {
-  const rootDir = join(__dirname, '../..');
-  const packageDirs = [
-    'packages/core',
-    'packages/jsonl', 
-    'packages/stream',
-    'packages/invoke'
-  ];
+  const rootDir = getRootDir();
+  const packageDirs = getPackages().map(pkg => `packages/${pkg}`);
+  let _setupResults: IntegrationSetupResults;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Use shared setup that caches build across all integration tests
+    _setupResults = await getSharedSetup();
     // Tests will use cwd option in execSync instead of process.chdir
     // since process.chdir is not supported in Vitest workers
-  });
+  }, 120000);
 
   describe('Package Discovery', () => {
     it('should detect all workspace packages', () => {
-      const result = execSync('npm ls --workspaces --depth=0 --json', { 
+      const result = execSync('npm ls --workspaces --json', { 
         encoding: 'utf8',
         cwd: rootDir 
       });
       
       const workspaceInfo = JSON.parse(result);
-      expect(workspaceInfo.workspaces).toBeDefined();
+      expect(workspaceInfo.dependencies).toBeDefined();
       
-      // Verify all expected packages are present
-      const workspaceNames = Object.keys(workspaceInfo.workspaces || {});
-      expect(workspaceNames).toContain('@agent-io/core');
-      expect(workspaceNames).toContain('@agent-io/jsonl');
-      expect(workspaceNames).toContain('@agent-io/stream');
-      expect(workspaceNames).toContain('@agent-io/invoke');
+      // Verify all expected packages are present in dependencies
+      const dependencyNames = Object.keys(workspaceInfo.dependencies || {});
+      expect(dependencyNames).toContain('@agent-io/core');
+      expect(dependencyNames).toContain('@agent-io/jsonl');
+      expect(dependencyNames).toContain('@agent-io/stream');
+      expect(dependencyNames).toContain('@agent-io/invoke');
     });
 
     it('should have valid package.json files for all packages', () => {

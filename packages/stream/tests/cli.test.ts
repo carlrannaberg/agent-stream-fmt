@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { spawn } from 'child_process';
-import { readFileSync, unlinkSync } from 'fs';
+import { readFileSync, unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 
@@ -265,7 +265,9 @@ describe('CLI Integration Tests', () => {
       expect(output).toContain('user:');
       
       // Clean up
-      unlinkSync(outputPath);
+      if (existsSync(outputPath)) {
+        unlinkSync(outputPath);
+      }
     });
 
     it('should write to file with -o flag', async () => {
@@ -281,7 +283,9 @@ describe('CLI Integration Tests', () => {
       expect(output.length).toBeGreaterThan(0);
       
       // Clean up
-      unlinkSync(outputPath);
+      if (existsSync(outputPath)) {
+        unlinkSync(outputPath);
+      }
     });
   });
 

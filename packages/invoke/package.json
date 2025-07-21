@@ -14,8 +14,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",
@@ -27,8 +26,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,json}\""
   },
   "dependencies": {
-    "@agent-io/core": "^0.2.0",
-    "@agent-io/stream": "^1.0.0"
+    "@agent-io/core": "^0.1.0",
+    "@agent-io/stream": "^0.1.0"
   },
   "keywords": [
     "agent-io",

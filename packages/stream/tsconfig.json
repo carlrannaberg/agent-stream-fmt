@@ -9,7 +9,6 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "composite": true,
     "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["ES2022"],
@@ -17,9 +16,5 @@
     "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"],
-  "references": [
-    { "path": "../core" },
-    { "path": "../jsonl" }
-  ]
+  "exclude": ["node_modules", "dist", "tests"]
 }

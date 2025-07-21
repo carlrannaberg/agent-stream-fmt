@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
+import { getSharedSetup, getPackages, getRootDir, type IntegrationSetupResults } from './shared-setup.js';
 
 /**
  * Integration tests for build process across all packages
@@ -9,34 +10,24 @@ import { join } from 'path';
  */
 
 describe('Build Process Integration', () => {
-  const rootDir = join(__dirname, '../..');
-  const packages = [
-    { name: 'core', dir: 'packages/core' },
-    { name: 'jsonl', dir: 'packages/jsonl' },
-    { name: 'stream', dir: 'packages/stream' },
-    { name: 'invoke', dir: 'packages/invoke' }
-  ];
-  
-  let hasBuilt = false;
+  const rootDir = getRootDir();
+  const packages = getPackages().map(name => ({ name, dir: `packages/${name}` }));
+  let _setupResults: IntegrationSetupResults;
 
   beforeAll(async () => {
-    // Build once for all tests to use
-    if (!hasBuilt) {
-      try {
-        execSync('npm run build:packages', {
-          cwd: rootDir,
-          stdio: 'pipe',
-          timeout: 120000
-        });
-        hasBuilt = true;
-      } catch (error) {
-        console.error('Initial build failed:', error);
-        throw error;
-      }
-    }
+    // Use shared setup that caches build across all integration tests
+    _setupResults = await getSharedSetup();
   }, 120000);
 
   describe('Clean Build Process', () => {
+    it('should have built all packages in correct order', () => {
+      // Verify all packages have dist directories from the beforeAll build
+      for (const pkg of packages) {
+        const distPath = join(rootDir, pkg.dir, 'dist');
+        expect(existsSync(distPath), `${pkg.name} should have dist directory after build`).toBe(true);
+      }
+    });
+
     it('should clean all packages successfully', () => {
       try {
         execSync('npm run clean', {
@@ -56,13 +47,18 @@ describe('Build Process Integration', () => {
         const distPath = join(rootDir, pkg.dir, 'dist');
         expect(existsSync(distPath), `${pkg.name} dist should be cleaned`).toBe(false);
       }
-    });
 
-    it('should have built all packages in correct order', () => {
-      // Verify all packages have dist directories from the beforeAll build
-      for (const pkg of packages) {
-        const distPath = join(rootDir, pkg.dir, 'dist');
-        expect(existsSync(distPath), `${pkg.name} should have dist directory after build`).toBe(true);
+      // Rebuild after clean for subsequent tests
+      try {
+        execSync('npm run build:packages', {
+          cwd: rootDir,
+          stdio: 'pipe',
+          timeout: 120000
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Rebuild after clean failed:', error);
+        throw error;
       }
     });
 
