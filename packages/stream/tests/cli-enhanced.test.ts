@@ -11,10 +11,15 @@ vi.mock('../src/stream.js', () => ({
 }));
 
 // Mock fs module
-vi.mock('fs', () => ({
-  createReadStream: vi.fn(),
-  createWriteStream: vi.fn()
-}));
+vi.mock('fs', async () => {
+  const actual = await vi.importActual<typeof import('fs')>('fs');
+  return {
+    ...actual,
+    createReadStream: vi.fn(),
+    createWriteStream: vi.fn(),
+    readFileSync: actual.readFileSync
+  };
+});
 
 describe('Enhanced CLI', () => {
   let mockStdoutWrite: any;
