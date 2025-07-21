@@ -55,13 +55,13 @@ npm install @agent-io/stream    # Full formatter
 
 ```bash
 # Auto-detect format and display in terminal
-claude --json "explain recursion" | agent-stream-fmt
+claude --output-format stream-json -p "explain recursion" | aio-stream
 
 # Specify vendor and filter output
-gemini --jsonl -i task.md | agent-stream-fmt --vendor gemini --hide-tools
+gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
 
 # Generate HTML report
-amp-code run build.yml -j | agent-stream-fmt --html > report.html
+amp-code run build.yml -j | aio-stream --html > report.html
 ```
 
 ### Programmatic Usage

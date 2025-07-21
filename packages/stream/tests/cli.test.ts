@@ -256,14 +256,15 @@ describe('CLI Integration Tests', () => {
   describe('Output Options', () => {
     it('should write to file with --output flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      const outputPath = join(__dirname, 'temp-test-output.txt');
-      // CLI runs from package root, so tell it the relative path from there
-      const cliOutputPath = 'tests/temp-test-output.txt';
+      // Use process.cwd() to ensure we write to a consistent location
+      const outputPath = join(process.cwd(), 'temp-test-output.txt');
       
-      const { exitCode, stdout, stderr } = await runCLI(['--output', cliOutputPath], input);
+      const { exitCode, stdout, stderr } = await runCLI(['--output', outputPath], input);
 
       expect(exitCode).toBe(0);
       expect(stderr).toBe('');
+      // When using --output, stdout should be empty
+      expect(stdout).toBe('');
       
       // Wait for file to be fully written and process to complete
       // Increase timeout and add retry logic for CI environments
@@ -277,7 +278,7 @@ describe('CLI Integration Tests', () => {
       // Check if file exists after retries
       if (!existsSync(outputPath)) {
         const cliPath = join(__dirname, '..', 'dist', 'cli.js');
-        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, outputPath: ${outputPath}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
       }
       
       // Check file was created and has content
@@ -321,7 +322,7 @@ describe('CLI Integration Tests', () => {
       // Check if file exists after retries
       if (!existsSync(outputPath)) {
         const cliPath = join(__dirname, '..', 'dist', 'cli.js');
-        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, outputPath: ${outputPath}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
       }
       
       // Check file was created and has content

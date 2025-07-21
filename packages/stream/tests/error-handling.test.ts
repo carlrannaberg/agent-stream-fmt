@@ -236,21 +236,29 @@ describe('Comprehensive Error Handling Tests', () => {
     it('handles events with missing required fields', () => {
       const parser = selectParser('claude');
       
-      const incompleteEvents = [
-        '{"type":"message"}', // Missing role and content
-        '{"type":"message","role":"assistant"}', // Missing content
-        '{"type":"message","content":"test"}', // Missing role
-        '{"type":"tool_use"}', // Missing id and name
-        '{"type":"tool_use","id":"123"}', // Missing name
-        '{"type":"tool_result"}', // Missing tool_use_id
-        '{"type":"usage"}', // Missing token counts
+      // Test incomplete events that would still be recognized as Claude format
+      const incompleteClaudeEvents = [
+        '{"type":"message","role":"assistant"}', // Missing content but has role
+        '{"type":"message","role":"user","content":""}', // Empty content
+        '{"type":"tool_use"}', // Tool use type is Claude-specific
+        '{"type":"tool_result"}', // Tool result type is Claude-specific
+        '{"type":"usage"}', // Usage type is Claude-specific
       ];
       
-      for (const incompleteEvent of incompleteEvents) {
+      for (const incompleteEvent of incompleteClaudeEvents) {
+        // These should be detected as Claude because they have Claude-specific types
         const detected = detectVendor(incompleteEvent);
-        expect(detected?.vendor, `Incomplete event should be detected: ${incompleteEvent}`).toBe('claude');
+        if (incompleteEvent.includes('"type":"message"')) {
+          // Message events need role field to be detected as Claude
+          if (incompleteEvent.includes('"role"')) {
+            expect(detected?.vendor, `Should detect Claude: ${incompleteEvent}`).toBe('claude');
+          }
+        } else {
+          // tool_use, tool_result, usage are Claude-specific
+          expect(detected?.vendor, `Should detect Claude: ${incompleteEvent}`).toBe('claude');
+        }
         
-        // Should parse without throwing (Claude parser handles missing fields)
+        // Should parse without throwing (Claude parser handles missing fields gracefully)
         const events = parser.parse(incompleteEvent);
         expect(events).toBeInstanceOf(Array);
         
@@ -261,6 +269,18 @@ describe('Comprehensive Error Handling Tests', () => {
         } else {
           expect(events.length).toBeGreaterThan(0);
         }
+      }
+      
+      // Test truly ambiguous events that shouldn't be detected as any vendor
+      const ambiguousEvents = [
+        '{"type":"message"}', // Too generic
+        '{"type":"message","content":"test"}', // Could be any vendor
+      ];
+      
+      for (const ambiguousEvent of ambiguousEvents) {
+        const detected = detectVendor(ambiguousEvent);
+        // These shouldn't be detected as Claude (or any vendor)
+        expect(detected, `Should not detect vendor: ${ambiguousEvent}`).toBeNull();
       }
     });
   });

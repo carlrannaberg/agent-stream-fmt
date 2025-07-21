@@ -94,5 +94,8 @@
     "tsup": "8.5.0",
     "typescript": "^5.0.0",
     "vitest": "1.6.1"
+  },
+  "dependencies": {
+    "@agent-io/stream": "0.1.1"
   }
 }

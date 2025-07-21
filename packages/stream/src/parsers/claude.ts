@@ -37,14 +37,36 @@ export class ClaudeParser implements VendorParser {
     try {
       const obj = JSON.parse(line);
       
-      // Claude events always have a 'type' field with specific values
-      return typeof obj.type === 'string' && (
-        obj.type === 'message' ||
-        obj.type === 'tool_use' ||
-        obj.type === 'tool_result' ||
-        obj.type === 'usage' ||
-        obj.type === 'error'
-      );
+      // Claude has two formats:
+      // 1. Claude Code stream-json: has 'message' property with nested structure
+      // 2. Legacy format: direct type fields like 'message', 'tool_use', etc.
+      
+      if (typeof obj.type === 'string') {
+        // Claude Code stream-json format
+        if (obj.type === 'system' && 'subtype' in obj) {
+          // System initialization event
+          return true;
+        }
+        
+        // Check for nested message structure
+        if ((obj.type === 'assistant' || obj.type === 'user') && 
+            obj.message && typeof obj.message === 'object') {
+          return true;
+        }
+        
+        // Legacy format with specific Claude event types
+        if (obj.type === 'message' && 'role' in obj) {
+          // Message with role field is Claude format (content is optional)
+          return true;
+        }
+        
+        if (obj.type === 'tool_use' || obj.type === 'tool_result' || 
+            obj.type === 'usage' || obj.type === 'error') {
+          return true;
+        }
+      }
+      
+      return false;
     } catch {
       return false;
     }
@@ -95,6 +117,68 @@ export class ClaudeParser implements VendorParser {
     }
     
     switch (record.type) {
+      // Claude Code stream-json format
+      case 'system':
+        // System events are metadata, emit as debug
+        events.push({
+          t: 'debug',
+          raw: obj
+        });
+        break;
+        
+      case 'assistant':
+      case 'user':
+        // Claude Code wraps messages in a message property
+        if (record.message && typeof record.message === 'object') {
+          const msg = record.message as Record<string, unknown>;
+          if (msg.content && Array.isArray(msg.content)) {
+            // Process each content item
+            for (const content of msg.content) {
+              if (typeof content === 'object' && content !== null) {
+                const c = content as Record<string, unknown>;
+                
+                if (c.type === 'text' && typeof c.text === 'string') {
+                  // Text message
+                  events.push({
+                    t: 'msg',
+                    role: msg.role as 'user' | 'assistant' | 'system' || record.type as 'user' | 'assistant',
+                    text: c.text
+                  });
+                } else if (c.type === 'tool_use') {
+                  // Tool use (start)
+                  events.push({
+                    t: 'tool',
+                    name: String(c.name || 'unknown'),
+                    phase: 'start'
+                  });
+                } else if (c.type === 'tool_result') {
+                  // Tool result (end)
+                  const exitCode = typeof c.exit_code === 'number' ? c.exit_code : 0;
+                  const text = typeof c.content === 'string' ? c.content : '';
+                  
+                  if (text) {
+                    events.push({
+                      t: 'tool',
+                      name: 'unknown', // We don't have the tool name in the result
+                      phase: 'stdout',
+                      text
+                    });
+                  }
+                  
+                  events.push({
+                    t: 'tool',
+                    name: 'unknown',
+                    phase: 'end',
+                    exitCode
+                  });
+                }
+              }
+            }
+          }
+        }
+        break;
+        
+      // Legacy format support
       case 'message':
         events.push(this.parseMessage(record));
         break;

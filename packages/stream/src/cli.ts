@@ -183,7 +183,14 @@ Vendor auto-detection:
 
   // Add HTML document wrapper for HTML output
   if (opts.format === 'html') {
-    output.write(HTML_DOCUMENT_START);
+    try {
+      output.write(HTML_DOCUMENT_START);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {
+        process.exit(0);
+      }
+      throw error;
+    }
   }
 
   try {
@@ -203,7 +210,15 @@ Vendor auto-detection:
     };
 
     for await (const formatted of streamFormat(formatOptions)) {
-      output.write(formatted);
+      try {
+        output.write(formatted);
+      } catch (error) {
+        // Handle EPIPE errors gracefully - the output pipe was closed
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {
+          process.exit(0);
+        }
+        throw error;
+      }
     }
   } catch (error) {
     if (opts.format === 'html') {
@@ -219,18 +234,55 @@ Vendor auto-detection:
     process.exit(1);
   } finally {
     if (opts.format === 'html') {
-      output.write(HTML_DOCUMENT_END);
+      try {
+        output.write(HTML_DOCUMENT_END);
+      } catch (error) {
+        // Ignore EPIPE errors in cleanup
+        if (error && typeof error === 'object' && 'code' in error && error.code !== 'EPIPE') {
+          console.error('Error writing HTML end:', error);
+        }
+      }
     }
 
     if (opts.output) {
-      output.end();
+      try {
+        output.end();
+      } catch (error) {
+        // Ignore EPIPE errors in cleanup
+        if (error && typeof error === 'object' && 'code' in error && error.code !== 'EPIPE') {
+          console.error('Error closing output file:', error);
+        }
+      }
     }
   }
 }
 
+// Handle SIGPIPE and EPIPE errors gracefully
+process.on('SIGPIPE', () => {
+  // Ignore SIGPIPE - this happens when the output pipe is closed
+  process.exit(0);
+});
+
+// Handle uncaught errors
+process.on('uncaughtException', (error: Error) => {
+  // EPIPE means the output pipe was closed (e.g., when piping to head or when the receiving process exits)
+  if (error && 'code' in error && error.code === 'EPIPE') {
+    process.exit(0);
+  }
+  // For other errors, log and exit
+  process.stderr.write(
+    `Uncaught error: ${error.message}\n`,
+  );
+  process.exit(1);
+});
+
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(error => {
+    // Handle EPIPE errors gracefully
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {
+      process.exit(0);
+    }
     process.stderr.write(
       `Fatal error: ${error instanceof Error ? error.message : String(error)}\n`,
     );
