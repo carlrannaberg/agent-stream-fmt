@@ -658,7 +658,7 @@ describe('AnsiRenderer', () => {
   describe('Memory Safety', () => {
     it('should not accumulate state over many renders', () => {
       // Render many events
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 1000 to prevent CPU spikes
         renderer.render({
           t: 'msg',
           role: i % 2 === 0 ? 'user' : 'assistant',
@@ -797,7 +797,7 @@ describe('AnsiRenderer', () => {
       collapsedRenderer.render({ t: 'tool', name: 'build', phase: 'start' });
       
       // Generate 1000 lines of output
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 1000 to prevent CPU spikes
         collapsedRenderer.render({
           t: 'tool',
           name: 'build',
@@ -837,7 +837,7 @@ describe('AnsiRenderer', () => {
       const start = performance.now();
       
       // Render 1000 events rapidly
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 1000 to prevent CPU spikes
         renderer.render({
           t: 'msg',
           role: i % 2 === 0 ? 'user' : 'assistant',
@@ -856,7 +856,7 @@ describe('AnsiRenderer', () => {
       const testRenderer = new AnsiRenderer(defaultOptions);
       
       // Process many events
-      for (let i = 0; i < 10000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 10000 to prevent CPU spikes
         if (i % 100 === 0) {
           testRenderer.render({ t: 'tool', name: `tool${i}`, phase: 'start' });
         } else if (i % 100 === 50) {

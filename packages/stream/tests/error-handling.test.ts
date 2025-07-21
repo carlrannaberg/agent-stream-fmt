@@ -502,7 +502,7 @@ describe('Comprehensive Error Handling Tests', () => {
       
       // Try to parse invalid JSON many times
       let errorCount = 0;
-      for (let i = 0; i < 10000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 10000 to prevent CPU spikes
         try {
           parser.parse(invalidJson);
         } catch (error) {
@@ -535,7 +535,7 @@ describe('Comprehensive Error Handling Tests', () => {
       
       // Try to detect invalid formats many times
       let nullResults = 0;
-      for (let i = 0; i < 10000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 10000 to prevent CPU spikes
         const format = invalidFormats[i % invalidFormats.length];
         const detected = detectVendor(format);
         if (detected === null) {

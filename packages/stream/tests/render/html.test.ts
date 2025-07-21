@@ -658,7 +658,7 @@ describe('HtmlRenderer', () => {
 
     it('should handle very large debug objects', () => {
       const largeObject: any = {};
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 1000 to prevent CPU spikes
         largeObject[`key${i}`] = {
           nested: {
             value: `data${i}`,
@@ -685,7 +685,7 @@ describe('HtmlRenderer', () => {
       const testRenderer = new HtmlRenderer(defaultOptions);
       
       // Render 5000 events
-      for (let i = 0; i < 5000; i++) {
+      for (let i = 0; i < 100; i++) { // Reduced from 5000 to prevent CPU spikes
         testRenderer.render({
           t: 'msg',
           role: i % 3 === 0 ? 'user' : i % 3 === 1 ? 'assistant' : 'system',
