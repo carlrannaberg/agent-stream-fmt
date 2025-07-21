@@ -320,7 +320,7 @@ describe('AmpParser', () => {
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
-          name: 123, // Parser passes through non-string values
+          name: 'unknown', // Parser normalizes non-string values to 'unknown'
           phase: 'start'
         });
       });
@@ -332,7 +332,7 @@ describe('AmpParser', () => {
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
-          name: true, // Parser passes through boolean values
+          name: 'unknown', // Parser normalizes boolean values to 'unknown'
           phase: 'stdout',
           text: 'test'
         });
@@ -345,7 +345,7 @@ describe('AmpParser', () => {
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
-          name: ["task1", "task2"], // Parser passes through array values
+          name: 'unknown', // Parser normalizes array values to 'unknown'
           phase: 'end',
           exitCode: 0
         });
@@ -358,7 +358,7 @@ describe('AmpParser', () => {
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
-          name: {"name": "build"}, // Parser passes through object values
+          name: 'unknown', // Parser normalizes object values to 'unknown'
           phase: 'start'
         });
       });
@@ -372,7 +372,7 @@ describe('AmpParser', () => {
           t: 'tool',
           name: 'log',
           phase: 'stdout',
-          text: 123 // Parser passes through non-string values
+          text: '' // Parser normalizes non-string content to empty string
         });
       });
     });

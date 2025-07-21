@@ -128,7 +128,7 @@ export class AmpParser implements VendorParser {
   private parseStart(obj: Record<string, unknown>): ToolEvent {
     return {
       t: 'tool',
-      name: typeof obj.task === 'string' ? obj.task : 'unknown',
+      name: typeof obj.task === 'string' && obj.task !== '' ? obj.task : 'unknown',
       phase: 'start'
     };
   }
@@ -146,7 +146,7 @@ export class AmpParser implements VendorParser {
     
     return {
       t: 'tool',
-      name: typeof obj.task === 'string' ? obj.task : 'unknown',
+      name: typeof obj.task === 'string' && obj.task !== '' ? obj.task : 'unknown',
       phase,
       text: typeof obj.content === 'string' ? obj.content : ''
     };
@@ -163,7 +163,7 @@ export class AmpParser implements VendorParser {
   private parseEnd(obj: Record<string, unknown>): ToolEvent {
     return {
       t: 'tool',
-      name: typeof obj.task === 'string' ? obj.task : 'unknown',
+      name: typeof obj.task === 'string' && obj.task !== '' ? obj.task : 'unknown',
       phase: 'end',
       exitCode: typeof obj.exitCode === 'number' ? obj.exitCode : 0
     };

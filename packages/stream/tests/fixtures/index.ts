@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
+import { Readable } from 'stream';
 
 /**
  * Stream package fixtures for testing
@@ -101,7 +102,6 @@ export function createFixture(content: string): {
 } {
   return {
     asStream: () => {
-      const { Readable } = require('stream');
       return Readable.from(content);
     },
     asLines: () => content.split('\n').filter(line => line.length > 0),
@@ -116,7 +116,7 @@ export const generate = {
   /**
    * Generates JSONL lines
    */
-  jsonlLines(count: number, template?: Record<string, any>): string[] {
+  jsonlLines(count: number, template?: Record<string, unknown>): string[] {
     const lines: string[] = [];
     for (let i = 0; i < count; i++) {
       const data = template ? { ...template, index: i } : { index: i, message: `Line ${i}` };
@@ -128,8 +128,8 @@ export const generate = {
   /**
    * Generates agent events
    */
-  agentEvents(count: number): any[] {
-    const events: any[] = [];
+  agentEvents(count: number): unknown[] {
+    const events: unknown[] = [];
     const types = ['msg', 'tool', 'cost', 'error'];
     
     for (let i = 0; i < count; i++) {

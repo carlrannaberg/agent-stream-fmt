@@ -14,7 +14,7 @@ async function runCLI(
   input?: string | Readable
 ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
   return new Promise((resolve, reject) => {
-    const cliPath = join(process.cwd(), 'dist', 'cli.js');
+    const cliPath = join(__dirname, '..', 'dist', 'cli.js');
     const child = spawn('node', [cliPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe']
     });
@@ -54,7 +54,7 @@ async function runCLI(
 
 // Helper to read fixture file
 function readFixture(vendor: string, filename: string): string {
-  const fixturePath = join(process.cwd(), 'tests', 'fixtures', vendor, filename);
+  const fixturePath = join(__dirname, '..', '..', '..', 'tests', 'fixtures', vendor, filename);
   return readFileSync(fixturePath, 'utf8');
 }
 
@@ -64,7 +64,7 @@ describe('CLI Integration Tests', () => {
       const { stdout, exitCode } = await runCLI(['--help']);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('agent-stream-fmt');
+      expect(stdout).toContain('aio-stream');
       expect(stdout).toContain('Usage:');
       expect(stdout).toContain('--vendor');
       expect(stdout).toContain('--format');
@@ -75,7 +75,7 @@ describe('CLI Integration Tests', () => {
       const { stdout, exitCode } = await runCLI(['-h']);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('agent-stream-fmt');
+      expect(stdout).toContain('aio-stream');
     });
 
     it('should show version with --version flag', async () => {
@@ -235,7 +235,7 @@ describe('CLI Integration Tests', () => {
 
   describe('File Input', () => {
     it('should read from file when provided as argument', async () => {
-      const filePath = join(process.cwd(), 'tests', 'fixtures', 'claude', 'basic-message.jsonl');
+      const filePath = join(__dirname, '..', '..', '..', 'tests', 'fixtures', 'claude', 'basic-message.jsonl');
       const { stdout, exitCode } = await runCLI([filePath]);
 
       expect(exitCode).toBe(0);
@@ -254,7 +254,7 @@ describe('CLI Integration Tests', () => {
   describe('Output Options', () => {
     it('should write to file with --output flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      const outputPath = join(process.cwd(), 'temp-test-output.txt');
+      const outputPath = join(__dirname, '..', 'temp-test-output.txt');
       
       const { exitCode } = await runCLI(['--output', outputPath], input);
 
@@ -270,7 +270,7 @@ describe('CLI Integration Tests', () => {
 
     it('should write to file with -o flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      const outputPath = join(process.cwd(), 'temp-test-output2.txt');
+      const outputPath = join(__dirname, '..', 'temp-test-output2.txt');
       
       const { exitCode } = await runCLI(['-o', outputPath], input);
 
