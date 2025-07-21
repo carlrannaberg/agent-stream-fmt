@@ -15,9 +15,10 @@ async function runCLI(
 ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
   return new Promise((resolve, reject) => {
     const cliPath = join(__dirname, '..', 'dist', 'cli.js');
+    const cwd = join(__dirname, '..');
     const child = spawn('node', [cliPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: join(__dirname, '..')  // Set working directory to package root
+      cwd // Set working directory to package root
     });
 
     let stdout = '';
@@ -255,9 +256,11 @@ describe('CLI Integration Tests', () => {
   describe('Output Options', () => {
     it('should write to file with --output flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      const outputPath = join(__dirname, '..', 'temp-test-output.txt');
+      const outputPath = join(__dirname, 'temp-test-output.txt');
+      // CLI runs from package root, so tell it the relative path from there
+      const cliOutputPath = 'tests/temp-test-output.txt';
       
-      const { exitCode, stdout, stderr } = await runCLI(['--output', outputPath], input);
+      const { exitCode, stdout, stderr } = await runCLI(['--output', cliOutputPath], input);
 
       expect(exitCode).toBe(0);
       
@@ -282,9 +285,11 @@ describe('CLI Integration Tests', () => {
 
     it('should write to file with -o flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      const outputPath = join(__dirname, '..', 'temp-test-output2.txt');
+      const outputPath = join(__dirname, 'temp-test-output2.txt');
+      // CLI runs from package root, so tell it the relative path from there
+      const cliOutputPath = 'tests/temp-test-output2.txt';
       
-      const { exitCode, stdout, stderr } = await runCLI(['-o', outputPath], input);
+      const { exitCode, stdout, stderr } = await runCLI(['-o', cliOutputPath], input);
 
       expect(exitCode).toBe(0);
       
