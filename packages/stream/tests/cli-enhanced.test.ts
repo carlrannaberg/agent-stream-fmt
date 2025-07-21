@@ -158,7 +158,10 @@ describe('Enhanced CLI', () => {
   it('should handle file output correctly', async () => {
     const mockWriteStream = {
       write: vi.fn(),
-      end: vi.fn()
+      end: vi.fn((cb?: (error?: Error | null) => void) => {
+        // Simulate successful stream end
+        if (cb) cb();
+      })
     };
     vi.mocked(fs.createWriteStream).mockReturnValue(mockWriteStream as any);
     

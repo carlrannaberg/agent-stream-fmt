@@ -256,8 +256,8 @@ describe('CLI Integration Tests', () => {
   describe('Output Options', () => {
     it('should write to file with --output flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      // Use process.cwd() to ensure we write to a consistent location
-      const outputPath = join(process.cwd(), 'temp-test-output.txt');
+      // Always use absolute path with unique timestamp to avoid conflicts
+      const outputPath = join(__dirname, '..', `temp-test-output-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
       
       const { exitCode, stdout, stderr } = await runCLI(['--output', outputPath], input);
 
@@ -301,11 +301,10 @@ describe('CLI Integration Tests', () => {
 
     it('should write to file with -o flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      const outputPath = join(__dirname, 'temp-test-output2.txt');
-      // CLI runs from package root, so tell it the relative path from there
-      const cliOutputPath = 'tests/temp-test-output2.txt';
+      // Always use absolute path with unique timestamp to avoid conflicts
+      const outputPath = join(__dirname, '..', `temp-test-output-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
       
-      const { exitCode, stdout, stderr } = await runCLI(['-o', cliOutputPath], input);
+      const { exitCode, stdout, stderr } = await runCLI(['-o', outputPath], input);
 
       expect(exitCode).toBe(0);
       expect(stderr).toBe('');
@@ -331,6 +330,10 @@ describe('CLI Integration Tests', () => {
       // If file is empty, wait a bit more and retry
       if (output.length === 0) {
         await new Promise(resolve => setTimeout(resolve, 500));
+        // Check if file still exists before trying to read again
+        if (!existsSync(outputPath)) {
+          throw new Error(`Output file disappeared after being created. This suggests a race condition.`);
+        }
         const retryOutput = readFileSync(outputPath, 'utf8');
         expect(retryOutput.length).toBeGreaterThan(0);
         expect(retryOutput).toContain('user:');

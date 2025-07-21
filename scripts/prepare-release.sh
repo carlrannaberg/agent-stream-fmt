@@ -149,7 +149,7 @@ get_current_versions() {
     PUBLISHED_STREAM=$(npm view "@agent-io/stream" version 2>/dev/null || echo "")
     if [ -n "$PUBLISHED_STREAM" ]; then
         echo "Latest published @agent-io/stream on NPM: $PUBLISHED_STREAM"
-        LAST_VERSION_TAG="v$PUBLISHED_STREAM"
+        LAST_VERSION_TAG="@agent-io/stream@$PUBLISHED_STREAM"
     else
         echo "@agent-io/stream not found on NPM registry"
         LAST_VERSION_TAG=""
@@ -224,10 +224,10 @@ pre_compute_release_data() {
     else
         echo "Last git tag: $LAST_TAG"
         # Warn if git tag doesn't match NPM version
-        if [ -n "$PUBLISHED_STREAM" ] && [ "$LAST_TAG" != "v$PUBLISHED_STREAM" ]; then
-            print_warning "Git tag ($LAST_TAG) doesn't match NPM version (v$PUBLISHED_STREAM)"
+        if [ -n "$PUBLISHED_STREAM" ] && [ "$LAST_TAG" != "@agent-io/stream@$PUBLISHED_STREAM" ]; then
+            print_warning "Git tag ($LAST_TAG) doesn't match NPM version (@agent-io/stream@$PUBLISHED_STREAM)"
             echo "Using NPM version as the reference for changes"
-            LAST_TAG="v$PUBLISHED_STREAM"
+            LAST_TAG="@agent-io/stream@$PUBLISHED_STREAM"
         fi
     fi
 

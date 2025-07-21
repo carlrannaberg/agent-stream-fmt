@@ -245,14 +245,17 @@ Vendor auto-detection:
     }
 
     if (opts.output) {
-      try {
-        output.end();
-      } catch (error) {
-        // Ignore EPIPE errors in cleanup
-        if (error && typeof error === 'object' && 'code' in error && error.code !== 'EPIPE') {
-          console.error('Error closing output file:', error);
-        }
-      }
+      // For file output, we need to wait for the stream to finish
+      await new Promise<void>((resolve, reject) => {
+        output.end((error?: Error | null) => {
+          if (error && 'code' in error && error.code !== 'EPIPE') {
+            console.error('Error closing output file:', error);
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
     }
   }
 }
