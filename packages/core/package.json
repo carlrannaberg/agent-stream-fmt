@@ -2,6 +2,7 @@
   "name": "@agent-io/core",
   "version": "0.1.0",
   "description": "Core types and utilities for Agent-IO packages",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -47,8 +48,5 @@
   },
   "bugs": {
     "url": "https://github.com/carlrannaberg/agent-io/issues"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

@@ -2,6 +2,7 @@
   "name": "@agent-io/invoke",
   "version": "0.1.0",
   "description": "CLI functionality for AI agent CLIs",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -52,8 +53,5 @@
   },
   "bugs": {
     "url": "https://github.com/carlrannaberg/agent-io/issues"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

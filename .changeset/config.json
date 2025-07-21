@@ -7,6 +7,6 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [],
+  "ignore": ["@agent-io/core", "@agent-io/jsonl", "@agent-io/invoke"],
   "packages": ["packages/*"]
 }

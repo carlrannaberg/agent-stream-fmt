@@ -2,6 +2,9 @@
 
 Core types and utilities for Agent-IO packages.
 
+> **⚠️ IMPORTANT: This is a placeholder package**  
+> This package is marked as `private` and should not be published to npm. It's reserved for future implementation of shared core functionality across Agent-IO packages.
+
 ## Installation
 
 ```bash
