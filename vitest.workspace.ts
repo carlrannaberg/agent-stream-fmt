@@ -21,6 +21,12 @@ export default defineWorkspace([
   {
     test: {
       include: ['packages/stream/**/*.test.ts', 'packages/stream/**/*.spec.ts'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/performance*.test.ts',
+        '**/*benchmark*.test.ts',
+      ],
       name: 'stream',
       environment: 'node',
     },

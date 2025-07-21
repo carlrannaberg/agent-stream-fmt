@@ -36,7 +36,7 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage --run",
     "test:integration": "vitest run tests/comprehensive-integration.test.ts tests/registry-integration.test.ts",
-    "test:performance": "vitest run tests/performance-benchmarks.test.ts",
+    "test:performance": "vitest run --config vitest.config.performance.ts",
     "test:errors": "vitest run tests/error-handling.test.ts",
     "test:fixtures": "vitest run tests/fixture-validation.test.ts",
     "fixtures:capture": "tsx ../../scripts/capture-fixtures.ts",

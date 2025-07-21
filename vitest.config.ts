@@ -44,6 +44,13 @@ export default defineConfig({
     // Shared test configuration
     testTimeout: 10000,
     hookTimeout: 10000,
+    // Exclude performance tests from main test run
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/performance*.test.ts',
+      '**/*benchmark*.test.ts',
+    ],
     // Watch mode configuration
     watchExclude: ['**/node_modules/**', '**/dist/**', '.git/**'],
   },

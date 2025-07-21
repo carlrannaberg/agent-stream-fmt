@@ -449,9 +449,14 @@ npm run test:coverage
 
 # Run tests in watch mode
 npm run test:watch
+
+# Run performance benchmarks (CPU-intensive!)
+npm run test:performance
 ```
 
 **Note:** The test suite includes error handling tests that intentionally throw errors to verify proper error handling. You may see error messages in stderr like "Parser error detection failed" - these are expected and indicate the error handling tests are working correctly.
+
+**Performance Tests:** Performance benchmarks are excluded from the main test suite because they are extremely CPU-intensive, processing millions of lines to measure throughput. Run them separately with `npm run test:performance` when needed.
 
 ## Contributing
 

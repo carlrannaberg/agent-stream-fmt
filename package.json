@@ -23,6 +23,7 @@
     "test:coverage": "vitest run --coverage",
     "test:workspace": "vitest run --workspace",
     "test:integration": "vitest run tests/integration",
+    "test:performance": "npm run test:performance --workspaces --if-present",
     "test:packages": "npm run test --workspaces --if-present",
     "test:all": "npm-run-all test:packages test:integration",
     "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
