@@ -272,8 +272,6 @@ describe('Publishing Simulation', () => {
             const distExists = existsSync(distDir);
             
             if (!distExists) {
-              // eslint-disable-next-line no-console
-              console.warn(`Dist directory missing for ${pkg.name}, attempting rebuild...`);
               try {
                 // Run build for this specific package
                 execSync(`npm run build --workspace ${pkg.name}`, {

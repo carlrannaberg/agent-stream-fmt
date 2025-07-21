@@ -85,8 +85,6 @@ async function performSetup(): Promise<IntegrationSetupResults> {
     });
     
     if (!allBuilt) {
-      // eslint-disable-next-line no-console
-      console.warn('⚠️  Not all packages built successfully');
       setupResults.buildPassed = false;
     }
 
