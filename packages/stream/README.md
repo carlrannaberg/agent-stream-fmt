@@ -438,6 +438,21 @@ DEBUG=agent-stream-fmt:* agent-stream-fmt < input.jsonl
 
 MIT
 
+## Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+**Note:** The test suite includes error handling tests that intentionally throw errors to verify proper error handling. You may see error messages in stderr like "Parser error detection failed" - these are expected and indicate the error handling tests are working correctly.
+
 ## Contributing
 
 See [CONTRIBUTING.md](../../CONTRIBUTING.md) for development setup and guidelines.

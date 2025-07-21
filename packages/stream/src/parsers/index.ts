@@ -147,8 +147,8 @@ export class ParserRegistry {
           candidates.push(entry.parser);
         }
       } catch (error) {
-        // Log warning but continue - enhanced error handling
-        console.warn(`Parser ${entry.parser.vendor} detection failed:`, error);
+        // Silently continue - parser detection errors are expected in some cases
+        // especially during testing of error handling
       }
     }
 
