@@ -1,5 +1,11 @@
 # @agent-io/stream
 
+## 0.1.2
+
+### Patch Changes
+
+- fix(tests): update cli-enhanced test to mock readFileSync
+
 ## 0.1.1
 
 ### Patch Changes

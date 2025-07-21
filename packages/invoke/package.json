@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@agent-io/core": "^0.1.0",
-    "@agent-io/stream": "^0.1.0"
+    "@agent-io/stream": "^0.1.2"
   },
   "keywords": [
     "agent-io",
