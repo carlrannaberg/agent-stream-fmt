@@ -43,7 +43,7 @@
     "release:patch": "./scripts/prepare-release.sh --type patch",
     "release:minor": "./scripts/prepare-release.sh --type minor",
     "release:major": "./scripts/prepare-release.sh --type major",
-    "prerelease": "npm-run-all validate build:all"
+    "prerelease": "npm-run-all build:all validate"
   },
   "keywords": [
     "monorepo",
