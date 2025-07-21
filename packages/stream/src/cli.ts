@@ -163,6 +163,15 @@ Vendor auto-detection:
 
   // Setup output stream
   const output = opts.output ? createWriteStream(opts.output) : process.stdout;
+  
+  // Disable output buffering for real-time streaming when writing to stdout
+  if (!opts.output && process.stdout) {
+    // Use a type assertion to access internal properties
+    const stdoutInternal = process.stdout as any;
+    if (stdoutInternal._handle && stdoutInternal._handle.setBlocking) {
+      stdoutInternal._handle.setBlocking(true);
+    }
+  }
 
   // Setup event filtering
   let eventFilter: Set<string> | undefined;
@@ -209,6 +218,18 @@ Vendor auto-detection:
       ? createReadStream(inputFile, { encoding: 'utf8' })
       : process.stdin;
 
+    // Configure stdin if using it
+    if (!inputFile) {
+      process.stdin.setEncoding('utf8');
+      process.stdin.on('error', (err) => {
+        // Handle stdin errors gracefully
+        if ('code' in err && err.code === 'EPIPE') {
+          process.exit(0);
+        }
+        throw err;
+      });
+    }
+
     // Stream with formatting
     const formatOptions: ExtendedStreamFormatOptions = {
       vendor: opts.vendor as Vendor,
@@ -221,7 +242,13 @@ Vendor auto-detection:
 
     for await (const formatted of streamFormat(formatOptions)) {
       try {
-        output.write(formatted);
+        // Write to output stream
+        const writeSuccessful = output.write(formatted);
+        
+        // If write returned false (backpressure), wait for drain
+        if (!writeSuccessful && output !== process.stdout) {
+          await new Promise<void>(resolve => output.once('drain', () => resolve()));
+        }
       } catch (error) {
         // Handle EPIPE errors gracefully - the output pipe was closed
         if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {

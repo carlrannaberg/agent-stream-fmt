@@ -116,8 +116,8 @@ export async function* createLineReader(
       yield buffer;
     }
   } finally {
-    // Ensure stream is properly closed
-    if (!readable.destroyed) {
+    // Don't destroy stdin - let it close naturally
+    if (!readable.destroyed && readable !== process.stdin) {
       readable.destroy();
     }
   }
