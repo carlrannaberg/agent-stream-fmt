@@ -16,7 +16,8 @@ async function runCLI(
   return new Promise((resolve, reject) => {
     const cliPath = join(__dirname, '..', 'dist', 'cli.js');
     const child = spawn('node', [cliPath, ...args], {
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: join(__dirname, '..')  // Set working directory to package root
     });
 
     let stdout = '';
@@ -256,9 +257,18 @@ describe('CLI Integration Tests', () => {
       const input = readFixture('claude', 'basic-message.jsonl');
       const outputPath = join(__dirname, '..', 'temp-test-output.txt');
       
-      const { exitCode } = await runCLI(['--output', outputPath], input);
+      const { exitCode, stdout, stderr } = await runCLI(['--output', outputPath], input);
 
       expect(exitCode).toBe(0);
+      
+      // Wait for file to be fully written and process to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Debug: check if file exists
+      if (!existsSync(outputPath)) {
+        const cliPath = join(__dirname, '..', 'dist', 'cli.js');
+        throw new Error(`Output file not created. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+      }
       
       // Check file was created
       const output = readFileSync(outputPath, 'utf8');
@@ -274,9 +284,18 @@ describe('CLI Integration Tests', () => {
       const input = readFixture('claude', 'basic-message.jsonl');
       const outputPath = join(__dirname, '..', 'temp-test-output2.txt');
       
-      const { exitCode } = await runCLI(['-o', outputPath], input);
+      const { exitCode, stdout, stderr } = await runCLI(['-o', outputPath], input);
 
       expect(exitCode).toBe(0);
+      
+      // Wait for file to be fully written and process to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Debug: check if file exists
+      if (!existsSync(outputPath)) {
+        const cliPath = join(__dirname, '..', 'dist', 'cli.js');
+        throw new Error(`Output file not created. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+      }
       
       // Check file was created
       const output = readFileSync(outputPath, 'utf8');
