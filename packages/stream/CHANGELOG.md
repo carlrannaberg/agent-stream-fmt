@@ -1,5 +1,11 @@
 # @agent-io/stream
 
+## 0.1.1
+
+### Patch Changes
+
+- chore(tests): remove duplicate CLI test file
+
 ## 1.0.0
 
 ### Major Changes
