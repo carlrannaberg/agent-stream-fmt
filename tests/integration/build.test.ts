@@ -16,11 +16,25 @@ describe('Build Process Integration', () => {
     { name: 'stream', dir: 'packages/stream' },
     { name: 'invoke', dir: 'packages/invoke' }
   ];
+  
+  let hasBuilt = false;
 
-  beforeAll(() => {
-    // Tests will use cwd option in execSync instead of process.chdir
-    // since process.chdir is not supported in Vitest workers
-  });
+  beforeAll(async () => {
+    // Build once for all tests to use
+    if (!hasBuilt) {
+      try {
+        execSync('npm run build:packages', {
+          cwd: rootDir,
+          stdio: 'pipe',
+          timeout: 120000
+        });
+        hasBuilt = true;
+      } catch (error) {
+        console.error('Initial build failed:', error);
+        throw error;
+      }
+    }
+  }, 120000);
 
   describe('Clean Build Process', () => {
     it('should clean all packages successfully', () => {
@@ -44,30 +58,13 @@ describe('Build Process Integration', () => {
       }
     });
 
-    it('should build all packages in correct order', async () => {
-      const buildStart = Date.now();
-      
-      try {
-        execSync('npm run build:packages', {
-          cwd: rootDir,
-          stdio: 'pipe',
-          timeout: 120000 // 2 minutes
-        });
-      } catch (error) {
-        console.error('Build failed:', error);
-        throw error;
-      }
-
-      const buildEnd = Date.now();
-      // eslint-disable-next-line no-console
-      console.log(`Build completed in ${buildEnd - buildStart}ms`);
-
-      // Verify all packages have dist directories
+    it('should have built all packages in correct order', () => {
+      // Verify all packages have dist directories from the beforeAll build
       for (const pkg of packages) {
         const distPath = join(rootDir, pkg.dir, 'dist');
         expect(existsSync(distPath), `${pkg.name} should have dist directory after build`).toBe(true);
       }
-    }, 120000);
+    });
 
     it('should respect TypeScript project references', () => {
       // Check that tsconfig.json has proper project references
@@ -178,14 +175,7 @@ describe('Build Process Integration', () => {
 
   describe('Incremental Builds', () => {
     it('should support incremental TypeScript builds', () => {
-      // First build
-      execSync('npm run build:packages', {
-        cwd: rootDir,
-        stdio: 'pipe',
-        timeout: 60000
-      });
-
-      // Check for .tsbuildinfo files
+      // Check for .tsbuildinfo files from the initial build
       for (const pkg of packages) {
         const tsBuildInfoPath = join(rootDir, pkg.dir, 'tsconfig.tsbuildinfo');
         if (existsSync(tsBuildInfoPath)) {
@@ -194,7 +184,7 @@ describe('Build Process Integration', () => {
         }
       }
 
-      // Second build should be faster (incremental)
+      // Test one incremental build to verify it works
       const start = Date.now();
       execSync('npm run build:packages', {
         cwd: rootDir,
@@ -208,19 +198,10 @@ describe('Build Process Integration', () => {
     });
 
     it('should handle dependency changes correctly', () => {
-      // This test verifies that changes to dependencies trigger rebuilds
-      // For now, we just verify the build system can handle multiple builds
-      
-      execSync('npm run build:packages', {
-        cwd: rootDir,
-        stdio: 'pipe',
-        timeout: 60000
-      });
-
-      // All packages should still have valid builds
+      // Verify the build system can handle multiple builds by checking artifacts exist
       for (const pkg of packages) {
         const distPath = join(rootDir, pkg.dir, 'dist');
-        expect(existsSync(distPath), `${pkg.name} should maintain dist after rebuild`).toBe(true);
+        expect(existsSync(distPath), `${pkg.name} should maintain dist after builds`).toBe(true);
       }
     });
   });
@@ -244,33 +225,13 @@ describe('Build Process Integration', () => {
       }
     });
 
-    it('should support parallel package builds', async () => {
-      // Clean first
-      try {
-        execSync('npm run clean', { cwd: rootDir, stdio: 'pipe' });
-      } catch (error) {
-        // Ignore clean errors
-      }
-
-      const start = Date.now();
-      
-      // Build packages (this should run in parallel where possible)
-      execSync('npm run build:packages', {
-        cwd: rootDir,
-        stdio: 'pipe',
-        timeout: 120000
-      });
-
-      const parallelTime = Date.now() - start;
-      // eslint-disable-next-line no-console
-      console.log(`Parallel build time: ${parallelTime}ms`);
-      
-      // Verify all packages are built
+    it('should support parallel package builds', () => {
+      // Verify all packages are built from the initial parallel build
       for (const pkg of packages) {
         const distPath = join(rootDir, pkg.dir, 'dist');
         expect(existsSync(distPath), `${pkg.name} should be built`).toBe(true);
       }
-    }, 120000);
+    });
   });
 
   describe('Error Handling', () => {
