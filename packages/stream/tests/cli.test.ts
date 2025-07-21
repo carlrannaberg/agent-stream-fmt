@@ -263,19 +263,34 @@ describe('CLI Integration Tests', () => {
       const { exitCode, stdout, stderr } = await runCLI(['--output', cliOutputPath], input);
 
       expect(exitCode).toBe(0);
+      expect(stderr).toBe('');
       
       // Wait for file to be fully written and process to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Debug: check if file exists
-      if (!existsSync(outputPath)) {
-        const cliPath = join(__dirname, '..', 'dist', 'cli.js');
-        throw new Error(`Output file not created. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+      // Increase timeout and add retry logic for CI environments
+      let retries = 0;
+      const maxRetries = 5;
+      while (!existsSync(outputPath) && retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        retries++;
       }
       
-      // Check file was created
+      // Check if file exists after retries
+      if (!existsSync(outputPath)) {
+        const cliPath = join(__dirname, '..', 'dist', 'cli.js');
+        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+      }
+      
+      // Check file was created and has content
       const output = readFileSync(outputPath, 'utf8');
-      expect(output).toContain('user:');
+      
+      // If file is empty, wait a bit more and retry
+      if (output.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const retryOutput = readFileSync(outputPath, 'utf8');
+        expect(retryOutput).toContain('user:');
+      } else {
+        expect(output).toContain('user:');
+      }
       
       // Clean up
       if (existsSync(outputPath)) {
@@ -292,19 +307,36 @@ describe('CLI Integration Tests', () => {
       const { exitCode, stdout, stderr } = await runCLI(['-o', cliOutputPath], input);
 
       expect(exitCode).toBe(0);
+      expect(stderr).toBe('');
       
       // Wait for file to be fully written and process to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Debug: check if file exists
-      if (!existsSync(outputPath)) {
-        const cliPath = join(__dirname, '..', 'dist', 'cli.js');
-        throw new Error(`Output file not created. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+      // Increase timeout and add retry logic for CI environments
+      let retries = 0;
+      const maxRetries = 5;
+      while (!existsSync(outputPath) && retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        retries++;
       }
       
-      // Check file was created
+      // Check if file exists after retries
+      if (!existsSync(outputPath)) {
+        const cliPath = join(__dirname, '..', 'dist', 'cli.js');
+        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+      }
+      
+      // Check file was created and has content
       const output = readFileSync(outputPath, 'utf8');
-      expect(output.length).toBeGreaterThan(0);
+      
+      // If file is empty, wait a bit more and retry
+      if (output.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const retryOutput = readFileSync(outputPath, 'utf8');
+        expect(retryOutput.length).toBeGreaterThan(0);
+        expect(retryOutput).toContain('user:');
+      } else {
+        expect(output.length).toBeGreaterThan(0);
+        expect(output).toContain('user:');
+      }
       
       // Clean up
       if (existsSync(outputPath)) {
