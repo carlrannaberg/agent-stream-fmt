@@ -18,7 +18,9 @@ describe('streamFormat', () => {
   /**
    * Helper to collect all output from streamFormat
    */
-  async function collectFormatted(options: StreamFormatOptions): Promise<string> {
+  async function collectFormatted(
+    options: StreamFormatOptions,
+  ): Promise<string> {
     const outputs: string[] = [];
     for await (const output of streamFormat(options)) {
       outputs.push(output);
@@ -28,18 +30,19 @@ describe('streamFormat', () => {
 
   describe('JSON format', () => {
     it('should format Claude message events as JSON', async () => {
-      const claudeData = '{"type":"message","role":"assistant","content":"Hello!"}\n';
+      const claudeData =
+        '{"type":"message","role":"assistant","content":"Hello!"}\n';
       const output = await collectFormatted({
         vendor: 'claude',
         source: createStream(claudeData),
-        format: 'json'
+        format: 'json',
       });
 
       const parsed = JSON.parse(output.trim());
       expect(parsed).toEqual({
         t: 'msg',
         role: 'assistant',
-        text: 'Hello!'
+        text: 'Hello!',
       });
     });
 
@@ -49,7 +52,7 @@ describe('streamFormat', () => {
         vendor: 'claude',
         source: createStream(claudeData),
         format: 'json',
-        renderOptions: { compactMode: false }
+        renderOptions: { compactMode: false },
       });
 
       // Pretty printed JSON should have newlines and indentation
@@ -63,19 +66,22 @@ describe('streamFormat', () => {
         '{"type":"message","role":"assistant","content":"Running tool..."}',
         '{"type":"tool_use","name":"bash","input":{"command":"echo hello"}}',
         '{"type":"tool_result","output":"hello","exit_code":0}',
-        '{"type":"message","role":"assistant","content":"Done!"}'
+        '{"type":"message","role":"assistant","content":"Done!"}',
       ].join('\n');
 
       const output = await collectFormatted({
         vendor: 'claude',
         source: createStream(claudeData),
         format: 'json',
-        renderOptions: { hideTools: true, compactMode: true }
+        renderOptions: { hideTools: true, compactMode: true },
       });
 
-      const lines = output.trim().split('\n').filter(line => line.length > 0);
+      const lines = output
+        .trim()
+        .split('\n')
+        .filter(line => line.length > 0);
       const events = lines.map(line => JSON.parse(line));
-      
+
       // Should only have message events (tools are hidden)
       expect(events).toHaveLength(2);
       expect(events.every(e => e.t === 'msg')).toBe(true);
@@ -84,12 +90,13 @@ describe('streamFormat', () => {
     });
 
     it('should add timestamps when showTimestamps is true', async () => {
-      const claudeData = '{"type":"message","role":"assistant","content":"Hello!"}\n';
+      const claudeData =
+        '{"type":"message","role":"assistant","content":"Hello!"}\n';
       const output = await collectFormatted({
         vendor: 'claude',
         source: createStream(claudeData),
         format: 'json',
-        renderOptions: { showTimestamps: true }
+        renderOptions: { showTimestamps: true },
       });
 
       const parsed = JSON.parse(output.trim());
@@ -105,7 +112,7 @@ describe('streamFormat', () => {
         vendor: 'claude',
         source: createStream(invalidData),
         format: 'json',
-        renderOptions: { compactMode: true }
+        renderOptions: { compactMode: true },
       });
 
       const parsed = JSON.parse(output.trim());
@@ -117,19 +124,22 @@ describe('streamFormat', () => {
       const mixedData = [
         '{"type":"message","role":"user","content":"Hi"}',
         'invalid json',
-        '{"type":"message","role":"assistant","content":"Hello"}'
+        '{"type":"message","role":"assistant","content":"Hello"}',
       ].join('\n');
 
       const output = await collectFormatted({
         vendor: 'claude',
         source: createStream(mixedData),
         format: 'json',
-        renderOptions: { compactMode: true }
+        renderOptions: { compactMode: true },
       });
 
-      const lines = output.trim().split('\n').filter(line => line.length > 0);
+      const lines = output
+        .trim()
+        .split('\n')
+        .filter(line => line.length > 0);
       const events = lines.map(line => JSON.parse(line));
-      
+
       expect(events).toHaveLength(3);
       expect(events[0].t).toBe('msg');
       expect(events[1].t).toBe('error');
@@ -139,13 +149,14 @@ describe('streamFormat', () => {
 
   describe('Renderer flush', () => {
     it('should call renderer flush at the end', async () => {
-      const claudeData = '{"type":"message","role":"assistant","content":"Test"}\n';
-      
+      const claudeData =
+        '{"type":"message","role":"assistant","content":"Test"}\n';
+
       // For JSON renderer, flush returns empty string, but we're testing the flow
       const output = await collectFormatted({
         vendor: 'claude',
         source: createStream(claudeData),
-        format: 'json'
+        format: 'json',
       });
 
       // Should have the formatted event
@@ -156,14 +167,14 @@ describe('streamFormat', () => {
       const errorStream = new Readable({
         read() {
           this.emit('error', new Error('Stream error'));
-        }
+        },
       });
 
       try {
         await collectFormatted({
           vendor: 'claude',
           source: errorStream as NodeJS.ReadableStream,
-          format: 'json'
+          format: 'json',
         });
         // Should not reach here
         expect.fail('Should have thrown error');

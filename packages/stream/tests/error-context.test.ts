@@ -11,9 +11,9 @@ describe('Enhanced ParseError Context', () => {
 
       // Start consuming events
       const eventPromise = (async () => {
-        for await (const event of streamEvents({ 
-          vendor: 'claude', 
-          source: input 
+        for await (const event of streamEvents({
+          vendor: 'claude',
+          source: input,
         })) {
           events.push(event);
         }
@@ -33,7 +33,7 @@ describe('Enhanced ParseError Context', () => {
       // Should have processed valid messages and errors
       const errorEvents = events.filter(e => e.t === 'error');
       expect(errorEvents).toHaveLength(2);
-      
+
       // Check that error messages include line numbers
       expect(errorEvents[0].message).toContain('Line 3:');
       expect(errorEvents[1].message).toContain('Line 5:');
@@ -47,10 +47,10 @@ describe('Enhanced ParseError Context', () => {
 
       // Start consuming events
       const eventPromise = (async () => {
-        for await (const event of streamEvents({ 
-          vendor: 'claude', 
+        for await (const event of streamEvents({
+          vendor: 'claude',
           source: input,
-          emitDebugEvents: true
+          emitDebugEvents: true,
         })) {
           events.push(event);
         }
@@ -77,9 +77,9 @@ describe('Enhanced ParseError Context', () => {
       const events: any[] = [];
 
       const eventPromise = (async () => {
-        for await (const event of streamEvents({ 
-          vendor: 'gemini', 
-          source: input 
+        for await (const event of streamEvents({
+          vendor: 'gemini',
+          source: input,
         })) {
           events.push(event);
         }
@@ -101,9 +101,9 @@ describe('Enhanced ParseError Context', () => {
       const events: any[] = [];
 
       const eventPromise = (async () => {
-        for await (const event of streamEvents({ 
-          vendor: 'amp', 
-          source: input 
+        for await (const event of streamEvents({
+          vendor: 'amp',
+          source: input,
         })) {
           events.push(event);
         }
@@ -127,17 +127,19 @@ describe('Enhanced ParseError Context', () => {
       const events: any[] = [];
 
       const eventPromise = (async () => {
-        for await (const event of streamEvents({ 
+        for await (const event of streamEvents({
           vendor: 'auto',
           source: input,
-          continueOnError: true
+          continueOnError: true,
         })) {
           events.push(event);
         }
       })();
 
       // Mix of valid Claude, Gemini, and invalid lines
-      input.write('{"type":"message","role":"assistant","content":"Claude message"}\n');
+      input.write(
+        '{"type":"message","role":"assistant","content":"Claude message"}\n',
+      );
       input.write('INVALID LINE 2\n');
       input.write('{"type":"user","content":"Gemini message"}\n');
       input.write('{ "broken": \n');
@@ -154,7 +156,7 @@ describe('Enhanced ParseError Context', () => {
 
       // Should have parsed valid messages
       expect(messageEvents.length).toBeGreaterThan(0);
-      
+
       // Should have errors with correct line numbers
       expect(errorEvents.length).toBeGreaterThan(0);
       const errorMessages = errorEvents.map(e => e.message);
@@ -173,12 +175,12 @@ describe('Enhanced ParseError Context', () => {
         {
           lineNumber: 42,
           characterPosition: 15,
-          expectedFormat: 'Valid JSON with type field'
-        }
+          expectedFormat: 'Valid JSON with type field',
+        },
       );
 
       const json = error.toJSON();
-      
+
       expect(json).toEqual({
         name: 'ParseError',
         message: 'Test error message',
@@ -186,8 +188,8 @@ describe('Enhanced ParseError Context', () => {
         context: {
           lineNumber: 42,
           characterPosition: 15,
-          expectedFormat: 'Valid JSON with type field'
-        }
+          expectedFormat: 'Valid JSON with type field',
+        },
       });
 
       // Should be JSON stringifiable
@@ -209,8 +211,8 @@ describe('Enhanced ParseError Context', () => {
         {
           lineNumber: 10,
           characterPosition: 25,
-          expectedFormat: 'Valid JSON'
-        }
+          expectedFormat: 'Valid JSON',
+        },
       );
 
       expect(error.context?.characterPosition).toBe(25);

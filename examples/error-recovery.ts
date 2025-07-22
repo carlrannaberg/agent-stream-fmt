@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Example: Error Recovery with Enhanced Context
- * 
+ *
  * Demonstrates how the enhanced ParseError provides detailed context
  * about parsing failures, including line numbers and expected formats.
  */
@@ -16,35 +16,40 @@ async function main() {
 
   // Create a stream with mixed valid and invalid content
   const input = new PassThrough();
-  
+
   // Start consuming events with debug enabled
   const eventPromise = (async () => {
     console.log(kleur.gray('Processing mixed JSONL stream...\n'));
-    
-    for await (const event of streamEvents({ 
+
+    for await (const event of streamEvents({
       vendor: 'auto',
       source: input,
       continueOnError: true,
-      emitDebugEvents: true
+      emitDebugEvents: true,
     })) {
       switch (event.t) {
         case 'msg':
           console.log(kleur.green('✓'), kleur.bold('Message:'), event.text);
           break;
-          
+
         case 'tool':
           if (event.phase === 'start') {
             console.log(kleur.cyan('→'), kleur.bold('Tool:'), event.name);
           }
           break;
-          
+
         case 'error':
           console.log(kleur.red('✗'), kleur.bold('Error:'), event.message);
           break;
-          
+
         case 'debug':
           if (event.raw.error) {
-            console.log(kleur.yellow('  Debug:'), kleur.gray(`Line ${event.raw.lineNumber}: ${event.raw.line.substring(0, 50)}...`));
+            console.log(
+              kleur.yellow('  Debug:'),
+              kleur.gray(
+                `Line ${event.raw.lineNumber}: ${event.raw.line.substring(0, 50)}...`,
+              ),
+            );
           }
           break;
       }
@@ -55,7 +60,8 @@ async function main() {
   console.log(kleur.gray('Input lines:\n'));
 
   // Valid Claude message
-  const line1 = '{"type":"message","role":"assistant","content":"Hello from Claude!"}';
+  const line1 =
+    '{"type":"message","role":"assistant","content":"Hello from Claude!"}';
   console.log(kleur.gray('1:'), line1);
   input.write(line1 + '\n');
 
@@ -75,7 +81,8 @@ async function main() {
   input.write(line4 + '\n');
 
   // Valid Claude tool use
-  const line5 = '{"type":"tool_use","name":"calculator","input":{"operation":"add","a":5,"b":3}}';
+  const line5 =
+    '{"type":"tool_use","name":"calculator","input":{"operation":"add","a":5,"b":3}}';
   console.log(kleur.gray('5:'), line5);
   input.write(line5 + '\n');
 
@@ -116,8 +123,9 @@ function demonstrateParseError() {
     {
       lineNumber: 42,
       characterPosition: 39,
-      expectedFormat: 'Valid JSON object with "type" field (message, tool_use, tool_result, usage, or error)'
-    }
+      expectedFormat:
+        'Valid JSON object with "type" field (message, tool_use, tool_result, usage, or error)',
+    },
   );
 
   console.log(kleur.bold('ParseError instance:'));

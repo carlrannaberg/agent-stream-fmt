@@ -2,7 +2,9 @@
 
 ## Introduction
 
-The Agent Stream Formatter provides a unified API for parsing and rendering JSONL output from various AI agent CLIs including Claude Code, Gemini CLI, and Amp Code. This library focuses on streaming efficiency, memory optimization, and beautiful terminal/HTML output.
+The Agent Stream Formatter provides a unified API for parsing and rendering JSONL output from
+various AI agent CLIs including Claude Code, Gemini CLI, and Amp Code. This library focuses on
+streaming efficiency, memory optimization, and beautiful terminal/HTML output.
 
 ## Core Concepts
 

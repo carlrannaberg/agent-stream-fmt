@@ -36,7 +36,9 @@ export function createReadableStream(data: string): NodeJS.ReadableStream {
 /**
  * Collects all data from a readable stream
  */
-export async function collectStream(stream: NodeJS.ReadableStream): Promise<string> {
+export async function collectStream(
+  stream: NodeJS.ReadableStream,
+): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const chunk of stream) {
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
@@ -78,7 +80,7 @@ export function createFixtureLoader(basePath: string) {
  */
 export async function waitFor(
   condition: () => boolean | Promise<boolean>,
-  options: { timeout?: number; interval?: number } = {}
+  options: { timeout?: number; interval?: number } = {},
 ): Promise<void> {
   const { timeout = 5000, interval = 100 } = options;
   const start = Date.now();
@@ -127,7 +129,9 @@ export const benchmark = {
   /**
    * Measures execution time of a function
    */
-  async measure<T>(fn: () => T | Promise<T>): Promise<{ result: T; duration: number }> {
+  async measure<T>(
+    fn: () => T | Promise<T>,
+  ): Promise<{ result: T; duration: number }> {
     const start = performance.now();
     const result = await fn();
     const duration = performance.now() - start;
@@ -139,7 +143,7 @@ export const benchmark = {
    */
   async profile(
     fn: () => unknown | Promise<unknown>,
-    iterations: number = 100
+    iterations: number = 100,
   ): Promise<{
     min: number;
     max: number;
@@ -160,8 +164,10 @@ export const benchmark = {
     const max = durations[durations.length - 1];
     const mean = durations.reduce((sum, d) => sum + d, 0) / durations.length;
     const median = durations[Math.floor(durations.length / 2)];
-    
-    const variance = durations.reduce((sum, d) => sum + Math.pow(d - mean, 2), 0) / durations.length;
+
+    const variance =
+      durations.reduce((sum, d) => sum + Math.pow(d - mean, 2), 0) /
+      durations.length;
     const stdDev = Math.sqrt(variance);
 
     return { min, max, mean, median, stdDev };

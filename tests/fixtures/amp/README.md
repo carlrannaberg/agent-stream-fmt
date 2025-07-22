@@ -4,7 +4,8 @@ This directory contains JSONL output samples from Amp Code CLI.
 
 ## Amp Code JSONL Format
 
-Amp Code uses the `-j` flag or `--output jsonl` to output structured JSONL data. The format typically includes:
+Amp Code uses the `-j` flag or `--output jsonl` to output structured JSONL data. The format
+typically includes:
 
 - Task execution events
 - Build process updates

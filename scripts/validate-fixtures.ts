@@ -121,7 +121,9 @@ function main() {
   const vendors = ['claude', 'gemini', 'amp'] as const;
   const results: ValidationResult[] = [];
 
-  console.log(`${colors.bold}${colors.cyan}Validating fixture files...${colors.reset}\n`);
+  console.log(
+    `${colors.bold}${colors.cyan}Validating fixture files...${colors.reset}\n`,
+  );
 
   for (const vendor of vendors) {
     results.push(validateVendor(vendor));
@@ -141,14 +143,18 @@ function main() {
     } else if (result.files.length === 0) {
       console.log(`  ${colors.yellow}⚠ No .jsonl files found${colors.reset}`);
     } else {
-      console.log(`  ${colors.green}✓ ${result.files.length} fixture file(s)${colors.reset}`);
-      
+      console.log(
+        `  ${colors.green}✓ ${result.files.length} fixture file(s)${colors.reset}`,
+      );
+
       for (const file of result.files) {
         const fileErrors = result.errors.filter(e => e.file === file);
         if (fileErrors.length === 0) {
           console.log(`    ${colors.green}✓${colors.reset} ${file}`);
         } else {
-          console.log(`    ${colors.red}✗${colors.reset} ${file} (${fileErrors.length} error${fileErrors.length > 1 ? 's' : ''})`);
+          console.log(
+            `    ${colors.red}✗${colors.reset} ${file} (${fileErrors.length} error${fileErrors.length > 1 ? 's' : ''})`,
+          );
         }
       }
     }
@@ -200,10 +206,14 @@ function main() {
   console.log(`  Total errors: ${totalErrors}`);
 
   if (totalErrors === 0) {
-    console.log(`\n${colors.green}${colors.bold}All fixtures are valid! ✓${colors.reset}`);
+    console.log(
+      `\n${colors.green}${colors.bold}All fixtures are valid! ✓${colors.reset}`,
+    );
     process.exit(0);
   } else {
-    console.log(`\n${colors.red}${colors.bold}Fixture validation failed with ${totalErrors} error${totalErrors > 1 ? 's' : ''}${colors.reset}`);
+    console.log(
+      `\n${colors.red}${colors.bold}Fixture validation failed with ${totalErrors} error${totalErrors > 1 ? 's' : ''}${colors.reset}`,
+    );
     process.exit(1);
   }
 }

@@ -14,6 +14,7 @@ The project uses the following development tools:
 ## Configuration Files
 
 ### ESLint Configuration (`.eslintrc.json`)
+
 - Uses `@typescript-eslint/parser` for TypeScript support
 - Extends recommended ESLint and TypeScript rules
 - Custom rules for code quality and consistency
@@ -21,6 +22,7 @@ The project uses the following development tools:
 - Ignores build outputs and generated files
 
 ### Prettier Configuration (`.prettierrc.json`)
+
 - Enforces consistent code style:
   - Semicolons: always
   - Single quotes for strings
@@ -30,6 +32,7 @@ The project uses the following development tools:
 - Special formatting for Markdown, JSON, and YAML files
 
 ### Ignore Files
+
 - `.eslintignore`: Excludes build outputs, dependencies, and non-source files
 - `.prettierignore`: Similar exclusions plus preserves fixture formatting
 
@@ -38,6 +41,7 @@ The project uses the following development tools:
 ### Root-Level Scripts
 
 #### Building
+
 ```bash
 npm run build          # Build all packages sequentially
 npm run build:all      # Clean and build all packages
@@ -46,12 +50,14 @@ npm run clean          # Clean all build outputs
 ```
 
 #### Development
+
 ```bash
 npm run dev            # Run all package dev scripts in parallel
 npm run dev:packages   # Run dev scripts in all workspaces
 ```
 
 #### Code Quality
+
 ```bash
 npm run lint           # Lint all TypeScript files
 npm run lint:fix       # Auto-fix linting issues
@@ -61,6 +67,7 @@ npm run format:check   # Check formatting without changes
 ```
 
 #### Testing
+
 ```bash
 npm run test           # Run all tests
 npm run test:watch     # Run tests in watch mode
@@ -68,6 +75,7 @@ npm run typecheck      # Type check all packages
 ```
 
 #### Validation
+
 ```bash
 npm run validate       # Run lint, typecheck, and tests in parallel
 npm run bootstrap      # Install deps and build everything
@@ -76,6 +84,7 @@ npm run bootstrap      # Install deps and build everything
 ### Package-Level Scripts
 
 Each package includes:
+
 ```bash
 npm run build          # Build the package
 npm run typecheck      # Type check the package
@@ -89,6 +98,7 @@ npm run format:check   # Check package formatting
 ## Workflow Examples
 
 ### Starting Development
+
 ```bash
 # Initial setup
 npm run bootstrap
@@ -98,6 +108,7 @@ npm run dev
 ```
 
 ### Before Committing
+
 ```bash
 # Run full validation
 npm run validate
@@ -109,6 +120,7 @@ npm run test
 ```
 
 ### Working on Specific Package
+
 ```bash
 # Build specific package
 npm run build:core
@@ -119,6 +131,7 @@ npm run workspace:run packages/jsonl test
 ```
 
 ### Adding Dependencies
+
 ```bash
 # Add to specific package
 npm run workspace:add packages/core lodash
@@ -146,18 +159,22 @@ The project uses `npm-run-all2` for efficient parallel execution:
 ## Troubleshooting
 
 ### ESLint Errors
+
 - If you see TypeScript parsing errors, ensure the file is included in a `tsconfig.json`
 - Use `npm run lint:fix` to auto-fix many issues
 
 ### Prettier Conflicts
+
 - Run `npm run format` to fix formatting issues
 - Check `.prettierignore` if files aren't being formatted
 
 ### Build Issues
+
 - Run `npm run clean` to clear old build artifacts
 - Ensure dependencies are built before dependent packages
 
 ### Script Failures
+
 - Check that all packages have the required scripts
 - Use `--if-present` flag for optional scripts
 - Review npm-run-all2 output for parallel execution issues

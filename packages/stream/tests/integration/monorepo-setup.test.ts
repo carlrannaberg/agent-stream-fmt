@@ -8,10 +8,10 @@ import { join } from 'path';
 
 describe('Monorepo Setup', () => {
   const rootDir = join(__dirname, '../../../..');
-  
+
   it('should have all required packages', () => {
     const packages = ['core', 'jsonl', 'stream', 'invoke'];
-    
+
     for (const pkg of packages) {
       const pkgPath = join(rootDir, 'packages', pkg, 'package.json');
       expect(existsSync(pkgPath), `Package ${pkg} should exist`).toBe(true);
@@ -22,12 +22,14 @@ describe('Monorepo Setup', () => {
     // Root configs
     expect(existsSync(join(rootDir, 'vitest.config.ts'))).toBe(true);
     expect(existsSync(join(rootDir, 'vitest.workspace.ts'))).toBe(true);
-    
+
     // Package configs
     const packagesWithVitest = ['core', 'jsonl', 'stream', 'invoke'];
     for (const pkg of packagesWithVitest) {
       const configPath = join(rootDir, 'packages', pkg, 'vitest.config.ts');
-      expect(existsSync(configPath), `${pkg} should have vitest config`).toBe(true);
+      expect(existsSync(configPath), `${pkg} should have vitest config`).toBe(
+        true,
+      );
     }
   });
 
@@ -47,10 +49,12 @@ describe('Monorepo Setup', () => {
   it('should have all packages built', () => {
     // Only check packages that are actually built (not placeholders)
     const packages = ['stream'];
-    
+
     for (const pkg of packages) {
       const distPath = join(rootDir, 'packages', pkg, 'dist');
-      expect(existsSync(distPath), `${pkg} should have dist directory`).toBe(true);
+      expect(existsSync(distPath), `${pkg} should have dist directory`).toBe(
+        true,
+      );
     }
   });
 });

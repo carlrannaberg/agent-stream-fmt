@@ -1,10 +1,12 @@
 # Performance Guide
 
-This guide provides comprehensive information about agent-stream-fmt's performance characteristics, optimization strategies, and best practices for high-throughput scenarios.
+This guide provides comprehensive information about agent-stream-fmt's performance characteristics,
+optimization strategies, and best practices for high-throughput scenarios.
 
 ## 📊 Throughput Characteristics
 
-agent-stream-fmt is designed for high-throughput stream processing with vendor-specific optimizations:
+agent-stream-fmt is designed for high-throughput stream processing with vendor-specific
+optimizations:
 
 ### Vendor-Specific Performance
 
@@ -69,7 +71,9 @@ for await (const event of streamEvents({
 }
 ```
 
-**Performance impact**: Auto-detection adds overhead due to format sampling and may fail on malformed input. Use specific vendor parsers when format is known for best performance and reliability.
+**Performance impact**: Auto-detection adds overhead due to format sampling and may fail on
+malformed input. Use specific vendor parsers when format is known for best performance and
+reliability.
 
 ### 2. Filter Events Early
 
@@ -226,9 +230,7 @@ async function processLargeFile(filePath: string) {
     if (eventCount % 10000 === 0) {
       const elapsed = Date.now() - startTime;
       const rate = eventCount / (elapsed / 1000);
-      console.log(
-        `Processed ${eventCount} events at ${rate.toFixed(0)} events/sec`,
-      );
+      console.log(`Processed ${eventCount} events at ${rate.toFixed(0)} events/sec`);
     }
   }
 }

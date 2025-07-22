@@ -14,7 +14,8 @@ pnpm add @agent-io/jsonl
 
 ## Usage
 
-This package provides the parser interface and utilities for implementing vendor-specific JSONL parsers.
+This package provides the parser interface and utilities for implementing vendor-specific JSONL
+parsers.
 
 ```typescript
 import { VendorParser, ParseError } from '@agent-io/jsonl';
@@ -23,7 +24,7 @@ import { AgentEvent } from '@agent-io/core';
 // Implement a custom parser
 const myParser: VendorParser = {
   vendor: 'mycli',
-  
+
   detect: (line: string) => {
     try {
       const obj = JSON.parse(line);
@@ -32,20 +33,15 @@ const myParser: VendorParser = {
       return false;
     }
   },
-  
+
   parse: (line: string) => {
     try {
       const obj = JSON.parse(line);
       return parseMyCliFormat(obj);
     } catch (error) {
-      throw new ParseError(
-        'Invalid JSON format',
-        'mycli',
-        line,
-        error
-      );
+      throw new ParseError('Invalid JSON format', 'mycli', line, error);
     }
-  }
+  },
 };
 ```
 
@@ -91,7 +87,7 @@ Options for configuring parsing behavior:
 interface ParseOptions {
   /** Vendor format to use (default: 'auto') */
   vendor?: Vendor;
-  
+
   /** Enable strict parsing mode */
   strict?: boolean;
 }
@@ -114,13 +110,13 @@ class ParseError extends Error {
       lineNumber?: number;
       characterPosition?: number;
       expectedFormat?: string;
-    }
+    },
   );
 
-  vendor: string;        // Which parser failed
-  line: string;         // The problematic line
-  cause?: unknown;      // Original error
-  context?: object;     // Additional context
+  vendor: string; // Which parser failed
+  line: string; // The problematic line
+  cause?: unknown; // Original error
+  context?: object; // Additional context
 }
 ```
 
@@ -134,27 +130,17 @@ parse: (line: string) => {
   try {
     obj = JSON.parse(line);
   } catch (error) {
-    throw new ParseError(
-      'Invalid JSON',
-      'mycli',
-      line,
-      error,
-      { expectedFormat: 'JSON object' }
-    );
+    throw new ParseError('Invalid JSON', 'mycli', line, error, { expectedFormat: 'JSON object' });
   }
 
   if (!obj.type) {
-    throw new ParseError(
-      'Missing required field: type',
-      'mycli',
-      line,
-      undefined,
-      { expectedFormat: '{ type: string, ... }' }
-    );
+    throw new ParseError('Missing required field: type', 'mycli', line, undefined, {
+      expectedFormat: '{ type: string, ... }',
+    });
   }
 
   // Parse logic...
-}
+};
 ```
 
 #### Handling ParseError
@@ -167,11 +153,11 @@ try {
     console.error(`Parse error in ${error.vendor}:`);
     console.error(`  Message: ${error.message}`);
     console.error(`  Line: ${error.line}`);
-    
+
     if (error.context?.lineNumber) {
       console.error(`  Line number: ${error.context.lineNumber}`);
     }
-    
+
     if (error.cause) {
       console.error(`  Caused by:`, error.cause);
     }
@@ -189,11 +175,11 @@ import { AgentEvent } from '@agent-io/core';
 
 export const myParser: VendorParser = {
   vendor: 'mycli',
-  
+
   metadata: {
     version: '1.0.0',
     supportedVersions: ['1.x', '2.x'],
-    documentationUrl: 'https://mycli.example.com/docs'
+    documentationUrl: 'https://mycli.example.com/docs',
   },
 
   detect: (line: string) => {
@@ -202,7 +188,7 @@ export const myParser: VendorParser = {
     if (!line.includes('"source":"mycli"')) {
       return false;
     }
-    
+
     try {
       const obj = JSON.parse(line);
       return obj.source === 'mycli' && obj.version >= 1;
@@ -213,37 +199,37 @@ export const myParser: VendorParser = {
 
   parse: (line: string) => {
     const events: AgentEvent[] = [];
-    
+
     let obj;
     try {
       obj = JSON.parse(line);
     } catch (error) {
       throw new ParseError('Invalid JSON', 'mycli', line, error);
     }
-    
+
     // Convert to AgentEvent format
     switch (obj.type) {
       case 'message':
         events.push({
           t: 'msg',
           role: obj.role || 'assistant',
-          text: obj.content || ''
+          text: obj.content || '',
         });
         break;
-        
+
       case 'tool_call':
         events.push({
           t: 'tool',
           name: obj.tool_name,
-          phase: 'start'
+          phase: 'start',
         });
         break;
-        
+
       // Handle other types...
     }
-    
+
     return events;
-  }
+  },
 };
 ```
 
@@ -259,17 +245,15 @@ detect: (line: string) => {
   if (!line.startsWith('{') || !line.includes('"mycli"')) {
     return false;
   }
-  
+
   // Detailed validation only if fast check passes
   try {
     const obj = JSON.parse(line);
-    return obj.vendor === 'mycli' && 
-           obj.version >= 1.0 &&
-           typeof obj.type === 'string';
+    return obj.vendor === 'mycli' && obj.version >= 1.0 && typeof obj.type === 'string';
   } catch {
     return false;
   }
-}
+};
 ```
 
 ### Parsing Best Practices
@@ -281,29 +265,25 @@ detect: (line: string) => {
 ```typescript
 parse: (line: string) => {
   const obj = JSON.parse(line); // Throws on invalid JSON
-  
+
   // Validate structure
   if (!obj || typeof obj !== 'object') {
-    throw new ParseError(
-      'Expected JSON object',
-      'mycli',
-      line,
-      undefined,
-      { expectedFormat: 'object' }
-    );
+    throw new ParseError('Expected JSON object', 'mycli', line, undefined, {
+      expectedFormat: 'object',
+    });
   }
-  
+
   const events: AgentEvent[] = [];
-  
+
   // Safe property access
   const type = obj.type || 'unknown';
   const content = obj.content || '';
   const metadata = obj.metadata || {};
-  
+
   // Convert to events...
-  
+
   return events;
-}
+};
 ```
 
 ### Multi-Event Parsing
@@ -314,46 +294,46 @@ Some lines may produce multiple events:
 parse: (line: string) => {
   const obj = JSON.parse(line);
   const events: AgentEvent[] = [];
-  
+
   // A tool execution with output
   if (obj.type === 'tool_execution') {
     // Start event
     events.push({
       t: 'tool',
       name: obj.tool,
-      phase: 'start'
+      phase: 'start',
     });
-    
+
     // Output events
     if (obj.stdout) {
       events.push({
         t: 'tool',
         name: obj.tool,
         phase: 'stdout',
-        text: obj.stdout
+        text: obj.stdout,
       });
     }
-    
+
     if (obj.stderr) {
       events.push({
         t: 'tool',
         name: obj.tool,
         phase: 'stderr',
-        text: obj.stderr
+        text: obj.stderr,
       });
     }
-    
+
     // End event
     events.push({
       t: 'tool',
       name: obj.tool,
       phase: 'end',
-      exitCode: obj.exitCode || 0
+      exitCode: obj.exitCode || 0,
     });
   }
-  
+
   return events;
-}
+};
 ```
 
 ## Testing Parsers
@@ -371,27 +351,27 @@ describe('MyParser', () => {
       const line = '{"source":"mycli","version":1,"type":"message"}';
       expect(myParser.detect(line)).toBe(true);
     });
-    
+
     it('should reject other formats', () => {
       expect(myParser.detect('{"type":"claude"}')).toBe(false);
       expect(myParser.detect('not json')).toBe(false);
       expect(myParser.detect('')).toBe(false);
     });
   });
-  
+
   describe('parse', () => {
     it('should parse message events', () => {
       const line = '{"source":"mycli","type":"message","content":"Hello"}';
       const events = myParser.parse(line);
-      
+
       expect(events).toHaveLength(1);
       expect(events[0]).toEqual({
         t: 'msg',
         role: 'assistant',
-        text: 'Hello'
+        text: 'Hello',
       });
     });
-    
+
     it('should throw ParseError for invalid JSON', () => {
       expect(() => myParser.parse('invalid')).toThrow(ParseError);
     });
@@ -406,23 +386,20 @@ import { createReadStream } from 'fs';
 import { streamEvents } from '@agent-io/stream';
 
 // Test with real fixture files
-const fixtures = [
-  'fixtures/mycli/session1.jsonl',
-  'fixtures/mycli/session2.jsonl'
-];
+const fixtures = ['fixtures/mycli/session1.jsonl', 'fixtures/mycli/session2.jsonl'];
 
 for (const fixture of fixtures) {
   it(`should parse ${fixture}`, async () => {
     const source = createReadStream(fixture);
     const events = [];
-    
-    for await (const event of streamEvents({ 
-      vendor: 'mycli', 
-      source 
+
+    for await (const event of streamEvents({
+      vendor: 'mycli',
+      source,
     })) {
       events.push(event);
     }
-    
+
     expect(events.length).toBeGreaterThan(0);
     expect(events.some(e => e.t === 'msg')).toBe(true);
   });
@@ -439,35 +416,35 @@ import { VendorParser } from '@agent-io/jsonl';
 // Parser that handles streaming chunks
 export const streamingParser: VendorParser = {
   vendor: 'stream-cli',
-  
+
   detect: (line: string) => {
     return line.includes('"stream":true');
   },
-  
+
   parse: (line: string) => {
     const obj = JSON.parse(line);
     const events: AgentEvent[] = [];
-    
+
     // Handle streaming text chunks
     if (obj.type === 'text_delta') {
       events.push({
         t: 'msg',
         role: 'assistant',
-        text: obj.delta || ''
+        text: obj.delta || '',
       });
     }
-    
+
     // Handle streaming completions
     if (obj.type === 'completion' && obj.partial) {
       events.push({
         t: 'msg',
         role: 'assistant',
-        text: obj.text || ''
+        text: obj.text || '',
       });
     }
-    
+
     return events;
-  }
+  },
 };
 ```
 
@@ -479,14 +456,14 @@ import { VendorParser, ParseError } from '@agent-io/jsonl';
 // Parser with graceful error handling
 export const resilientParser: VendorParser = {
   vendor: 'resilient-cli',
-  
+
   detect: (line: string) => {
     return line.includes('resilient-cli');
   },
-  
+
   parse: (line: string) => {
     let obj;
-    
+
     // Try to parse as JSON
     try {
       obj = JSON.parse(line);
@@ -496,17 +473,13 @@ export const resilientParser: VendorParser = {
       if (match) {
         obj = { type: match[1], content: match[2] };
       } else {
-        throw new ParseError(
-          'Unrecognized format',
-          'resilient-cli',
-          line
-        );
+        throw new ParseError('Unrecognized format', 'resilient-cli', line);
       }
     }
-    
+
     // Convert to events...
     return [];
-  }
+  },
 };
 ```
 

@@ -5,7 +5,7 @@ import type {
   RenderContext,
   ToolState,
   RendererFactory,
-  RendererRegistry
+  RendererRegistry,
 } from './types.js';
 import type { AgentEvent } from '../types.js';
 
@@ -13,7 +13,7 @@ describe('Render Types', () => {
   it('should allow valid RenderOptions', () => {
     // Minimal options
     const minimal: RenderOptions = {
-      format: 'ansi'
+      format: 'ansi',
     };
     expect(minimal.format).toBe('ansi');
 
@@ -26,7 +26,7 @@ describe('Render Types', () => {
       hideDebug: true,
       showTimestamps: true,
       compactMode: false,
-      colorDisabled: true
+      colorDisabled: true,
     };
     expect(full.format).toBe('html');
     expect(full.collapseTools).toBe(true);
@@ -62,7 +62,7 @@ describe('Render Types', () => {
 
     const renderer = new TestRenderer();
     const event: AgentEvent = { t: 'msg', role: 'user', text: 'Hello' };
-    
+
     expect(renderer.render(event)).toBe(JSON.stringify(event));
     expect(renderer.renderBatch([event])).toContain('Hello');
     expect(renderer.flush()).toBe('');
@@ -72,7 +72,7 @@ describe('Render Types', () => {
     const context: RenderContext = {
       toolStack: new Map(),
       messageCount: 0,
-      renderStartTime: Date.now()
+      renderStartTime: Date.now(),
     };
 
     // Add a tool state
@@ -80,7 +80,7 @@ describe('Render Types', () => {
       name: 'bash',
       startTime: Date.now(),
       outputLines: ['Line 1', 'Line 2'],
-      collapsed: false
+      collapsed: false,
     };
 
     context.toolStack.set('bash', toolState);
@@ -96,14 +96,15 @@ describe('Render Types', () => {
     const factory: RendererFactory = (options: RenderOptions) => {
       return {
         render: (event: AgentEvent) => `[${options.format}] ${event.t}`,
-        renderBatch: (events: AgentEvent[]) => events.map(e => `[${options.format}] ${e.t}`).join('\n'),
-        flush: () => ''
+        renderBatch: (events: AgentEvent[]) =>
+          events.map(e => `[${options.format}] ${e.t}`).join('\n'),
+        flush: () => '',
       };
     };
 
     const renderer = factory({ format: 'ansi' });
     const event: AgentEvent = { t: 'tool', name: 'ls', phase: 'start' };
-    
+
     expect(renderer.render(event)).toBe('[ansi] tool');
   });
 
@@ -111,19 +112,21 @@ describe('Render Types', () => {
     const registry: RendererRegistry = {
       ansi: (_options: RenderOptions) => ({
         render: (event: AgentEvent) => `ANSI: ${event.t}`,
-        renderBatch: (events: AgentEvent[]) => events.map(e => `ANSI: ${e.t}`).join('\n'),
-        flush: () => ''
+        renderBatch: (events: AgentEvent[]) =>
+          events.map(e => `ANSI: ${e.t}`).join('\n'),
+        flush: () => '',
       }),
       html: (_options: RenderOptions) => ({
         render: (event: AgentEvent) => `<div>${event.t}</div>`,
-        renderBatch: (events: AgentEvent[]) => events.map(e => `<div>${e.t}</div>`).join(''),
-        flush: () => '</body></html>'
+        renderBatch: (events: AgentEvent[]) =>
+          events.map(e => `<div>${e.t}</div>`).join(''),
+        flush: () => '</body></html>',
       }),
       json: (_options: RenderOptions) => ({
         render: (event: AgentEvent) => JSON.stringify(event),
         renderBatch: (events: AgentEvent[]) => JSON.stringify(events),
-        flush: () => ''
-      })
+        flush: () => '',
+      }),
     };
 
     // Each factory should produce a valid renderer
@@ -132,7 +135,7 @@ describe('Render Types', () => {
     const jsonRenderer = registry.json({ format: 'json' });
 
     const event: AgentEvent = { t: 'error', message: 'Test error' };
-    
+
     expect(ansiRenderer.render(event)).toContain('ANSI');
     expect(htmlRenderer.render(event)).toContain('<div>');
     expect(jsonRenderer.render(event)).toContain('"t":"error"');
@@ -148,7 +151,7 @@ describe('Render Types', () => {
     const context: RenderContext = {
       toolStack: new Map(),
       messageCount: 0,
-      renderStartTime: Date.now()
+      renderStartTime: Date.now(),
     };
     expect(context.previousEvent).toBeUndefined();
 
@@ -156,7 +159,7 @@ describe('Render Types', () => {
     const toolEvent: AgentEvent = {
       t: 'tool',
       name: 'git',
-      phase: 'start'
+      phase: 'start',
       // text and exitCode are optional
     };
     expect((toolEvent as any).text).toBeUndefined();

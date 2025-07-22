@@ -41,7 +41,10 @@ export default defineWorkspace([
   // Integration tests
   {
     test: {
-      include: ['tests/integration/**/*.test.ts', 'tests/integration/**/*.spec.ts'],
+      include: [
+        'tests/integration/**/*.test.ts',
+        'tests/integration/**/*.spec.ts',
+      ],
       name: 'integration',
       environment: 'node',
       testTimeout: 30000,

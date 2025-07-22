@@ -2,7 +2,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
-import { getSharedSetup, getPackages, getRootDir, type IntegrationSetupResults } from './shared-setup.js';
+import {
+  getSharedSetup,
+  getPackages,
+  getRootDir,
+  type IntegrationSetupResults,
+} from './shared-setup.js';
 
 /**
  * Integration tests for build process across all packages
@@ -11,7 +16,10 @@ import { getSharedSetup, getPackages, getRootDir, type IntegrationSetupResults }
 
 describe('Build Process Integration', () => {
   const rootDir = getRootDir();
-  const packages = getPackages().map(name => ({ name, dir: `packages/${name}` }));
+  const packages = getPackages().map(name => ({
+    name,
+    dir: `packages/${name}`,
+  }));
   let _setupResults: IntegrationSetupResults;
 
   beforeAll(async () => {
@@ -24,7 +32,10 @@ describe('Build Process Integration', () => {
       // Verify all packages have dist directories from the beforeAll build
       for (const pkg of packages) {
         const distPath = join(rootDir, pkg.dir, 'dist');
-        expect(existsSync(distPath), `${pkg.name} should have dist directory after build`).toBe(true);
+        expect(
+          existsSync(distPath),
+          `${pkg.name} should have dist directory after build`,
+        ).toBe(true);
       }
     });
 
@@ -33,7 +44,7 @@ describe('Build Process Integration', () => {
         execSync('npm run clean', {
           cwd: rootDir,
           stdio: 'pipe',
-          timeout: 30000
+          timeout: 30000,
         });
       } catch (error) {
         // Clean might fail if dist directories don't exist, which is OK
@@ -45,7 +56,9 @@ describe('Build Process Integration', () => {
       // Verify dist directories are removed
       for (const pkg of packages) {
         const distPath = join(rootDir, pkg.dir, 'dist');
-        expect(existsSync(distPath), `${pkg.name} dist should be cleaned`).toBe(false);
+        expect(existsSync(distPath), `${pkg.name} dist should be cleaned`).toBe(
+          false,
+        );
       }
 
       // Rebuild after clean for subsequent tests
@@ -53,7 +66,7 @@ describe('Build Process Integration', () => {
         execSync('npm run build:packages', {
           cwd: rootDir,
           stdio: 'pipe',
-          timeout: 120000
+          timeout: 120000,
         });
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -69,11 +82,14 @@ describe('Build Process Integration', () => {
         const tsConfig = JSON.parse(readFileSync(rootTsConfig, 'utf8'));
         if (tsConfig.references) {
           expect(tsConfig.references.length).toBeGreaterThan(0);
-          
+
           // Verify referenced projects exist
           for (const ref of tsConfig.references) {
             const refPath = join(rootDir, ref.path, 'tsconfig.json');
-            expect(existsSync(refPath), `Referenced project ${ref.path} should exist`).toBe(true);
+            expect(
+              existsSync(refPath),
+              `Referenced project ${ref.path} should exist`,
+            ).toBe(true);
           }
         }
       }
@@ -92,19 +108,27 @@ describe('Build Process Integration', () => {
         // Check for main entry point
         if (packageJson.main) {
           const mainPath = join(rootDir, pkg.dir, packageJson.main);
-          expect(existsSync(mainPath), `${pkg.name} main entry should exist`).toBe(true);
+          expect(
+            existsSync(mainPath),
+            `${pkg.name} main entry should exist`,
+          ).toBe(true);
         }
 
         // Check for module entry point (ESM)
         if (packageJson.module) {
           const modulePath = join(rootDir, pkg.dir, packageJson.module);
-          expect(existsSync(modulePath), `${pkg.name} module entry should exist`).toBe(true);
+          expect(
+            existsSync(modulePath),
+            `${pkg.name} module entry should exist`,
+          ).toBe(true);
         }
 
         // Check for TypeScript declarations
         if (packageJson.types) {
           const typesPath = join(rootDir, pkg.dir, packageJson.types);
-          expect(existsSync(typesPath), `${pkg.name} types should exist`).toBe(true);
+          expect(existsSync(typesPath), `${pkg.name} types should exist`).toBe(
+            true,
+          );
         }
 
         // Check for exports field
@@ -116,13 +140,19 @@ describe('Build Process Integration', () => {
               // Check CJS export
               if (exportEntry.require) {
                 const cjsPath = join(rootDir, pkg.dir, exportEntry.require);
-                expect(existsSync(cjsPath), `${pkg.name} CJS export should exist`).toBe(true);
+                expect(
+                  existsSync(cjsPath),
+                  `${pkg.name} CJS export should exist`,
+                ).toBe(true);
               }
-              
+
               // Check ESM export
               if (exportEntry.import) {
                 const esmPath = join(rootDir, pkg.dir, exportEntry.import);
-                expect(existsSync(esmPath), `${pkg.name} ESM export should exist`).toBe(true);
+                expect(
+                  existsSync(esmPath),
+                  `${pkg.name} ESM export should exist`,
+                ).toBe(true);
               }
             }
           }
@@ -160,8 +190,11 @@ describe('Build Process Integration', () => {
 
         if (packageJson.types) {
           const typesPath = join(rootDir, pkg.dir, packageJson.types);
-          expect(existsSync(typesPath), `${pkg.name} should have .d.ts file`).toBe(true);
-          
+          expect(
+            existsSync(typesPath),
+            `${pkg.name} should have .d.ts file`,
+          ).toBe(true);
+
           const content = readFileSync(typesPath, 'utf8');
           expect(content).toContain('export'); // Should export types
         }
@@ -185,7 +218,7 @@ describe('Build Process Integration', () => {
       execSync('npm run build:packages', {
         cwd: rootDir,
         stdio: 'pipe',
-        timeout: 60000
+        timeout: 60000,
       });
       const incrementalTime = Date.now() - start;
 
@@ -197,7 +230,10 @@ describe('Build Process Integration', () => {
       // Verify the build system can handle multiple builds by checking artifacts exist
       for (const pkg of packages) {
         const distPath = join(rootDir, pkg.dir, 'dist');
-        expect(existsSync(distPath), `${pkg.name} should maintain dist after builds`).toBe(true);
+        expect(
+          existsSync(distPath),
+          `${pkg.name} should maintain dist after builds`,
+        ).toBe(true);
       }
     });
   });

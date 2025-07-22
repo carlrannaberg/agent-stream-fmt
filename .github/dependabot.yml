@@ -21,8 +21,8 @@ updates:
       - "dependencies"
       - "npm"
     reviewers:
-      - "yourusername"  # Replace with actual GitHub username
-    
+      - "yourusername" # Replace with actual GitHub username
+
   # Check for GitHub Actions updates
   - package-ecosystem: "github-actions"
     directory: "/"

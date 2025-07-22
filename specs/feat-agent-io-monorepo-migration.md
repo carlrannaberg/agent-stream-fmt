@@ -7,31 +7,43 @@
 
 ## Overview
 
-Transform the current agent-stream-fmt single package into a modular monorepo structure called "Agent-IO" - a universal I/O toolkit for AI agent CLIs.
+Transform the current agent-stream-fmt single package into a modular monorepo structure called
+"Agent-IO" - a universal I/O toolkit for AI agent CLIs.
 
-**Implementation Approach**: The initial release will establish the monorepo infrastructure with @agent-io/stream as the primary package containing all current functionality. Future releases will progressively extract functionality into the specialized packages (@agent-io/core, @agent-io/jsonl, @agent-io/invoke) as described in this specification.
+**Implementation Approach**: The initial release will establish the monorepo infrastructure with
+@agent-io/stream as the primary package containing all current functionality. Future releases will
+progressively extract functionality into the specialized packages (@agent-io/core, @agent-io/jsonl,
+@agent-io/invoke) as described in this specification.
 
 ## Background/Problem Statement
 
-The current agent-stream-fmt package bundles all functionality (parsing, streaming, rendering, CLI) into a single package. This monolithic approach has several limitations:
+The current agent-stream-fmt package bundles all functionality (parsing, streaming, rendering, CLI)
+into a single package. This monolithic approach has several limitations:
 
-1. **Installation overhead**: Users who only need parsing capabilities must install rendering dependencies
+1. **Installation overhead**: Users who only need parsing capabilities must install rendering
+   dependencies
 2. **Limited extensibility**: Adding new AI agents or formatters requires modifying the core package
-3. **Version coupling**: All features must be versioned together, even when only one component changes
+3. **Version coupling**: All features must be versioned together, even when only one component
+   changes
 4. **Testing complexity**: Tests for different concerns are intermingled
 5. **Future growth**: As more AI agents emerge, the single package will become unwieldy
 
-The content-generator project demonstrates that a simple npm workspaces monorepo can effectively manage multiple related packages with minimal tooling overhead.
+The content-generator project demonstrates that a simple npm workspaces monorepo can effectively
+manage multiple related packages with minimal tooling overhead.
 
 ## Implementation Scope
 
-**Initial Migration Focus**: This specification describes the complete target architecture, but the initial implementation will focus on:
+**Initial Migration Focus**: This specification describes the complete target architecture, but the
+initial implementation will focus on:
 
 1. **Monorepo Infrastructure**: Set up npm workspaces, build tooling, and development workflow
-2. **@agent-io/stream Package**: Migrate the current agent-stream-fmt functionality as the primary package
-3. **Package Stubs**: Create placeholder packages (@agent-io/core, @agent-io/jsonl, @agent-io/invoke) with minimal structure for future implementation
+2. **@agent-io/stream Package**: Migrate the current agent-stream-fmt functionality as the primary
+   package
+3. **Package Stubs**: Create placeholder packages (@agent-io/core, @agent-io/jsonl,
+   @agent-io/invoke) with minimal structure for future implementation
 
-The full modularization into separate packages will be implemented in subsequent phases after validating the monorepo structure and workflow.
+The full modularization into separate packages will be implemented in subsequent phases after
+validating the monorepo structure and workflow.
 
 ## Goals
 
@@ -292,28 +304,20 @@ export default defineConfig({
 
 ```typescript
 // Current (before migration)
-import {
-  streamEvents,
-  streamFormat,
-  AgentEvent,
-  Vendor,
-} from 'agent-stream-fmt';
+import { streamEvents, streamFormat, AgentEvent, Vendor } from 'agent-stream-fmt';
 
 // After migration (initial release)
 // All functionality moves to @agent-io/stream
-import {
-  streamEvents,
-  streamFormat,
-  AgentEvent,
-  Vendor,
-} from '@agent-io/stream';
+import { streamEvents, streamFormat, AgentEvent, Vendor } from '@agent-io/stream';
 
 // Future (when fully modularized into separate packages)
 import { AgentEvent, Vendor } from '@agent-io/core';
 import { streamEvents, streamFormat } from '@agent-io/stream';
 ```
 
-Note: The initial migration simply relocates the entire agent-stream-fmt codebase to @agent-io/stream within the monorepo structure. No separate agent-stream-fmt package will be maintained.
+Note: The initial migration simply relocates the entire agent-stream-fmt codebase to
+@agent-io/stream within the monorepo structure. No separate agent-stream-fmt package will be
+maintained.
 
 ### 6. Dependency Graph
 

@@ -4,7 +4,14 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AnsiRenderer } from '../../src/render/ansi.js';
-import type { AgentEvent, MessageEvent, ToolEvent, CostEvent, ErrorEvent, DebugEvent } from '../../src/types.js';
+import type {
+  AgentEvent,
+  MessageEvent,
+  ToolEvent,
+  CostEvent,
+  ErrorEvent,
+  DebugEvent,
+} from '../../src/types.js';
 import type { RenderOptions } from '../../src/render/types.js';
 
 // Helper to strip ANSI codes for testing
@@ -20,7 +27,7 @@ describe('AnsiRenderer', () => {
     collapseTools: false,
     hideTools: false,
     hideCost: false,
-    hideDebug: false
+    hideDebug: false,
   };
 
   beforeEach(() => {
@@ -32,7 +39,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Hello, world!'
+        text: 'Hello, world!',
       };
 
       const output = renderer.render(event);
@@ -47,7 +54,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: 'I can help with that.'
+        text: 'I can help with that.',
       };
 
       const output = renderer.render(event);
@@ -61,7 +68,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'system',
-        text: 'System initialized'
+        text: 'System initialized',
       };
 
       const output = renderer.render(event);
@@ -75,11 +82,11 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: 'This is **bold** and *italic* and `code`'
+        text: 'This is **bold** and *italic* and `code`',
       };
 
       const output = renderer.render(event);
-      
+
       // Check that formatting codes are applied
       expect(output).toContain('\u001b[1m'); // Bold
       expect(output).toContain('\u001b[3m'); // Italic
@@ -90,7 +97,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Line 1\nLine 2\nLine 3'
+        text: 'Line 1\nLine 2\nLine 3',
       };
 
       const output = renderer.render(event);
@@ -106,7 +113,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'npm',
         phase: 'start',
-        text: 'install'
+        text: 'install',
       };
 
       const output = renderer.render(event);
@@ -120,14 +127,14 @@ describe('AnsiRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'stdout',
-        text: 'Installing dependencies...'
+        text: 'Installing dependencies...',
       };
 
       const output = renderer.render(event);
@@ -141,18 +148,18 @@ describe('AnsiRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'stderr',
-        text: 'Warning: peer dependency'
+        text: 'Warning: peer dependency',
       };
 
       const output = renderer.render(event);
-      
+
       // Should have red color for stderr
       expect(output).toContain('\u001b[31m'); // Red
       expect(stripAnsi(output)).toContain('  │ Warning: peer dependency');
@@ -163,14 +170,14 @@ describe('AnsiRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       };
 
       const output = renderer.render(event);
@@ -185,14 +192,14 @@ describe('AnsiRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'end',
-        exitCode: 1
+        exitCode: 1,
       };
 
       const output = renderer.render(event);
@@ -204,14 +211,14 @@ describe('AnsiRenderer', () => {
     it('should collapse tool output when option is set', () => {
       const collapsedRenderer = new AnsiRenderer({
         ...defaultOptions,
-        collapseTools: true
+        collapseTools: true,
       });
 
       // Start tool
       collapsedRenderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       // Output should be stored, not rendered
@@ -219,7 +226,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'npm',
         phase: 'stdout',
-        text: 'Line 1\nLine 2\nLine 3'
+        text: 'Line 1\nLine 2\nLine 3',
       });
 
       expect(stdoutOutput).toBe('');
@@ -229,7 +236,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'npm',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       });
 
       const stripped = stripAnsi(endOutput);
@@ -240,13 +247,13 @@ describe('AnsiRenderer', () => {
     it('should hide tools when option is set', () => {
       const hiddenRenderer = new AnsiRenderer({
         ...defaultOptions,
-        hideTools: true
+        hideTools: true,
       });
 
       const output = hiddenRenderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       expect(output).toBe('');
@@ -257,7 +264,7 @@ describe('AnsiRenderer', () => {
     it('should render cost information', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 0.0234
+        deltaUsd: 0.0234,
       };
 
       const output = renderer.render(event);
@@ -269,12 +276,12 @@ describe('AnsiRenderer', () => {
     it('should hide cost when option is set', () => {
       const hiddenRenderer = new AnsiRenderer({
         ...defaultOptions,
-        hideCost: true
+        hideCost: true,
       });
 
       const output = hiddenRenderer.render({
         t: 'cost',
-        deltaUsd: 0.0234
+        deltaUsd: 0.0234,
       });
 
       expect(output).toBe('');
@@ -285,7 +292,7 @@ describe('AnsiRenderer', () => {
     it('should render errors with bold red text', () => {
       const event: ErrorEvent = {
         t: 'error',
-        message: 'Something went wrong!'
+        message: 'Something went wrong!',
       };
 
       const output = renderer.render(event);
@@ -301,7 +308,7 @@ describe('AnsiRenderer', () => {
     it('should render debug information', () => {
       const event: DebugEvent = {
         t: 'debug',
-        raw: { key: 'value', nested: { data: 123 } }
+        raw: { key: 'value', nested: { data: 123 } },
       };
 
       const output = renderer.render(event);
@@ -315,12 +322,12 @@ describe('AnsiRenderer', () => {
     it('should hide debug when option is set', () => {
       const hiddenRenderer = new AnsiRenderer({
         ...defaultOptions,
-        hideDebug: true
+        hideDebug: true,
       });
 
       const output = hiddenRenderer.render({
         t: 'debug',
-        raw: { test: true }
+        raw: { test: true },
       });
 
       expect(output).toBe('');
@@ -332,7 +339,7 @@ describe('AnsiRenderer', () => {
       const events: AgentEvent[] = [
         { t: 'msg', role: 'user', text: 'Hello' },
         { t: 'msg', role: 'assistant', text: 'Hi there!' },
-        { t: 'cost', deltaUsd: 0.001 }
+        { t: 'cost', deltaUsd: 0.001 },
       ];
 
       const output = renderer.renderBatch(events);
@@ -355,7 +362,7 @@ describe('AnsiRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const output = renderer.flush();
@@ -369,13 +376,13 @@ describe('AnsiRenderer', () => {
     it('should not include ANSI codes when colors are disabled', () => {
       const noColorRenderer = new AnsiRenderer({
         ...defaultOptions,
-        colorDisabled: true
+        colorDisabled: true,
       });
 
       const output = noColorRenderer.render({
         t: 'msg',
         role: 'user',
-        text: 'Hello'
+        text: 'Hello',
       });
 
       // Should not contain any ANSI escape codes
@@ -389,7 +396,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: ''
+        text: '',
       };
 
       const output = renderer.render(event);
@@ -403,7 +410,7 @@ describe('AnsiRenderer', () => {
       const event: ToolEvent = {
         t: 'tool',
         name: '',
-        phase: 'start'
+        phase: 'start',
       };
 
       const output = renderer.render(event);
@@ -420,7 +427,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'test',
         phase: 'stdout',
-        text: longLine
+        text: longLine,
       };
 
       const output = renderer.render(event);
@@ -434,7 +441,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'test',
         phase: 'stdout',
-        text: 'Special chars: \t\n\r\b\f'
+        text: 'Special chars: \t\n\r\b\f',
       };
 
       const output = renderer.render(event);
@@ -446,7 +453,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'test',
         phase: 'stdout',
-        text: undefined
+        text: undefined,
       };
 
       // Should not throw
@@ -457,7 +464,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: '   \n\t   '
+        text: '   \n\t   ',
       };
 
       const output = renderer.render(event);
@@ -468,7 +475,7 @@ describe('AnsiRenderer', () => {
       // Start multiple tools
       renderer.render({ t: 'tool', name: 'tool1', phase: 'start' });
       renderer.render({ t: 'tool', name: 'tool2', phase: 'start' });
-      
+
       // End them out of order
       renderer.render({ t: 'tool', name: 'tool2', phase: 'end', exitCode: 0 });
       renderer.render({ t: 'tool', name: 'tool1', phase: 'end', exitCode: 0 });
@@ -484,7 +491,7 @@ describe('AnsiRenderer', () => {
       const event: ToolEvent = {
         t: 'tool',
         name: 'test',
-        phase: 'end'
+        phase: 'end',
         // No exitCode
       };
 
@@ -501,11 +508,11 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: '**Bold with *nested italic* text** and `inline code`'
+        text: '**Bold with *nested italic* text** and `inline code`',
       };
 
       const output = renderer.render(event);
-      
+
       // Should have multiple formatting codes
       // eslint-disable-next-line no-control-regex
       const formatCodes = output.match(/\u001b\[\d+m/g);
@@ -517,7 +524,7 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: '```\nfunction hello() {\n  console.log("world");\n}\n```'
+        text: '```\nfunction hello() {\n  console.log("world");\n}\n```',
       };
 
       const output = renderer.render(event);
@@ -532,11 +539,11 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'test',
         phase: 'stdout',
-        text: 'Output with **bold** and `code`'
+        text: 'Output with **bold** and `code`',
       };
 
       const output = renderer.render(event);
-      
+
       // Tool output should not have markdown formatting applied
       expect(output).toContain('**bold**');
       expect(output).toContain('`code`');
@@ -552,23 +559,23 @@ describe('AnsiRenderer', () => {
 
       // Add output to each
       for (let i = 0; i < 5; i++) {
-        renderer.render({ 
-          t: 'tool', 
-          name: `tool${i}`, 
+        renderer.render({
+          t: 'tool',
+          name: `tool${i}`,
           phase: 'stdout',
-          text: `Output from tool ${i}`
+          text: `Output from tool ${i}`,
         });
       }
 
       // End them all
       for (let i = 0; i < 5; i++) {
-        const output = renderer.render({ 
-          t: 'tool', 
-          name: `tool${i}`, 
+        const output = renderer.render({
+          t: 'tool',
+          name: `tool${i}`,
           phase: 'end',
-          exitCode: 0
+          exitCode: 0,
         });
-        
+
         expect(output).toContain('✅');
         expect(output).toContain(`tool${i}`);
       }
@@ -582,7 +589,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'unknown-tool',
         phase: 'stdout',
-        text: 'Output without start'
+        text: 'Output without start',
       };
 
       // Should not throw
@@ -594,7 +601,7 @@ describe('AnsiRenderer', () => {
         t: 'tool',
         name: 'unknown-tool',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       };
 
       // Should not throw
@@ -606,7 +613,7 @@ describe('AnsiRenderer', () => {
     it('should handle unknown event types gracefully', () => {
       const unknownEvent: any = {
         t: 'future-event-type',
-        data: 'some data'
+        data: 'some data',
       };
 
       const output = renderer.render(unknownEvent);
@@ -621,7 +628,7 @@ describe('AnsiRenderer', () => {
     it('should format very small costs correctly', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 0.000001
+        deltaUsd: 0.000001,
       };
 
       const output = renderer.render(event);
@@ -633,7 +640,7 @@ describe('AnsiRenderer', () => {
     it('should format large costs correctly', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 123.456789
+        deltaUsd: 123.456789,
       };
 
       const output = renderer.render(event);
@@ -645,7 +652,7 @@ describe('AnsiRenderer', () => {
     it('should handle negative costs', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: -0.5
+        deltaUsd: -0.5,
       };
 
       const output = renderer.render(event);
@@ -659,12 +666,25 @@ describe('AnsiRenderer', () => {
     it('should handle real Claude fixture data', () => {
       // Simulate events from Claude fixture
       const events: AgentEvent[] = [
-        { t: 'msg', role: 'user', text: 'Can you help me write a Python function?' },
-        { t: 'msg', role: 'assistant', text: 'I\'d be happy to help! What kind of function do you need?' },
+        {
+          t: 'msg',
+          role: 'user',
+          text: 'Can you help me write a Python function?',
+        },
+        {
+          t: 'msg',
+          role: 'assistant',
+          text: "I'd be happy to help! What kind of function do you need?",
+        },
         { t: 'tool', name: 'python', phase: 'start', text: 'def example():' },
-        { t: 'tool', name: 'python', phase: 'stdout', text: 'Function created successfully' },
+        {
+          t: 'tool',
+          name: 'python',
+          phase: 'stdout',
+          text: 'Function created successfully',
+        },
         { t: 'tool', name: 'python', phase: 'end', exitCode: 0 },
-        { t: 'cost', deltaUsd: 0.0023 }
+        { t: 'cost', deltaUsd: 0.0023 },
       ];
 
       events.forEach(event => {
@@ -683,15 +703,15 @@ describe('AnsiRenderer', () => {
       const nullEvent: any = {
         t: 'msg',
         role: 'user',
-        text: null
+        text: null,
       };
       expect(() => renderer.render(nullEvent)).not.toThrow();
-      
+
       // Test with undefined role
       const undefinedRoleEvent: any = {
         t: 'msg',
         role: undefined,
-        text: 'Test message'
+        text: 'Test message',
       };
       expect(() => renderer.render(undefinedRoleEvent)).not.toThrow();
     });
@@ -699,12 +719,12 @@ describe('AnsiRenderer', () => {
     it('should handle circular references in debug events', () => {
       const circular: any = { name: 'test' };
       circular.self = circular;
-      
+
       const event: DebugEvent = {
         t: 'debug',
-        raw: circular
+        raw: circular,
       };
-      
+
       expect(() => renderer.render(event)).not.toThrow();
       const output = renderer.render(event);
       expect(output).toContain('🐛');
@@ -715,9 +735,9 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: longText
+        text: longText,
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('x'.repeat(100)); // Check partial content
       expect(output.length).toBeGreaterThan(49000); // Most content preserved
@@ -727,9 +747,9 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Text with \x00null\x01 and \x1bescape\x08 chars'
+        text: 'Text with \x00null\x01 and \x1bescape\x08 chars',
       };
-      
+
       expect(() => renderer.render(event)).not.toThrow();
     });
 
@@ -737,9 +757,9 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: '**Unclosed bold and *mixed formatting` with backticks'
+        text: '**Unclosed bold and *mixed formatting` with backticks',
       };
-      
+
       const output = renderer.render(event);
       expect(output).toBeTruthy();
       expect(output).toContain('🤖');
@@ -750,47 +770,62 @@ describe('AnsiRenderer', () => {
     it('should handle interleaved tool executions', () => {
       // Start tool 1
       renderer.render({ t: 'tool', name: 'npm', phase: 'start' });
-      renderer.render({ t: 'tool', name: 'npm', phase: 'stdout', text: 'npm output 1' });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'npm',
+        phase: 'stdout',
+        text: 'npm output 1',
+      });
+
       // Start tool 2 before tool 1 ends
       renderer.render({ t: 'tool', name: 'git', phase: 'start' });
-      renderer.render({ t: 'tool', name: 'git', phase: 'stdout', text: 'git output' });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'git',
+        phase: 'stdout',
+        text: 'git output',
+      });
+
       // More output from tool 1
-      renderer.render({ t: 'tool', name: 'npm', phase: 'stdout', text: 'npm output 2' });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'npm',
+        phase: 'stdout',
+        text: 'npm output 2',
+      });
+
       // End tools in reverse order
       renderer.render({ t: 'tool', name: 'git', phase: 'end', exitCode: 0 });
       renderer.render({ t: 'tool', name: 'npm', phase: 'end', exitCode: 1 });
-      
+
       expect(renderer.flush()).toBe('');
     });
 
     it('should handle tools with very long output in collapsed mode', () => {
       const collapsedRenderer = new AnsiRenderer({
         ...defaultOptions,
-        collapseTools: true
+        collapseTools: true,
       });
-      
+
       collapsedRenderer.render({ t: 'tool', name: 'build', phase: 'start' });
-      
+
       // Generate 10 lines of output
       for (let i = 0; i < 10; i++) {
         collapsedRenderer.render({
           t: 'tool',
           name: 'build',
           phase: 'stdout',
-          text: `Build output line ${i}: Processing files and dependencies...`
+          text: `Build output line ${i}: Processing files and dependencies...`,
         });
       }
-      
+
       const endOutput = collapsedRenderer.render({
         t: 'tool',
         name: 'build',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       });
-      
+
       const stripped = stripAnsi(endOutput);
       expect(stripped).toContain('✅ build');
       expect(stripped).toContain('(10 lines)');
@@ -798,14 +833,34 @@ describe('AnsiRenderer', () => {
 
     it('should handle tool errors with stderr', () => {
       renderer.render({ t: 'tool', name: 'test', phase: 'start' });
-      
+
       // Mix stdout and stderr
-      renderer.render({ t: 'tool', name: 'test', phase: 'stdout', text: 'Normal output' });
-      renderer.render({ t: 'tool', name: 'test', phase: 'stderr', text: 'Error: Command failed' });
-      renderer.render({ t: 'tool', name: 'test', phase: 'stderr', text: 'Stack trace follows...' });
-      
-      const endOutput = renderer.render({ t: 'tool', name: 'test', phase: 'end', exitCode: 1 });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'test',
+        phase: 'stdout',
+        text: 'Normal output',
+      });
+      renderer.render({
+        t: 'tool',
+        name: 'test',
+        phase: 'stderr',
+        text: 'Error: Command failed',
+      });
+      renderer.render({
+        t: 'tool',
+        name: 'test',
+        phase: 'stderr',
+        text: 'Stack trace follows...',
+      });
+
+      const endOutput = renderer.render({
+        t: 'tool',
+        name: 'test',
+        phase: 'end',
+        exitCode: 1,
+      });
+
       expect(endOutput).toContain('❌');
     });
   });
@@ -816,11 +871,11 @@ describe('AnsiRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: maliciousText
+        text: maliciousText,
       };
-      
+
       const output = renderer.render(event);
-      
+
       // The literal escape sequence should be rendered, not interpreted
       expect(output).toContain('\\x1b[31m');
     });
@@ -829,9 +884,9 @@ describe('AnsiRenderer', () => {
       const event: ToolEvent = {
         t: 'tool',
         name: 'tool\x1b[31mRED',
-        phase: 'start'
+        phase: 'start',
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('tool\\x1b[31mRED');
     });
@@ -840,21 +895,36 @@ describe('AnsiRenderer', () => {
   describe('State Recovery', () => {
     it('should recover from inconsistent tool states', () => {
       // End a tool that was never started
-      renderer.render({ t: 'tool', name: 'phantom', phase: 'end', exitCode: 0 });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'phantom',
+        phase: 'end',
+        exitCode: 0,
+      });
+
       // Output for a tool that was never started
-      renderer.render({ t: 'tool', name: 'ghost', phase: 'stdout', text: 'Output' });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'ghost',
+        phase: 'stdout',
+        text: 'Output',
+      });
+
       // Start a tool twice
       renderer.render({ t: 'tool', name: 'duplicate', phase: 'start' });
       renderer.render({ t: 'tool', name: 'duplicate', phase: 'start' });
-      
+
       // Should still function normally
       renderer.render({ t: 'msg', role: 'user', text: 'Normal message' });
-      
+
       // Cleanup should work
-      renderer.render({ t: 'tool', name: 'duplicate', phase: 'end', exitCode: 0 });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'duplicate',
+        phase: 'end',
+        exitCode: 0,
+      });
+
       expect(renderer.flush()).toBe('');
     });
   });

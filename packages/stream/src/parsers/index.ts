@@ -253,7 +253,10 @@ export class ParserRegistry {
         // Only log parser detection errors in non-test environments
         // In tests, we intentionally use error parsers to test error handling
         if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
-          console.warn(`Parser ${entry.parser.vendor} detection failed:`, error);
+          console.warn(
+            `Parser ${entry.parser.vendor} detection failed:`,
+            error,
+          );
         }
       }
     }

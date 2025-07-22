@@ -27,8 +27,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -49,7 +49,7 @@ jobs:
     needs: quality
     strategy:
       matrix:
-        node-version: ['18', '20']
+        node-version: ["18", "20"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -93,7 +93,7 @@ jobs:
           # Find all lcov.info files and merge coverage data
           TOTAL_LINES=0
           TOTAL_HITS=0
-          
+
           for lcov_file in $(find . -name "lcov.info" -type f | grep -v node_modules); do
             if [ -f "$lcov_file" ]; then
               echo "Processing $lcov_file"
@@ -103,7 +103,7 @@ jobs:
               TOTAL_HITS=$((TOTAL_HITS + ${HITS:-0}))
             fi
           done
-          
+
           if [ $TOTAL_LINES -gt 0 ]; then
             PERCENT=$(awk "BEGIN {printf \"%.2f\", $TOTAL_HITS * 100 / $TOTAL_LINES}")
             echo "Total Coverage: ${PERCENT}% (${TOTAL_HITS}/${TOTAL_LINES} lines)"
@@ -127,7 +127,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ['20']
+        node-version: ["20"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -136,7 +136,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -158,8 +158,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -186,8 +186,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -199,6 +199,6 @@ jobs:
             echo "Skipping changeset check for ${{ github.event.pull_request.title }}"
             exit 0
           fi
-          
+
           # Check if changeset exists
           npx changeset status --since=origin/main

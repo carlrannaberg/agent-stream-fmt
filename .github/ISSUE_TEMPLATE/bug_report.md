@@ -8,14 +8,11 @@ assignees: ''
 
 ## Bug Description
 
-**Brief Summary**
-A clear and concise description of what the bug is.
+**Brief Summary** A clear and concise description of what the bug is.
 
-**Expected Behavior**
-What you expected to happen.
+**Expected Behavior** What you expected to happen.
 
-**Actual Behavior**
-What actually happened instead.
+**Actual Behavior** What actually happened instead.
 
 ## Environment Information
 
@@ -41,8 +38,7 @@ What actually happened instead.
 
 ## Reproduction Steps
 
-**Minimal Example**
-Please provide the smallest possible example that reproduces the issue:
+**Minimal Example** Please provide the smallest possible example that reproduces the issue:
 
 ```bash
 # Command that triggers the bug
@@ -92,8 +88,7 @@ agent-stream-fmt --vendor claude --format ansi --collapse-tools
 # Full error output if any
 ```
 
-**Debug Information:**
-If possible, run with debug logging enabled:
+**Debug Information:** If possible, run with debug logging enabled:
 
 ```bash
 DEBUG=agent-stream-fmt:* your-command-here

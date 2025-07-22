@@ -4,13 +4,20 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HtmlRenderer } from './html.js';
-import type { AgentEvent, MessageEvent, ToolEvent, CostEvent, ErrorEvent, DebugEvent } from '../types.js';
+import type {
+  AgentEvent,
+  MessageEvent,
+  ToolEvent,
+  CostEvent,
+  ErrorEvent,
+  DebugEvent,
+} from '../types.js';
 import type { RenderOptions } from './types.js';
 
 describe('HtmlRenderer', () => {
   let renderer: HtmlRenderer;
   const defaultOptions: RenderOptions = {
-    format: 'html'
+    format: 'html',
   };
 
   beforeEach(() => {
@@ -22,12 +29,16 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: '<script>alert("XSS")</script> & "quotes" \'apostrophes\''
+        text: '<script>alert("XSS")</script> & "quotes" \'apostrophes\'',
       };
 
       const result = renderer.render(event);
-      expect(result).toContain('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;');
-      expect(result).toContain('&amp; &quot;quotes&quot; &#39;apostrophes&#39;');
+      expect(result).toContain(
+        '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;',
+      );
+      expect(result).toContain(
+        '&amp; &quot;quotes&quot; &#39;apostrophes&#39;',
+      );
       expect(result).not.toContain('<script>');
     });
 
@@ -36,7 +47,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: '<dangerous>tool</dangerous>',
         phase: 'start',
-        text: '<input>data</input>'
+        text: '<input>data</input>',
       };
 
       const result = renderer.render(event);
@@ -50,7 +61,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Hello, world!'
+        text: 'Hello, world!',
       };
 
       const result = renderer.render(event);
@@ -64,7 +75,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: 'I can help with that.'
+        text: 'I can help with that.',
       };
 
       const result = renderer.render(event);
@@ -76,7 +87,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'system',
-        text: 'System message'
+        text: 'System message',
       };
 
       const result = renderer.render(event);
@@ -88,7 +99,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: 'Line 1\nLine 2\n\n`code` and **bold** and *italic*'
+        text: 'Line 1\nLine 2\n\n`code` and **bold** and *italic*',
       };
 
       const result = renderer.render(event);
@@ -105,7 +116,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'bash',
         phase: 'start',
-        text: 'ls -la'
+        text: 'ls -la',
       };
 
       const result = renderer.render(event);
@@ -123,11 +134,13 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'bash',
         phase: 'stdout',
-        text: 'file1.txt\nfile2.txt'
+        text: 'file1.txt\nfile2.txt',
       };
 
       const result = renderer.render(event);
-      expect(result).toContain('class="tool-stdout">file1.txt\nfile2.txt</div>');
+      expect(result).toContain(
+        'class="tool-stdout">file1.txt\nfile2.txt</div>',
+      );
     });
 
     it('should render tool stderr', () => {
@@ -135,11 +148,13 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'bash',
         phase: 'stderr',
-        text: 'Error: file not found'
+        text: 'Error: file not found',
       };
 
       const result = renderer.render(event);
-      expect(result).toContain('class="tool-stderr">Error: file not found</div>');
+      expect(result).toContain(
+        'class="tool-stderr">Error: file not found</div>',
+      );
     });
 
     it('should render tool end with success', () => {
@@ -147,7 +162,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'bash',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       };
 
       const result = renderer.render(event);
@@ -161,7 +176,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'bash',
         phase: 'end',
-        exitCode: 1
+        exitCode: 1,
       };
 
       const result = renderer.render(event);
@@ -171,11 +186,14 @@ describe('HtmlRenderer', () => {
     });
 
     it('should hide tools when hideTools option is set', () => {
-      const hidingRenderer = new HtmlRenderer({ ...defaultOptions, hideTools: true });
+      const hidingRenderer = new HtmlRenderer({
+        ...defaultOptions,
+        hideTools: true,
+      });
       const event: ToolEvent = {
         t: 'tool',
         name: 'bash',
-        phase: 'start'
+        phase: 'start',
       };
 
       const result = hidingRenderer.render(event);
@@ -187,7 +205,7 @@ describe('HtmlRenderer', () => {
     it('should render cost information', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 0.0025
+        deltaUsd: 0.0025,
       };
 
       const result = renderer.render(event);
@@ -197,10 +215,13 @@ describe('HtmlRenderer', () => {
     });
 
     it('should hide cost when hideCost option is set', () => {
-      const hidingRenderer = new HtmlRenderer({ ...defaultOptions, hideCost: true });
+      const hidingRenderer = new HtmlRenderer({
+        ...defaultOptions,
+        hideCost: true,
+      });
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 0.0025
+        deltaUsd: 0.0025,
       };
 
       const result = hidingRenderer.render(event);
@@ -212,23 +233,27 @@ describe('HtmlRenderer', () => {
     it('should render error messages', () => {
       const event: ErrorEvent = {
         t: 'error',
-        message: 'Something went wrong!'
+        message: 'Something went wrong!',
       };
 
       const result = renderer.render(event);
       expect(result).toContain('class="error-message"');
       expect(result).toContain('class="error-icon">🚨</span>');
-      expect(result).toContain('class="error-text">Something went wrong!</span>');
+      expect(result).toContain(
+        'class="error-text">Something went wrong!</span>',
+      );
     });
 
     it('should escape HTML in error messages', () => {
       const event: ErrorEvent = {
         t: 'error',
-        message: '<script>alert("error")</script>'
+        message: '<script>alert("error")</script>',
       };
 
       const result = renderer.render(event);
-      expect(result).toContain('&lt;script&gt;alert(&quot;error&quot;)&lt;/script&gt;');
+      expect(result).toContain(
+        '&lt;script&gt;alert(&quot;error&quot;)&lt;/script&gt;',
+      );
     });
   });
 
@@ -236,7 +261,7 @@ describe('HtmlRenderer', () => {
     it('should render debug information', () => {
       const event: DebugEvent = {
         t: 'debug',
-        raw: { type: 'test', value: 123 }
+        raw: { type: 'test', value: 123 },
       };
 
       const result = renderer.render(event);
@@ -248,10 +273,13 @@ describe('HtmlRenderer', () => {
     });
 
     it('should hide debug when hideDebug option is set', () => {
-      const hidingRenderer = new HtmlRenderer({ ...defaultOptions, hideDebug: true });
+      const hidingRenderer = new HtmlRenderer({
+        ...defaultOptions,
+        hideDebug: true,
+      });
       const event: DebugEvent = {
         t: 'debug',
-        raw: { test: true }
+        raw: { test: true },
       };
 
       const result = hidingRenderer.render(event);
@@ -264,7 +292,7 @@ describe('HtmlRenderer', () => {
       const events: AgentEvent[] = [
         { t: 'msg', role: 'user', text: 'Hello' },
         { t: 'msg', role: 'assistant', text: 'Hi there!' },
-        { t: 'cost', deltaUsd: 0.001 }
+        { t: 'cost', deltaUsd: 0.001 },
       ];
 
       const result = renderer.renderBatch(events);
@@ -282,7 +310,7 @@ describe('HtmlRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'test-tool',
-        phase: 'start'
+        phase: 'start',
       });
 
       // Add some output
@@ -290,7 +318,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'test-tool',
         phase: 'stdout',
-        text: 'output'
+        text: 'output',
       });
 
       // Flush without ending the tool
@@ -320,7 +348,7 @@ describe('HtmlRenderer', () => {
     it('should render unknown events gracefully', () => {
       const unknownEvent = {
         t: 'unknown',
-        data: 'some data'
+        data: 'some data',
       } as any;
 
       const result = renderer.render(unknownEvent);
@@ -345,7 +373,12 @@ describe('HtmlRenderer', () => {
     it('should properly track tool lifecycle', () => {
       // Complete tool lifecycle
       renderer.render({ t: 'tool', name: 'bash', phase: 'start' });
-      renderer.render({ t: 'tool', name: 'bash', phase: 'stdout', text: 'output' });
+      renderer.render({
+        t: 'tool',
+        name: 'bash',
+        phase: 'stdout',
+        text: 'output',
+      });
       renderer.render({ t: 'tool', name: 'bash', phase: 'end', exitCode: 0 });
 
       // Flush should have no open tools

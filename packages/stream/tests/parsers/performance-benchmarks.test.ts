@@ -1,9 +1,9 @@
 /**
  * Performance benchmarks for parser implementations
- * 
+ *
  * WARNING: These tests are CPU-intensive and may cause system slowdown!
  * They process millions of lines to measure parser performance.
- * 
+ *
  * Run these tests separately with: npm run test:performance
  * These tests are excluded from the main test suite.
  *

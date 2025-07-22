@@ -1,6 +1,8 @@
 # Agent Stream Formatter Examples
 
-This directory contains comprehensive examples demonstrating all major features of the agent-stream-fmt library. These examples showcase real-world usage patterns for parsing, formatting, and integrating AI agent CLI outputs.
+This directory contains comprehensive examples demonstrating all major features of the
+agent-stream-fmt library. These examples showcase real-world usage patterns for parsing, formatting,
+and integrating AI agent CLI outputs.
 
 ## Quick Start
 
@@ -76,7 +78,8 @@ node examples/advanced/error-handling.js
 node examples/benchmarks/throughput-test.js
 ```
 
-Integration examples may require additional setup (environment variables, external services) as documented in each file.
+Integration examples may require additional setup (environment variables, external services) as
+documented in each file.
 
 ## Example Data
 

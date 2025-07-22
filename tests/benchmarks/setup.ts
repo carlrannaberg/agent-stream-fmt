@@ -38,7 +38,7 @@ export class Benchmark {
       iterations?: number;
       warmup?: number;
       measureMemory?: boolean;
-    } = {}
+    } = {},
   ): Promise<BenchmarkResult> {
     const { iterations = 1000, warmup = 10, measureMemory = false } = options;
 
@@ -108,7 +108,7 @@ export class Benchmark {
       name: string;
       fn: () => unknown | Promise<unknown>;
     }>,
-    options?: Parameters<typeof this.run>[2]
+    options?: Parameters<typeof this.run>[2],
   ): Promise<BenchmarkResult[]> {
     const results: BenchmarkResult[] = [];
 
@@ -120,8 +120,8 @@ export class Benchmark {
     }
 
     // Find fastest
-    const fastest = results.reduce((a, b) => 
-      a.opsPerSecond > b.opsPerSecond ? a : b
+    const fastest = results.reduce((a, b) =>
+      a.opsPerSecond > b.opsPerSecond ? a : b,
     );
 
     // eslint-disable-next-line no-console
@@ -152,7 +152,7 @@ export class Benchmark {
   saveResults(filepath: string): void {
     const dir = join(process.cwd(), 'reports');
     mkdirSync(dir, { recursive: true });
-    
+
     const fullPath = join(dir, filepath);
     const content = this.generateReport();
     writeFileSync(fullPath, content);
@@ -203,7 +203,8 @@ export function suite(name: string): {
   run: (options?: Parameters<Benchmark['run']>[2]) => Promise<void>;
 } {
   const benchmark = new Benchmark();
-  const tests: Array<{ name: string; fn: () => unknown | Promise<unknown> }> = [];
+  const tests: Array<{ name: string; fn: () => unknown | Promise<unknown> }> =
+    [];
 
   return {
     add(testName: string, fn: () => unknown | Promise<unknown>) {
@@ -213,7 +214,9 @@ export function suite(name: string): {
       // eslint-disable-next-line no-console
       console.log(`\nRunning benchmark suite: ${name}\n`);
       await benchmark.compare(tests, options);
-      benchmark.saveResults(`BENCHMARK_${name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.md`);
+      benchmark.saveResults(
+        `BENCHMARK_${name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.md`,
+      );
     },
   };
 }

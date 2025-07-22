@@ -1,21 +1,19 @@
 # Task Breakdown: Agent-IO Monorepo Migration
 
-Generated: 2025-07-20
-Source: specs/feat-agent-io-monorepo-migration.md
+Generated: 2025-07-20 Source: specs/feat-agent-io-monorepo-migration.md
 
 ## Overview
 
-Transform the current agent-stream-fmt single package into a modular monorepo structure called "Agent-IO" - a universal I/O toolkit for AI agent CLIs. The initial release establishes the monorepo infrastructure with @agent-io/stream as the primary package containing all current functionality.
+Transform the current agent-stream-fmt single package into a modular monorepo structure called
+"Agent-IO" - a universal I/O toolkit for AI agent CLIs. The initial release establishes the monorepo
+infrastructure with @agent-io/stream as the primary package containing all current functionality.
 
 ## Phase 1: Foundation - Monorepo Infrastructure
 
 ### Task 1.1: Initialize npm workspace structure
 
-**Description**: Set up the base monorepo structure with npm workspaces configuration
-**Size**: Medium
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: None
+**Description**: Set up the base monorepo structure with npm workspaces configuration **Size**:
+Medium **Priority**: High **Dependencies**: None **Can run parallel with**: None
 
 **Technical Requirements**:
 
@@ -56,11 +54,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 1.2: Configure TypeScript project references
 
-**Description**: Set up TypeScript configuration for monorepo with project references
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 1.1
-**Can run parallel with**: Task 1.3, 1.4
+**Description**: Set up TypeScript configuration for monorepo with project references **Size**:
+Medium **Priority**: High **Dependencies**: Task 1.1 **Can run parallel with**: Task 1.3, 1.4
 
 **Technical Requirements**:
 
@@ -103,11 +98,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 1.3: Set up build tooling with tsup
 
-**Description**: Configure tsup for building all packages in the monorepo
-**Size**: Small
-**Priority**: High
-**Dependencies**: Task 1.1
-**Can run parallel with**: Task 1.2, 1.4
+**Description**: Configure tsup for building all packages in the monorepo **Size**: Small
+**Priority**: High **Dependencies**: Task 1.1 **Can run parallel with**: Task 1.2, 1.4
 
 **Technical Requirements**:
 
@@ -147,11 +139,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 1.4: Configure changesets for versioning
 
-**Description**: Set up changesets for independent package versioning and releases
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 1.1
-**Can run parallel with**: Task 1.2, 1.3
+**Description**: Set up changesets for independent package versioning and releases **Size**: Medium
+**Priority**: High **Dependencies**: Task 1.1 **Can run parallel with**: Task 1.2, 1.3
 
 **Technical Requirements**:
 
@@ -190,11 +179,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 1.5: Set up development tooling
 
-**Description**: Configure ESLint, Prettier, and npm-run-all for development workflow
-**Size**: Medium
-**Priority**: Medium
-**Dependencies**: Task 1.1
-**Can run parallel with**: Task 1.6
+**Description**: Configure ESLint, Prettier, and npm-run-all for development workflow **Size**:
+Medium **Priority**: Medium **Dependencies**: Task 1.1 **Can run parallel with**: Task 1.6
 
 **Technical Requirements**:
 
@@ -236,11 +222,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 1.6: Configure testing infrastructure
 
-**Description**: Set up Vitest for monorepo testing with coverage
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 1.1
-**Can run parallel with**: Task 1.5
+**Description**: Set up Vitest for monorepo testing with coverage **Size**: Medium **Priority**:
+High **Dependencies**: Task 1.1 **Can run parallel with**: Task 1.5
 
 **Technical Requirements**:
 
@@ -281,11 +264,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 2.1: Create package directory structure
 
-**Description**: Create all package directories with initial configurations
-**Size**: Small
-**Priority**: High
-**Dependencies**: Task 1.1, 1.2
-**Can run parallel with**: None
+**Description**: Create all package directories with initial configurations **Size**: Small
+**Priority**: High **Dependencies**: Task 1.1, 1.2 **Can run parallel with**: None
 
 **Technical Requirements**:
 
@@ -319,11 +299,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 2.2: Migrate agent-stream-fmt to @agent-io/stream
 
-**Description**: Move entire agent-stream-fmt codebase to @agent-io/stream package
-**Size**: Large
-**Priority**: High
-**Dependencies**: Task 2.1
-**Can run parallel with**: Task 2.3
+**Description**: Move entire agent-stream-fmt codebase to @agent-io/stream package **Size**: Large
+**Priority**: High **Dependencies**: Task 2.1 **Can run parallel with**: Task 2.3
 
 **Technical Requirements**:
 
@@ -365,11 +342,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 2.3: Create placeholder packages
 
-**Description**: Create stub implementations for core, jsonl, and invoke packages
-**Size**: Medium
-**Priority**: Medium
-**Dependencies**: Task 2.1
-**Can run parallel with**: Task 2.2
+**Description**: Create stub implementations for core, jsonl, and invoke packages **Size**: Medium
+**Priority**: Medium **Dependencies**: Task 2.1 **Can run parallel with**: Task 2.2
 
 **Technical Requirements**:
 
@@ -416,11 +390,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 2.4: Update @agent-io/stream imports
 
-**Description**: Ensure @agent-io/stream works as standalone package
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 2.2, 2.3
-**Can run parallel with**: None
+**Description**: Ensure @agent-io/stream works as standalone package **Size**: Medium **Priority**:
+High **Dependencies**: Task 2.2, 2.3 **Can run parallel with**: None
 
 **Technical Requirements**:
 
@@ -461,11 +432,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 3.1: Migrate all tests to @agent-io/stream
 
-**Description**: Move all existing tests to the stream package
-**Size**: Large
-**Priority**: High
-**Dependencies**: Task 2.2
-**Can run parallel with**: Task 3.2
+**Description**: Move all existing tests to the stream package **Size**: Large **Priority**: High
+**Dependencies**: Task 2.2 **Can run parallel with**: Task 3.2
 
 **Technical Requirements**:
 
@@ -497,11 +465,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 3.2: Create monorepo integration tests
 
-**Description**: Build integration tests for monorepo functionality
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 2.4
-**Can run parallel with**: Task 3.1
+**Description**: Build integration tests for monorepo functionality **Size**: Medium **Priority**:
+High **Dependencies**: Task 2.4 **Can run parallel with**: Task 3.1
 
 **Technical Requirements**:
 
@@ -534,11 +499,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 3.3: Validate package publishing
 
-**Description**: Test npm publishing workflow for all packages
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 3.1, 3.2
-**Can run parallel with**: Task 3.4
+**Description**: Test npm publishing workflow for all packages **Size**: Medium **Priority**: High
+**Dependencies**: Task 3.1, 3.2 **Can run parallel with**: Task 3.4
 
 **Technical Requirements**:
 
@@ -569,11 +531,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 3.4: Performance benchmarking
 
-**Description**: Ensure monorepo migration maintains performance targets
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 2.4
-**Can run parallel with**: Task 3.3
+**Description**: Ensure monorepo migration maintains performance targets **Size**: Medium
+**Priority**: High **Dependencies**: Task 2.4 **Can run parallel with**: Task 3.3
 
 **Technical Requirements**:
 
@@ -605,11 +564,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 3.5: Validate TypeScript project references
 
-**Description**: Ensure TypeScript incremental builds work correctly
-**Size**: Small
-**Priority**: Medium
-**Dependencies**: Task 3.1
-**Can run parallel with**: Task 3.6
+**Description**: Ensure TypeScript incremental builds work correctly **Size**: Small **Priority**:
+Medium **Dependencies**: Task 3.1 **Can run parallel with**: Task 3.6
 
 **Technical Requirements**:
 
@@ -637,11 +593,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 3.6: End-to-end CLI testing
 
-**Description**: Test the CLI functionality after migration
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Task 3.1
-**Can run parallel with**: Task 3.5
+**Description**: Test the CLI functionality after migration **Size**: Medium **Priority**: High
+**Dependencies**: Task 3.1 **Can run parallel with**: Task 3.5
 
 **Technical Requirements**:
 
@@ -674,11 +627,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 4.1: Create root README.md
 
-**Description**: Write comprehensive monorepo documentation
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Phase 3 completion
-**Can run parallel with**: Task 4.2, 4.3
+**Description**: Write comprehensive monorepo documentation **Size**: Medium **Priority**: High
+**Dependencies**: Phase 3 completion **Can run parallel with**: Task 4.2, 4.3
 
 **Technical Requirements**:
 
@@ -709,11 +659,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 4.2: Create package-specific documentation
 
-**Description**: Write README for each package in the monorepo
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Phase 3 completion
-**Can run parallel with**: Task 4.1, 4.3
+**Description**: Write README for each package in the monorepo **Size**: Medium **Priority**: High
+**Dependencies**: Phase 3 completion **Can run parallel with**: Task 4.1, 4.3
 
 **Technical Requirements**:
 
@@ -745,11 +692,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 4.3: Create migration guide
 
-**Description**: Document migration from agent-stream-fmt to @agent-io/stream
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Phase 3 completion
-**Can run parallel with**: Task 4.1, 4.2
+**Description**: Document migration from agent-stream-fmt to @agent-io/stream **Size**: Medium
+**Priority**: High **Dependencies**: Phase 3 completion **Can run parallel with**: Task 4.1, 4.2
 
 **Technical Requirements**:
 
@@ -785,11 +729,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 4.4: Set up CI/CD pipeline
 
-**Description**: Configure GitHub Actions for monorepo CI/CD
-**Size**: Large
-**Priority**: High
-**Dependencies**: Task 3.2
-**Can run parallel with**: Task 4.5
+**Description**: Configure GitHub Actions for monorepo CI/CD **Size**: Large **Priority**: High
+**Dependencies**: Task 3.2 **Can run parallel with**: Task 4.5
 
 **Technical Requirements**:
 
@@ -827,11 +768,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 4.5: Update project metadata
 
-**Description**: Update all project metadata for new structure
-**Size**: Small
-**Priority**: Medium
-**Dependencies**: Task 4.1
-**Can run parallel with**: Task 4.4
+**Description**: Update all project metadata for new structure **Size**: Small **Priority**: Medium
+**Dependencies**: Task 4.1 **Can run parallel with**: Task 4.4
 
 **Technical Requirements**:
 
@@ -863,11 +801,8 @@ Transform the current agent-stream-fmt single package into a modular monorepo st
 
 ### Task 4.6: Prepare initial release
 
-**Description**: Create and publish first monorepo release
-**Size**: Medium
-**Priority**: High
-**Dependencies**: All previous tasks
-**Can run parallel with**: None
+**Description**: Create and publish first monorepo release **Size**: Medium **Priority**: High
+**Dependencies**: All previous tasks **Can run parallel with**: None
 
 **Technical Requirements**:
 

@@ -1,6 +1,8 @@
 # Contributing to agent-stream-fmt
 
-We love your input! We want to make contributing to agent-stream-fmt as easy and transparent as possible. Whether you're reporting a bug, discussing the current state of the code, submitting a fix, proposing new features, or becoming a maintainer - we appreciate all contributions.
+We love your input! We want to make contributing to agent-stream-fmt as easy and transparent as
+possible. Whether you're reporting a bug, discussing the current state of the code, submitting a
+fix, proposing new features, or becoming a maintainer - we appreciate all contributions.
 
 ## Development Setup
 
@@ -63,7 +65,8 @@ npm run typecheck      # TypeScript type checking
 
 ### Testing
 
-We use Vitest as our test framework. Tests are located in `tests/` directory and alongside source files as `*.test.ts`.
+We use Vitest as our test framework. Tests are located in `tests/` directory and alongside source
+files as `*.test.ts`.
 
 ```bash
 # Core testing commands
@@ -289,7 +292,9 @@ When contributing, please keep our performance targets in mind:
 
 ### Our Pledge
 
-We pledge to make participation in our project a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
+We pledge to make participation in our project a harassment-free experience for everyone, regardless
+of age, body size, disability, ethnicity, gender identity and expression, level of experience,
+nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 ### Our Standards
 
@@ -311,12 +316,17 @@ Examples of unacceptable behavior:
 
 ### Enforcement
 
-Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any instances of unacceptable behavior.
+Project maintainers are responsible for clarifying the standards of acceptable behavior and are
+expected to take appropriate and fair corrective action in response to any instances of unacceptable
+behavior.
 
 ## Recognition
 
-Contributors who make significant improvements will be recognized in our README.md. We value all contributions, whether they're fixing typos, improving documentation, adding tests, or implementing new features.
+Contributors who make significant improvements will be recognized in our README.md. We value all
+contributions, whether they're fixing typos, improving documentation, adding tests, or implementing
+new features.
 
-Remember: **We're all here to make great software together!** Every contribution matters, and we're excited to see what you'll bring to the project.
+Remember: **We're all here to make great software together!** Every contribution matters, and we're
+excited to see what you'll bring to the project.
 
 Thank you for contributing to agent-stream-fmt! 🎉

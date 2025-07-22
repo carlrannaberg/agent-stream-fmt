@@ -1,6 +1,8 @@
 # Migration Guide: agent-stream-fmt to @agent-io/stream
 
-This guide will help you migrate from the original `agent-stream-fmt` package to the new monorepo-based `@agent-io/stream` package. The migration is straightforward with no breaking changes - only the package name and import paths have changed.
+This guide will help you migrate from the original `agent-stream-fmt` package to the new
+monorepo-based `@agent-io/stream` package. The migration is straightforward with no breaking
+changes - only the package name and import paths have changed.
 
 ## Table of Contents
 
@@ -16,14 +18,16 @@ This guide will help you migrate from the original `agent-stream-fmt` package to
 
 ## Overview
 
-The `agent-stream-fmt` package has been migrated to a monorepo structure and is now published as `@agent-io/stream`. This change brings several benefits:
+The `agent-stream-fmt` package has been migrated to a monorepo structure and is now published as
+`@agent-io/stream`. This change brings several benefits:
 
 - Better organization and modularity
 - Easier maintenance and updates
 - Consistent versioning across related packages
 - Improved development workflow
 
-**Good news:** There are no breaking API changes! All your existing code will work with simple import path updates.
+**Good news:** There are no breaking API changes! All your existing code will work with simple
+import path updates.
 
 ## Step-by-Step Migration
 
@@ -93,7 +97,7 @@ import {
   parseAmpLine,
   AnsiRenderer,
   HtmlRenderer,
-  JsonRenderer
+  JsonRenderer,
 } from 'agent-stream-fmt';
 
 // After
@@ -105,7 +109,7 @@ import {
   parseAmpLine,
   AnsiRenderer,
   HtmlRenderer,
-  JsonRenderer
+  JsonRenderer,
 } from '@agent-io/stream';
 ```
 
@@ -125,7 +129,7 @@ import type {
   StreamEventOptions,
   StreamFormatOptions,
   RenderOptions,
-  Renderer
+  Renderer,
 } from 'agent-stream-fmt';
 
 // After
@@ -141,7 +145,7 @@ import type {
   StreamEventOptions,
   StreamFormatOptions,
   RenderOptions,
-  Renderer
+  Renderer,
 } from '@agent-io/stream';
 ```
 
@@ -156,7 +160,8 @@ gemini --jsonl -i task.md | agent-stream-fmt --vendor gemini
 amp-code run build.yml -j | agent-stream-fmt --html > output.html
 ```
 
-The binary name is kept for backward compatibility, ensuring your scripts and workflows continue to work without modification.
+The binary name is kept for backward compatibility, ensuring your scripts and workflows continue to
+work without modification.
 
 ## Package.json Updates
 
@@ -188,7 +193,8 @@ If you have npm scripts that reference the package, update them:
 }
 ```
 
-Note: Using the CLI binary name (`agent-stream-fmt`) in scripts will continue to work without changes.
+Note: Using the CLI binary name (`agent-stream-fmt`) in scripts will continue to work without
+changes.
 
 ## TypeScript Configuration
 
@@ -265,7 +271,7 @@ app.post('/format', async (req, res) => {
   for await (const chunk of streamFormat({
     source: req.body.jsonl.split('\n'),
     vendor: 'auto',
-    format: 'html'
+    format: 'html',
   })) {
     res.write(chunk);
   }
@@ -290,15 +296,20 @@ The migration to a monorepo structure under the `@agent-io` scope provides sever
 
 ### What's the performance impact?
 
-There is no performance impact. The code is identical - only the package structure has changed. The same optimized streaming engine delivers 50,000+ lines/second throughput with constant memory usage.
+There is no performance impact. The code is identical - only the package structure has changed. The
+same optimized streaming engine delivers 50,000+ lines/second throughput with constant memory usage.
 
 ### How long will backward compatibility be maintained?
 
-The CLI binary name (`agent-stream-fmt`) will be maintained indefinitely to ensure existing scripts and workflows continue to function. However, we recommend updating import statements to use the new package name for better long-term support.
+The CLI binary name (`agent-stream-fmt`) will be maintained indefinitely to ensure existing scripts
+and workflows continue to function. However, we recommend updating import statements to use the new
+package name for better long-term support.
 
 ### Can I use both packages simultaneously during migration?
 
-While technically possible, it's not recommended. The packages contain the same code, so having both installed may lead to confusion and increased bundle size. Complete the migration in one step if possible.
+While technically possible, it's not recommended. The packages contain the same code, so having both
+installed may lead to confusion and increased bundle size. Complete the migration in one step if
+possible.
 
 ### How do I report migration issues?
 
@@ -315,11 +326,13 @@ If you encounter any issues during migration:
 If you see errors like "Cannot find module '@agent-io/stream'":
 
 1. Ensure you've installed the new package:
+
    ```bash
    npm list @agent-io/stream
    ```
 
 2. Clear your node_modules and reinstall:
+
    ```bash
    rm -rf node_modules package-lock.json
    npm install
@@ -347,18 +360,18 @@ If using build tools like Webpack, Rollup, or Vite, you may need to update alias
 module.exports = {
   resolve: {
     alias: {
-      'agent-stream-fmt': '@agent-io/stream'
-    }
-  }
+      'agent-stream-fmt': '@agent-io/stream',
+    },
+  },
 };
 
 // Vite example
 export default {
   resolve: {
     alias: {
-      'agent-stream-fmt': '@agent-io/stream'
-    }
-  }
+      'agent-stream-fmt': '@agent-io/stream',
+    },
+  },
 };
 ```
 
@@ -375,11 +388,13 @@ The package supports both ESM and CommonJS. If you encounter module format issue
 If the `agent-stream-fmt` command is not found after installation:
 
 1. Install globally:
+
    ```bash
    npm install -g @agent-io/stream
    ```
 
 2. Or use npx:
+
    ```bash
    npx @agent-io/stream --help
    ```
@@ -397,6 +412,8 @@ Migrating from `agent-stream-fmt` to `@agent-io/stream` is a simple process:
 2. Update import statements to use the new package name
 3. Everything else remains the same - no API changes!
 
-The migration maintains full backward compatibility while providing a better foundation for future development. Your existing code, scripts, and workflows will continue to work with minimal changes.
+The migration maintains full backward compatibility while providing a better foundation for future
+development. Your existing code, scripts, and workflows will continue to work with minimal changes.
 
-For additional help or to report issues, please visit our [GitHub repository](https://github.com/yourusername/agent-io).
+For additional help or to report issues, please visit our
+[GitHub repository](https://github.com/yourusername/agent-io).

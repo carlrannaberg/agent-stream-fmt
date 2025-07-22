@@ -1,16 +1,21 @@
 # Test Suite Documentation
 
-This directory contains comprehensive test suites and validation for the Phase 1 components of the agent-stream-fmt project.
+This directory contains comprehensive test suites and validation for the Phase 1 components of the
+agent-stream-fmt project.
 
 ## Test Structure
 
 ### Core Test Files
 
-- **`comprehensive-integration.test.ts`** - Comprehensive integration tests validating all parsers against real fixture files
-- **`registry-integration.test.ts`** - Enhanced registry integration tests for auto-detection and priority ordering
-- **`error-handling.test.ts`** - Comprehensive error handling tests for malformed JSON and edge cases
+- **`comprehensive-integration.test.ts`** - Comprehensive integration tests validating all parsers
+  against real fixture files
+- **`registry-integration.test.ts`** - Enhanced registry integration tests for auto-detection and
+  priority ordering
+- **`error-handling.test.ts`** - Comprehensive error handling tests for malformed JSON and edge
+  cases
 - **`performance-benchmarks.test.ts`** - Performance benchmark tests targeting >1000 lines/sec
-- **`fixture-validation.test.ts`** - Validation tests for all fixture data from tests/fixtures/ directory
+- **`fixture-validation.test.ts`** - Validation tests for all fixture data from tests/fixtures/
+  directory
 - **`fixtures.test.ts`** - Basic fixture validation (existing)
 
 ### Parser-Specific Tests
@@ -28,6 +33,7 @@ This directory contains comprehensive test suites and validation for the Phase 1
 **Purpose**: Validate parsers against real fixture files
 
 **Key Test Areas**:
+
 - Parser detection accuracy across all fixtures
 - Event generation validation
 - Content preservation testing
@@ -41,6 +47,7 @@ This directory contains comprehensive test suites and validation for the Phase 1
 **Purpose**: Validate parser registry system
 
 **Key Test Areas**:
+
 - Auto-detection system validation
 - Priority ordering verification
 - Error handling in registry operations
@@ -54,6 +61,7 @@ This directory contains comprehensive test suites and validation for the Phase 1
 **Purpose**: Test resilience and graceful failure modes
 
 **Key Test Areas**:
+
 - Malformed JSON handling
 - Edge case inputs (empty, whitespace, unicode)
 - Unknown event types
@@ -68,6 +76,7 @@ This directory contains comprehensive test suites and validation for the Phase 1
 **Purpose**: Ensure performance meets targets
 
 **Key Test Areas**:
+
 - Parser performance (>1000 lines/sec target)
 - Detection performance
 - Memory usage validation
@@ -82,6 +91,7 @@ This directory contains comprehensive test suites and validation for the Phase 1
 **Purpose**: Comprehensive validation of all fixture data
 
 **Key Test Areas**:
+
 - JSON structure validation
 - Vendor detection validation
 - Parser processing validation
@@ -153,16 +163,19 @@ For performance tests, synthetic data is generated to ensure consistent benchmar
 ## Performance Targets
 
 ### Parser Performance
+
 - **Target**: >1000 lines/second
 - **Measurement**: Average processing time across fixture files
 - **Validation**: All parsers must meet target consistently
 
 ### Detection Performance
+
 - **Target**: >2000 detections/second
 - **Measurement**: Vendor detection speed
 - **Validation**: Detection should be faster than parsing
 
 ### Memory Usage
+
 - **Target**: <100MB for 10k line processing
 - **Measurement**: Heap usage during processing
 - **Validation**: No significant memory leaks
@@ -170,16 +183,19 @@ For performance tests, synthetic data is generated to ensure consistent benchmar
 ## Error Handling Requirements
 
 ### Malformed JSON
+
 - **Detection**: Should return null gracefully
 - **Parsing**: Should throw ParseError with meaningful message
 - **Performance**: Should not degrade significantly
 
 ### Unknown Event Types
+
 - **Detection**: Should detect if basic structure matches
 - **Parsing**: Should generate debug events
 - **Content**: Should preserve original data in debug event
 
 ### Edge Cases
+
 - **Empty inputs**: Should handle gracefully
 - **Unicode content**: Should preserve exactly
 - **Large inputs**: Should process efficiently
@@ -190,6 +206,7 @@ For performance tests, synthetic data is generated to ensure consistent benchmar
 The comprehensive validation script generates detailed reports:
 
 ### Report Sections
+
 1. **Registry Status** - Available parsers and configuration
 2. **Overall Statistics** - Total files, lines, errors processed
 3. **Performance Benchmarks** - Speed and memory usage metrics
@@ -197,6 +214,7 @@ The comprehensive validation script generates detailed reports:
 5. **Error Summary** - Categorized error analysis
 
 ### Report Output
+
 - **Console**: Formatted terminal output with colors
 - **JSON**: Machine-readable report in `validation-report.json`
 - **Status**: Exit code indicating pass/fail status
@@ -228,16 +246,16 @@ describe('Feature Area', () => {
 ```typescript
 it('meets performance target', () => {
   const startTime = performance.now();
-  
+
   // Test operation
   for (const item of testData) {
     process(item);
   }
-  
+
   const endTime = performance.now();
   const duration = endTime - startTime;
   const itemsPerSecond = (testData.length / duration) * 1000;
-  
+
   expect(itemsPerSecond).toBeGreaterThan(TARGET_PERFORMANCE);
 });
 ```
@@ -247,15 +265,18 @@ it('meets performance target', () => {
 The test suite is designed for CI/CD integration:
 
 ### Test Execution
+
 - **Parallel**: Tests can run in parallel for speed
 - **Deterministic**: Results should be consistent across runs
 - **Environment**: Works in Node.js 18+ environments
 
 ### Exit Codes
+
 - **0**: All tests passed
 - **1**: Tests failed or performance targets not met
 
 ### Reporting
+
 - **JUnit**: Compatible with CI reporting systems
 - **Coverage**: Integrated with coverage reporting
 - **Artifacts**: Validation reports as build artifacts
@@ -295,12 +316,14 @@ npm test -- --coverage
 ## Future Enhancements
 
 ### Planned Test Additions
+
 - **Streaming Tests**: Real-time processing validation
 - **Memory Profiling**: Detailed memory usage analysis
 - **Regression Tests**: Automated regression detection
 - **Load Testing**: High-volume processing tests
 
 ### Test Infrastructure
+
 - **Test Data Management**: Automated fixture generation
 - **Performance Tracking**: Historical performance monitoring
 - **Cross-Platform Testing**: Validation across different environments
@@ -308,4 +331,5 @@ npm test -- --coverage
 
 ---
 
-*This test suite ensures the reliability, performance, and correctness of the Phase 1 implementation according to the specifications in `specs/phase-1.md`.*
+_This test suite ensures the reliability, performance, and correctness of the Phase 1 implementation
+according to the specifications in `specs/phase-1.md`._

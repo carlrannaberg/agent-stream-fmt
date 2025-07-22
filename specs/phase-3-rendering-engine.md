@@ -3,27 +3,35 @@
 **Status**: Draft  
 **Authors**: Claude Assistant  
 **Date**: 2025-07-16  
-**Version**: 1.0.0  
+**Version**: 1.0.0
 
 ## Overview
 
-Phase 3 transforms the agent-stream-fmt project from a functional streaming parser into a polished, human-readable formatting tool. This phase implements the rendering engine that converts normalized `AgentEvent` streams into beautifully formatted ANSI terminal output and semantic HTML, along with an enhanced CLI that provides the complete user experience specified in the main feature document.
+Phase 3 transforms the agent-stream-fmt project from a functional streaming parser into a polished,
+human-readable formatting tool. This phase implements the rendering engine that converts normalized
+`AgentEvent` streams into beautifully formatted ANSI terminal output and semantic HTML, along with
+an enhanced CLI that provides the complete user experience specified in the main feature document.
 
 ## Background/Problem Statement
 
-Phases 1 and 2 delivered a working streaming parser that can normalize vendor-specific JSONL into unified `AgentEvent` objects. However, the current output is raw JSON events, which are not suitable for human consumption. Phase 3 addresses this by:
+Phases 1 and 2 delivered a working streaming parser that can normalize vendor-specific JSONL into
+unified `AgentEvent` objects. However, the current output is raw JSON events, which are not suitable
+for human consumption. Phase 3 addresses this by:
 
-1. **Raw JSON output**: Current `streamEvents` emits structured events but no human-readable formatting
+1. **Raw JSON output**: Current `streamEvents` emits structured events but no human-readable
+   formatting
 2. **Missing visual hierarchy**: No distinction between message types, roles, or tool phases
 3. **No terminal styling**: Plain text output lacks colors, emphasis, and visual structure
-4. **Limited CLI features**: Basic functionality without filtering, formatting options, or user experience polish
+4. **Limited CLI features**: Basic functionality without filtering, formatting options, or user
+   experience polish
 5. **No HTML support**: Cannot generate web-friendly output for documentation or dashboards
 
 ## Goals
 
 - **Beautiful terminal output**: ANSI-formatted text with colors, icons, and proper indentation
 - **Semantic HTML generation**: Web-compatible output with CSS styling and accessibility features
-- **Enhanced CLI experience**: Complete command-line interface with filtering, formatting options, and help
+- **Enhanced CLI experience**: Complete command-line interface with filtering, formatting options,
+  and help
 - **Flexible rendering system**: Extensible architecture supporting multiple output formats
 - **Performance optimization**: Maintain streaming efficiency while adding rendering complexity
 - **User-friendly defaults**: Sensible formatting that works well out-of-the-box
@@ -39,15 +47,18 @@ Phases 1 and 2 delivered a working streaming parser that can normalize vendor-sp
 ## Technical Dependencies
 
 ### Phase Prerequisites
+
 - **Phase 1 Complete**: Core types (`AgentEvent`, `VendorParser`) and parser infrastructure
 - **Phase 2 Complete**: `streamEvents` function, line reader, and basic CLI foundation
 
 ### External Dependencies
+
 - **kleur**: ^4.1.5 (ANSI colors and styles, already specified in main spec)
 - **Node.js**: >= 18.0.0 (native stream support)
 - **TypeScript**: 5.x (type safety)
 
 ### New Dependencies (Optional)
+
 - **@types/node**: For enhanced type definitions
 - **escape-html**: For HTML entity escaping (or implement inline)
 
@@ -110,26 +121,26 @@ interface ToolState {
 
 ### ANSI Renderer Implementation
 
-```typescript
+````typescript
 // src/render/ansi.ts
 import { kleur } from 'kleur';
 import { AgentEvent, RenderOptions } from '../types';
 
 export class AnsiRenderer implements Renderer {
   private context: RenderContext;
-  
+
   constructor(private options: RenderOptions) {
     this.context = {
       toolStack: new Map(),
       messageCount: 0,
-      renderStartTime: Date.now()
+      renderStartTime: Date.now(),
     };
   }
-  
+
   render(event: AgentEvent): string {
     // Update context
     this.context.previousEvent = event;
-    
+
     switch (event.t) {
       case 'msg':
         return this.renderMessage(event);
@@ -145,154 +156,159 @@ export class AnsiRenderer implements Renderer {
         return this.renderUnknown(event);
     }
   }
-  
+
   private renderMessage(event: AgentEvent & { t: 'msg' }): string {
     this.context.messageCount++;
-    
-    const roleIcon = {
-      'user': '👤',
-      'assistant': '🤖',
-      'system': '⚙️'
-    }[event.role] || '❓';
-    
-    const roleColor = {
-      'user': kleur.bold().cyan,
-      'assistant': kleur.bold().green,
-      'system': kleur.bold().yellow
-    }[event.role] || kleur.bold().white;
-    
+
+    const roleIcon =
+      {
+        user: '👤',
+        assistant: '🤖',
+        system: '⚙️',
+      }[event.role] || '❓';
+
+    const roleColor =
+      {
+        user: kleur.bold().cyan,
+        assistant: kleur.bold().green,
+        system: kleur.bold().yellow,
+      }[event.role] || kleur.bold().white;
+
     const header = roleColor(`${roleIcon} ${event.role}:`);
     const content = this.formatMessageContent(event.text);
-    
+
     return `${header}\n${content}\n\n`;
   }
-  
+
   private renderTool(event: AgentEvent & { t: 'tool' }): string {
     if (this.options.hideTools) return '';
-    
+
     const toolKey = `${event.name}-${event.phase}`;
-    
+
     switch (event.phase) {
       case 'start':
         this.context.toolStack.set(event.name, {
           name: event.name,
           startTime: Date.now(),
           outputLines: [],
-          collapsed: this.options.collapseTools || false
+          collapsed: this.options.collapseTools || false,
         });
-        
+
         const startIcon = kleur.dim().italic('🔧');
         const toolName = kleur.bold().blue(event.name);
         const input = event.text ? kleur.dim(` ${event.text}`) : '';
-        
+
         return `${startIcon} ${toolName}${input}\n`;
-        
+
       case 'stdout':
       case 'stderr':
         const toolState = this.context.toolStack.get(event.name);
         if (!toolState) return '';
-        
+
         if (toolState.collapsed) {
           toolState.outputLines.push(event.text || '');
           return '';
         }
-        
-        const prefix = event.phase === 'stderr' 
-          ? kleur.dim().red('  │ ')
-          : kleur.dim().gray('  │ ');
-        
+
+        const prefix =
+          event.phase === 'stderr' ? kleur.dim().red('  │ ') : kleur.dim().gray('  │ ');
+
         const lines = (event.text || '').split('\n');
         return lines.map(line => `${prefix}${line}`).join('\n') + '\n';
-        
+
       case 'end':
         const endState = this.context.toolStack.get(event.name);
         if (!endState) return '';
-        
+
         const duration = Date.now() - endState.startTime;
         const exitCode = event.exitCode || 0;
-        
+
         let result = '';
-        
+
         if (endState.collapsed && endState.outputLines.length > 0) {
           const summary = endState.outputLines.join('\n');
-          result += kleur.dim().gray(`  └─ ${summary.slice(0, 100)}${summary.length > 100 ? '...' : ''}\n`);
+          result += kleur
+            .dim()
+            .gray(`  └─ ${summary.slice(0, 100)}${summary.length > 100 ? '...' : ''}\n`);
         }
-        
+
         const statusIcon = exitCode === 0 ? '✅' : '❌';
         const statusColor = exitCode === 0 ? kleur.green : kleur.red;
         const durationText = kleur.dim().gray(`(${duration}ms)`);
-        
+
         result += `${statusIcon} ${statusColor(event.name)} ${durationText}\n`;
-        
+
         this.context.toolStack.delete(event.name);
         return result;
-        
+
       default:
         return kleur.dim().gray(`  │ ${event.phase}: ${event.text || ''}\n`);
     }
   }
-  
+
   private renderCost(event: AgentEvent & { t: 'cost' }): string {
     if (this.options.hideCost) return '';
-    
+
     const costIcon = '💰';
     const costText = kleur.dim().yellow(`$${event.deltaUsd.toFixed(4)}`);
-    
+
     return `${costIcon} ${costText}\n`;
   }
-  
+
   private renderError(event: AgentEvent & { t: 'error' }): string {
     const errorIcon = '🚨';
     const errorText = kleur.bold().red(event.message);
-    
+
     return `${errorIcon} ${errorText}\n`;
   }
-  
+
   private renderDebug(event: AgentEvent & { t: 'debug' }): string {
     if (this.options.hideDebug) return '';
-    
+
     const debugIcon = kleur.dim().gray('🐛');
     const debugText = kleur.dim().gray(JSON.stringify(event.raw, null, 2));
-    
+
     return `${debugIcon} ${debugText}\n`;
   }
-  
+
   private formatMessageContent(text: string): string {
     // Basic markdown-like formatting
     const lines = text.split('\n');
-    return lines.map(line => {
-      // Code blocks
-      if (line.startsWith('```')) {
-        return kleur.dim().gray(line);
-      }
-      
-      // Inline code
-      line = line.replace(/`([^`]+)`/g, (_, code) => kleur.yellow(code));
-      
-      // Bold
-      line = line.replace(/\*\*([^*]+)\*\*/g, (_, text) => kleur.bold(text));
-      
-      // Italic
-      line = line.replace(/\*([^*]+)\*/g, (_, text) => kleur.italic(text));
-      
-      return `  ${line}`;
-    }).join('\n');
+    return lines
+      .map(line => {
+        // Code blocks
+        if (line.startsWith('```')) {
+          return kleur.dim().gray(line);
+        }
+
+        // Inline code
+        line = line.replace(/`([^`]+)`/g, (_, code) => kleur.yellow(code));
+
+        // Bold
+        line = line.replace(/\*\*([^*]+)\*\*/g, (_, text) => kleur.bold(text));
+
+        // Italic
+        line = line.replace(/\*([^*]+)\*/g, (_, text) => kleur.italic(text));
+
+        return `  ${line}`;
+      })
+      .join('\n');
   }
-  
+
   renderBatch(events: AgentEvent[]): string {
     return events.map(event => this.render(event)).join('');
   }
-  
+
   flush(): string {
     // Handle any pending tool output
     const pending = Array.from(this.context.toolStack.values())
       .map(tool => `⚠️  ${kleur.yellow('Tool still running:')} ${tool.name}`)
       .join('\n');
-      
+
     return pending ? pending + '\n' : '';
   }
 }
-```
+````
 
 ### HTML Renderer Implementation
 
@@ -300,18 +316,18 @@ export class AnsiRenderer implements Renderer {
 // src/render/html.ts
 export class HtmlRenderer implements Renderer {
   private context: RenderContext;
-  
+
   constructor(private options: RenderOptions) {
     this.context = {
       toolStack: new Map(),
       messageCount: 0,
-      renderStartTime: Date.now()
+      renderStartTime: Date.now(),
     };
   }
-  
+
   render(event: AgentEvent): string {
     this.context.previousEvent = event;
-    
+
     switch (event.t) {
       case 'msg':
         return this.renderMessage(event);
@@ -327,21 +343,22 @@ export class HtmlRenderer implements Renderer {
         return this.renderUnknown(event);
     }
   }
-  
+
   private renderMessage(event: AgentEvent & { t: 'msg' }): string {
     const roleClass = `message-${event.role}`;
-    const roleIcon = {
-      'user': '👤',
-      'assistant': '🤖',
-      'system': '⚙️'
-    }[event.role] || '❓';
-    
+    const roleIcon =
+      {
+        user: '👤',
+        assistant: '🤖',
+        system: '⚙️',
+      }[event.role] || '❓';
+
     const content = this.escapeHtml(event.text)
       .replace(/\n/g, '<br>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    
+
     return `
       <div class="message ${roleClass}">
         <div class="message-header">
@@ -352,10 +369,10 @@ export class HtmlRenderer implements Renderer {
       </div>
     `;
   }
-  
+
   private renderTool(event: AgentEvent & { t: 'tool' }): string {
     if (this.options.hideTools) return '';
-    
+
     switch (event.phase) {
       case 'start':
         return `
@@ -367,17 +384,17 @@ export class HtmlRenderer implements Renderer {
             </div>
             <div class="tool-output">
         `;
-        
+
       case 'stdout':
       case 'stderr':
         const outputClass = event.phase === 'stderr' ? 'stderr' : 'stdout';
         const escapedText = this.escapeHtml(event.text || '');
         return `<div class="tool-${outputClass}">${escapedText}</div>`;
-        
+
       case 'end':
         const statusClass = (event.exitCode || 0) === 0 ? 'success' : 'error';
         const statusIcon = (event.exitCode || 0) === 0 ? '✅' : '❌';
-        
+
         return `
             </div>
             <div class="tool-end ${statusClass}">
@@ -387,15 +404,15 @@ export class HtmlRenderer implements Renderer {
             </div>
           </div>
         `;
-        
+
       default:
         return `<div class="tool-${event.phase}">${this.escapeHtml(event.text || '')}</div>`;
     }
   }
-  
+
   private renderCost(event: AgentEvent & { t: 'cost' }): string {
     if (this.options.hideCost) return '';
-    
+
     return `
       <div class="cost-info">
         <span class="cost-icon">💰</span>
@@ -403,7 +420,7 @@ export class HtmlRenderer implements Renderer {
       </div>
     `;
   }
-  
+
   private renderError(event: AgentEvent & { t: 'error' }): string {
     return `
       <div class="error-message">
@@ -412,10 +429,10 @@ export class HtmlRenderer implements Renderer {
       </div>
     `;
   }
-  
+
   private renderDebug(event: AgentEvent & { t: 'debug' }): string {
     if (this.options.hideDebug) return '';
-    
+
     return `
       <div class="debug-info">
         <span class="debug-icon">🐛</span>
@@ -423,7 +440,7 @@ export class HtmlRenderer implements Renderer {
       </div>
     `;
   }
-  
+
   private escapeHtml(text: string): string {
     return text
       .replace(/&/g, '&amp;')
@@ -432,17 +449,19 @@ export class HtmlRenderer implements Renderer {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-  
+
   renderBatch(events: AgentEvent[]): string {
     return events.map(event => this.render(event)).join('');
   }
-  
+
   flush(): string {
     // Close any open tool executions
     const openTools = Array.from(this.context.toolStack.values())
-      .map(tool => `</div><div class="tool-interrupted">⚠️ Tool interrupted: ${tool.name}</div></div>`)
+      .map(
+        tool => `</div><div class="tool-interrupted">⚠️ Tool interrupted: ${tool.name}</div></div>`,
+      )
       .join('');
-      
+
     return openTools;
   }
 }
@@ -459,14 +478,14 @@ export async function* streamFormat(opts: {
   renderOptions?: RenderOptions;
 }): AsyncIterator<string> {
   const renderer = createRenderer(opts.format || 'ansi', opts.renderOptions || {});
-  
+
   for await (const event of streamEvents(opts)) {
     const formatted = renderer.render(event);
     if (formatted) {
       yield formatted;
     }
   }
-  
+
   // Flush any pending output
   const final = renderer.flush();
   if (final) {
@@ -523,7 +542,9 @@ async function main() {
     .option('-o, --output <file>', 'output file (default: stdout)')
     .option('--html', 'shorthand for --format html')
     .option('--json', 'shorthand for --format json')
-    .addHelpText('after', `
+    .addHelpText(
+      'after',
+      `
 Examples:
   claude --json "explain recursion" | agent-stream-fmt
   gemini --jsonl -i task.md | agent-stream-fmt --vendor gemini --hide-tools
@@ -541,46 +562,43 @@ Vendor auto-detection:
   - Automatically detects format from input
   - Supports claude, gemini, amp formats
   - Use --vendor to force specific parser
-    `);
-    
+    `,
+    );
+
   program.parse();
-  
+
   const opts = program.opts<CliOptions>();
-  
+
   // Handle shorthand options
   if (opts.html) opts.format = 'html';
   if (opts.json) opts.format = 'json';
-  
+
   // Setup output stream
-  const output = opts.output 
-    ? fs.createWriteStream(opts.output)
-    : process.stdout;
-  
+  const output = opts.output ? fs.createWriteStream(opts.output) : process.stdout;
+
   // Setup filtering
-  const eventFilter = opts.only
-    ? new Set(opts.only.split(',').map(s => s.trim()))
-    : undefined;
-  
+  const eventFilter = opts.only ? new Set(opts.only.split(',').map(s => s.trim())) : undefined;
+
   // Setup render options
   const renderOptions: RenderOptions = {
     format: opts.format,
     collapseTools: opts.collapseTools,
     hideTools: opts.hideTools,
     hideCost: opts.hideCost,
-    hideDebug: opts.hideDebug
+    hideDebug: opts.hideDebug,
   };
-  
+
   // Add HTML document wrapper for HTML output
   if (opts.format === 'html') {
     output.write(HTML_DOCUMENT_START);
   }
-  
+
   try {
     for await (const formatted of streamFormat({
       vendor: opts.vendor as Vendor,
       source: process.stdin,
       format: opts.format,
-      renderOptions
+      renderOptions,
     })) {
       // Apply filtering if specified
       if (eventFilter) {
@@ -588,7 +606,7 @@ Vendor auto-detection:
         // need to parse the event type from the formatted output or
         // apply filtering at the event level
       }
-      
+
       output.write(formatted);
     }
   } catch (error) {
@@ -598,7 +616,7 @@ Vendor auto-detection:
     if (opts.format === 'html') {
       output.write(HTML_DOCUMENT_END);
     }
-    
+
     if (opts.output) {
       output.end();
     }
@@ -661,7 +679,7 @@ if (require.main === module) {
   │ function helloWorld(): string {
   │   return "Hello, World!";
   │ }
-  │ 
+  │
   │ export default helloWorld;
 ✅ write (234ms)
 
@@ -708,32 +726,42 @@ describe('ANSI Renderer', () => {
   it('renders message with correct role styling', () => {
     const renderer = new AnsiRenderer({ format: 'ansi' });
     const event: AgentEvent = { t: 'msg', role: 'assistant', text: 'Hello' };
-    
+
     const output = renderer.render(event);
-    
+
     expect(output).toContain('🤖');
     expect(output).toMatch(/\x1b\[.*m/); // Contains ANSI codes
     expect(output).toContain('Hello');
   });
-  
+
   it('handles tool lifecycle correctly', () => {
     const renderer = new AnsiRenderer({ format: 'ansi' });
-    
+
     const start = renderer.render({ t: 'tool', name: 'npm', phase: 'start' });
-    const stdout = renderer.render({ t: 'tool', name: 'npm', phase: 'stdout', text: 'Installing...' });
+    const stdout = renderer.render({
+      t: 'tool',
+      name: 'npm',
+      phase: 'stdout',
+      text: 'Installing...',
+    });
     const end = renderer.render({ t: 'tool', name: 'npm', phase: 'end', exitCode: 0 });
-    
+
     expect(start).toContain('🔧');
     expect(stdout).toContain('Installing...');
     expect(end).toContain('✅');
   });
-  
+
   it('collapses tools when option enabled', () => {
     const renderer = new AnsiRenderer({ format: 'ansi', collapseTools: true });
-    
+
     renderer.render({ t: 'tool', name: 'npm', phase: 'start' });
-    const stdout = renderer.render({ t: 'tool', name: 'npm', phase: 'stdout', text: 'Installing...' });
-    
+    const stdout = renderer.render({
+      t: 'tool',
+      name: 'npm',
+      phase: 'stdout',
+      text: 'Installing...',
+    });
+
     expect(stdout).toBe(''); // No immediate output when collapsed
   });
 });
@@ -747,24 +775,24 @@ describe('Enhanced CLI', () => {
   it('formats Claude output end-to-end', async () => {
     const input = fs.createReadStream('fixtures/claude/basic-message.jsonl');
     const output = await runCLI(['--vendor', 'claude'], input);
-    
+
     expect(output).toContain('👤 user:');
     expect(output).toContain('🤖 assistant:');
   });
-  
+
   it('generates valid HTML output', async () => {
     const input = fs.createReadStream('fixtures/claude/tool-use.jsonl');
     const output = await runCLI(['--html'], input);
-    
+
     expect(output).toContain('<!DOCTYPE html>');
     expect(output).toContain('<div class="message">');
     expect(output).toContain('</html>');
   });
-  
+
   it('filters events correctly', async () => {
     const input = fs.createReadStream('fixtures/claude/complex-session.jsonl');
     const output = await runCLI(['--only', 'tool,error'], input);
-    
+
     expect(output).toContain('🔧'); // Tool events
     expect(output).not.toContain('🤖'); // No messages
   });
@@ -778,24 +806,24 @@ describe('Enhanced CLI', () => {
 describe('HTML Renderer', () => {
   it('escapes HTML entities correctly', () => {
     const renderer = new HtmlRenderer({ format: 'html' });
-    const event: AgentEvent = { 
-      t: 'msg', 
-      role: 'user', 
-      text: 'Code: <script>alert("xss")</script>' 
+    const event: AgentEvent = {
+      t: 'msg',
+      role: 'user',
+      text: 'Code: <script>alert("xss")</script>',
     };
-    
+
     const output = renderer.render(event);
-    
+
     expect(output).toContain('&lt;script&gt;');
     expect(output).not.toContain('<script>');
   });
-  
+
   it('generates semantic HTML structure', () => {
     const renderer = new HtmlRenderer({ format: 'html' });
     const event: AgentEvent = { t: 'msg', role: 'assistant', text: 'Hello' };
-    
+
     const output = renderer.render(event);
-    
+
     expect(output).toContain('<div class="message message-assistant">');
     expect(output).toContain('<div class="message-header">');
     expect(output).toContain('<div class="message-content">');
@@ -811,13 +839,13 @@ describe('Rendering Performance', () => {
   it('maintains streaming performance with rendering', async () => {
     const events = generateTestEvents(10000);
     const renderer = new AnsiRenderer({ format: 'ansi' });
-    
+
     const start = performance.now();
     for (const event of events) {
       renderer.render(event);
     }
     const elapsed = performance.now() - start;
-    
+
     const eventsPerSecond = (events.length * 1000) / elapsed;
     expect(eventsPerSecond).toBeGreaterThan(50000); // Maintain 50k events/sec
   });
@@ -827,17 +855,20 @@ describe('Rendering Performance', () => {
 ## Performance Considerations
 
 ### Streaming Efficiency
+
 - **Incremental rendering**: Each event rendered independently without buffering
 - **Minimal string concatenation**: Use arrays and single join operations
 - **Efficient ANSI escape sequences**: Pre-computed color codes, minimal escape usage
 - **Context reuse**: Maintain rendering state without creating new objects
 
 ### Memory Management
+
 - **Bounded tool stack**: Limit concurrent tool tracking to prevent memory leaks
 - **String interning**: Reuse common strings (colors, icons) to reduce allocation
 - **Lazy evaluation**: Only format complex content when actually needed
 
 ### Optimization Targets
+
 - **Rendering throughput**: > 50k events/second (maintaining Phase 2 performance)
 - **Memory overhead**: < 5MB additional RSS for rendering engine
 - **Startup time**: < 50ms additional overhead for renderer initialization
@@ -845,16 +876,19 @@ describe('Rendering Performance', () => {
 ## Security Considerations
 
 ### Input Sanitization
+
 - **HTML escaping**: All user content properly escaped in HTML mode
 - **ANSI injection prevention**: Strip or escape ANSI codes in message content
 - **No code execution**: Renderers never execute or evaluate user content
 
 ### Output Safety
+
 - **Content Security Policy**: Generated HTML includes CSP headers
 - **XSS prevention**: Comprehensive HTML entity escaping
 - **Safe defaults**: All formatting options default to secure values
 
 ### Error Handling
+
 ```typescript
 // Safe error handling in renderers
 try {
@@ -869,12 +903,14 @@ try {
 ## Documentation
 
 ### User Documentation
+
 1. **Enhanced README**: Complete examples showing all output formats
 2. **CLI help**: Comprehensive help text with examples
 3. **Format comparison**: Side-by-side ANSI vs HTML output examples
 4. **Filtering guide**: How to use `--only` and other filtering options
 
 ### API Documentation
+
 1. **Renderer interfaces**: Complete TypeScript API documentation
 2. **Customization guide**: How to extend renderers for new formats
 3. **Performance guide**: Optimization tips for high-volume streams
@@ -882,10 +918,12 @@ try {
 ## Implementation Phases
 
 ### Phase 3a: Core Rendering (6-8 hours)
+
 **Duration**: 6-8 hours  
 **Focus**: Basic ANSI rendering with essential features
 
 #### Tasks:
+
 1. **Renderer architecture** (1.5 hours)
    - Implement `Renderer` interface and factory pattern
    - Create `RenderContext` for state management
@@ -908,20 +946,24 @@ try {
    - Update help text and examples
 
 #### Testing:
+
 - Unit tests for `AnsiRenderer`
 - Integration tests with fixture files
 - CLI option validation
 
 #### Success Criteria:
+
 - ANSI output renders correctly for all event types
 - Performance maintains 50k+ events/second
 - CLI provides formatted output for all vendors
 
 ### Phase 3b: HTML Rendering & Advanced Features (4-6 hours)
+
 **Duration**: 4-6 hours  
 **Focus**: HTML output and advanced CLI features
 
 #### Tasks:
+
 1. **HTML renderer implementation** (2.5 hours)
    - Semantic HTML structure for all event types
    - CSS styling for professional appearance
@@ -943,21 +985,25 @@ try {
    - Input validation
 
 #### Testing:
+
 - HTML output validation
 - Advanced CLI option testing
 - Security testing for HTML escaping
 - End-to-end integration tests
 
 #### Success Criteria:
+
 - Valid, self-contained HTML output
 - All CLI options work correctly
 - Comprehensive error handling
 
 ### Phase 3c: Polish & Optimization (2-3 hours)
+
 **Duration**: 2-3 hours  
 **Focus**: Performance optimization and final polish
 
 #### Tasks:
+
 1. **Performance optimization** (1.5 hours)
    - Profile rendering performance
    - Optimize string operations
@@ -974,12 +1020,14 @@ try {
    - End-to-end validation
 
 #### Testing:
+
 - Performance benchmarking
 - Memory usage validation
 - Complete fixture testing
 - Documentation accuracy
 
 #### Success Criteria:
+
 - Performance targets met
 - All tests pass
 - Documentation complete
@@ -987,7 +1035,8 @@ try {
 
 ## Open Questions
 
-1. **Tool output chunking**: Should we buffer tool output to avoid interleaved lines, or stream immediately?
+1. **Tool output chunking**: Should we buffer tool output to avoid interleaved lines, or stream
+   immediately?
 2. **HTML templating**: Use string templates or consider a minimal templating engine?
 3. **Color customization**: Should we support custom color schemes or theme files?
 4. **Accessibility**: What ARIA attributes and semantic elements are needed for HTML mode?
@@ -996,16 +1045,19 @@ try {
 ## Next Steps
 
 ### Immediate (Phase 3 Implementation)
+
 1. **Start with Phase 3a**: Core ANSI rendering
 2. **Test extensively**: Use all captured fixtures from Phase 0
 3. **Optimize incrementally**: Profile and improve performance
 
 ### Future Phases (Phase 4+)
+
 1. **Additional vendors**: Gemini and Amp parser implementation
 2. **Advanced features**: Plugin system, custom renderers
 3. **Performance optimization**: Further streaming improvements
 
 ### Success Transition to Phase 4
+
 - [ ] All rendering tests pass with 90%+ coverage
 - [ ] Performance maintains 50k+ events/second
 - [ ] HTML output validates and displays correctly
@@ -1015,16 +1067,19 @@ try {
 ## References
 
 ### External Libraries
+
 - [kleur documentation](https://github.com/lukeed/kleur) - ANSI colors and styling
 - [commander.js](https://github.com/tj/commander.js) - CLI framework
 - [HTML5 specification](https://html.spec.whatwg.org/) - Semantic HTML guidelines
 
 ### Design Patterns
+
 - [Renderer pattern](https://en.wikipedia.org/wiki/Visitor_pattern) - Multiple output format support
 - [Factory pattern](https://en.wikipedia.org/wiki/Factory_method_pattern) - Renderer creation
 - [Strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern) - Format selection
 
 ### Performance References
+
 - [Node.js Stream Performance](https://nodejs.org/en/docs/guides/backpressuring-in-streams/)
 - [String Optimization in V8](https://v8.dev/blog/string-optimization)
 - [Memory Management Best Practices](https://nodejs.org/en/docs/guides/simple-profiling/)

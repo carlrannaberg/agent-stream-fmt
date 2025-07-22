@@ -28,12 +28,12 @@ describe('Cross-package integration', () => {
 
     // Verify events were parsed correctly
     expect(events.length).toBeGreaterThan(0);
-    
+
     // Find specific event types
     const msgEvent = events.find(e => e.t === 'msg');
     const toolEvent = events.find(e => e.t === 'tool');
     const costEvent = events.find(e => e.t === 'cost');
-    
+
     expect(msgEvent).toMatchObject({
       t: 'msg',
       role: 'assistant',

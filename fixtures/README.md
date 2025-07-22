@@ -1,11 +1,12 @@
 # Test Fixtures
 
-This directory contains JSONL output samples from various AI agent CLIs. These fixtures are essential for developing and testing the parsing and formatting logic.
+This directory contains JSONL output samples from various AI agent CLIs. These fixtures are
+essential for developing and testing the parsing and formatting logic.
 
 ## Directory Structure
 
 - `claude/` - Claude Code JSONL outputs
-- `gemini/` - Gemini CLI JSONL outputs  
+- `gemini/` - Gemini CLI JSONL outputs
 - `amp/` - Amp Code JSONL outputs
 
 ## Capturing New Fixtures
@@ -47,6 +48,7 @@ npm run fixtures:analyze
 ```
 
 This generates a report in `SCHEMA_ANALYSIS.md` with:
+
 - Event type frequencies
 - Unique JSON keys found
 - Sample events for each type

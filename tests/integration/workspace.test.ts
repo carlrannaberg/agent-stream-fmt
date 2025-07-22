@@ -2,7 +2,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, lstatSync } from 'fs';
 import { join } from 'path';
-import { getSharedSetup, getPackages, getRootDir, type IntegrationSetupResults } from './shared-setup.js';
+import {
+  getSharedSetup,
+  getPackages,
+  getRootDir,
+  type IntegrationSetupResults,
+} from './shared-setup.js';
 
 /**
  * Integration tests for workspace installation and management
@@ -23,14 +28,14 @@ describe('Workspace Installation', () => {
 
   describe('Package Discovery', () => {
     it('should detect all workspace packages', () => {
-      const result = execSync('npm ls --workspaces --json', { 
+      const result = execSync('npm ls --workspaces --json', {
         encoding: 'utf8',
-        cwd: rootDir 
+        cwd: rootDir,
       });
-      
+
       const workspaceInfo = JSON.parse(result);
       expect(workspaceInfo.dependencies).toBeDefined();
-      
+
       // Verify all expected packages are present in dependencies
       const dependencyNames = Object.keys(workspaceInfo.dependencies || {});
       expect(dependencyNames).toContain('@agent-io/core');
@@ -42,8 +47,11 @@ describe('Workspace Installation', () => {
     it('should have valid package.json files for all packages', () => {
       for (const pkgDir of packageDirs) {
         const packageJsonPath = join(rootDir, pkgDir, 'package.json');
-        expect(existsSync(packageJsonPath), `${pkgDir}/package.json should exist`).toBe(true);
-        
+        expect(
+          existsSync(packageJsonPath),
+          `${pkgDir}/package.json should exist`,
+        ).toBe(true);
+
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
         expect(packageJson.name).toBeDefined();
         expect(packageJson.version).toBeDefined();
@@ -56,26 +64,29 @@ describe('Workspace Installation', () => {
     it('should have hoisted shared dependencies to root node_modules', () => {
       const rootNodeModules = join(rootDir, 'node_modules');
       expect(existsSync(rootNodeModules)).toBe(true);
-      
+
       // Check that common dependencies are hoisted
       const sharedDeps = ['typescript', 'vitest', 'tsup', '@types/node'];
       for (const dep of sharedDeps) {
         const depPath = join(rootNodeModules, dep);
-        expect(existsSync(depPath), `${dep} should be hoisted to root`).toBe(true);
+        expect(existsSync(depPath), `${dep} should be hoisted to root`).toBe(
+          true,
+        );
       }
     });
 
     it('should not duplicate hoisted dependencies in packages', () => {
       const commonDeps = ['typescript', 'vitest'];
-      
+
       for (const pkgDir of packageDirs) {
         const pkgNodeModules = join(rootDir, pkgDir, 'node_modules');
-        
+
         if (existsSync(pkgNodeModules)) {
           for (const dep of commonDeps) {
             const depPath = join(pkgNodeModules, dep);
-            expect(existsSync(depPath), 
-              `${dep} should not be duplicated in ${pkgDir}/node_modules`
+            expect(
+              existsSync(depPath),
+              `${dep} should not be duplicated in ${pkgDir}/node_modules`,
             ).toBe(false);
           }
         }
@@ -89,14 +100,17 @@ describe('Workspace Installation', () => {
       const streamPackageJson = join(rootDir, 'packages/stream/package.json');
       if (existsSync(streamPackageJson)) {
         const streamPkg = JSON.parse(readFileSync(streamPackageJson, 'utf8'));
-        const dependencies = { 
-          ...streamPkg.dependencies, 
-          ...streamPkg.devDependencies 
+        const dependencies = {
+          ...streamPkg.dependencies,
+          ...streamPkg.devDependencies,
         };
-        
+
         // If stream depends on @agent-io/core, check symlink
         if (dependencies['@agent-io/core']) {
-          const symlinkPath = join(rootDir, 'packages/stream/node_modules/@agent-io/core');
+          const symlinkPath = join(
+            rootDir,
+            'packages/stream/node_modules/@agent-io/core',
+          );
           if (existsSync(symlinkPath)) {
             const stats = lstatSync(symlinkPath);
             expect(stats.isSymbolicLink()).toBe(true);
@@ -108,21 +122,25 @@ describe('Workspace Installation', () => {
     it('should resolve workspace protocol dependencies', async () => {
       // Test that workspace: protocol resolves correctly
       try {
-        const result = execSync('npm ls --workspaces --depth=1 --json', { 
+        const result = execSync('npm ls --workspaces --depth=1 --json', {
           encoding: 'utf8',
           cwd: rootDir,
-          timeout: 10000
+          timeout: 10000,
         });
-        
+
         const lsInfo = JSON.parse(result);
         expect(lsInfo.workspaces).toBeDefined();
-        
+
         // Verify that workspace dependencies are resolved
-        for (const [, workspaceInfo] of Object.entries(lsInfo.workspaces || {})) {
+        for (const [, workspaceInfo] of Object.entries(
+          lsInfo.workspaces || {},
+        )) {
           const info = workspaceInfo as any;
           if (info.dependencies) {
             // Check that any @agent-io/* dependencies are properly resolved
-            for (const [depName, depInfo] of Object.entries(info.dependencies)) {
+            for (const [depName, depInfo] of Object.entries(
+              info.dependencies,
+            )) {
               if (depName.startsWith('@agent-io/')) {
                 expect(depInfo).toHaveProperty('resolved');
               }
@@ -142,10 +160,10 @@ describe('Workspace Installation', () => {
   describe('Installation Health', () => {
     it('should have no missing dependencies', () => {
       try {
-        execSync('npm ls --workspaces', { 
+        execSync('npm ls --workspaces', {
           cwd: rootDir,
           stdio: 'pipe',
-          timeout: 15000
+          timeout: 15000,
         });
       } catch (error) {
         // npm ls exits with code 1 for warnings, check the actual error
@@ -157,11 +175,14 @@ describe('Workspace Installation', () => {
     });
 
     it('should be able to run workspace scripts', () => {
-      const result = execSync('npm run --workspaces --if-present --silent help || echo "help not available"', {
-        encoding: 'utf8',
-        cwd: rootDir
-      });
-      
+      const result = execSync(
+        'npm run --workspaces --if-present --silent help || echo "help not available"',
+        {
+          encoding: 'utf8',
+          cwd: rootDir,
+        },
+      );
+
       // Should not throw an error
       expect(result).toBeDefined();
     });
@@ -169,7 +190,7 @@ describe('Workspace Installation', () => {
     it('should have consistent lock file', () => {
       const lockFilePath = join(rootDir, 'package-lock.json');
       expect(existsSync(lockFilePath)).toBe(true);
-      
+
       const lockFile = JSON.parse(readFileSync(lockFilePath, 'utf8'));
       expect(lockFile.lockfileVersion).toBeGreaterThan(1);
       expect(lockFile.packages).toBeDefined();
@@ -181,9 +202,9 @@ describe('Workspace Installation', () => {
       // Test workspace targeting
       const result = execSync('npm list --workspace packages/core --depth=0', {
         encoding: 'utf8',
-        cwd: rootDir
+        cwd: rootDir,
       });
-      
+
       expect(result).toContain('@agent-io/core');
     });
 
@@ -193,12 +214,15 @@ describe('Workspace Installation', () => {
         execSync('npm run typecheck --workspaces --if-present', {
           cwd: rootDir,
           stdio: 'pipe',
-          timeout: 30000
+          timeout: 30000,
         });
       } catch (error) {
         // If typecheck fails, that's a different issue - we just want to ensure
         // the workspace command structure works
-        if (error instanceof Error && error.message.includes('command not found')) {
+        if (
+          error instanceof Error &&
+          error.message.includes('command not found')
+        ) {
           throw error;
         }
       }

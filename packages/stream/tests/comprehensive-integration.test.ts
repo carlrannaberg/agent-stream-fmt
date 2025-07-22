@@ -44,13 +44,13 @@ describe('Comprehensive Parser Integration Tests', () => {
         const filepath = join(vendorDir, filename);
         const content = readFileSync(filepath, 'utf-8');
         const lines = content.split('\n').filter(line => line.trim());
-        
+
         allFixtures.push({
           vendor,
           filename,
           path: filepath,
           content,
-          lines
+          lines,
         });
       }
     }
@@ -65,7 +65,7 @@ describe('Comprehensive Parser Integration Tests', () => {
             vendor: fixture.vendor,
             file: fixture.filename,
             line: lineIndex + 1,
-            success: false
+            success: false,
           };
 
           // Skip invalid JSON lines in error-handling fixtures
@@ -83,14 +83,25 @@ describe('Comprehensive Parser Integration Tests', () => {
                 result.error = 'Failed to detect vendor';
               }
               testResults.push(result);
-              expect(detected, `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`).toBeTruthy();
-              expect(detected!.vendor, `Line ${lineIndex + 1} in ${fixture.filename}`).toBe(fixture.vendor);
+              expect(
+                detected,
+                `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`,
+              ).toBeTruthy();
+              expect(
+                detected!.vendor,
+                `Line ${lineIndex + 1} in ${fixture.filename}`,
+              ).toBe(fixture.vendor);
             } catch (e) {
               // Invalid JSON should return null - this is expected
               result.success = detected === null;
-              result.error = detected ? 'Unexpected detection of invalid JSON' : null;
+              result.error = detected
+                ? 'Unexpected detection of invalid JSON'
+                : null;
               testResults.push(result);
-              expect(detected, `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`).toBeNull();
+              expect(
+                detected,
+                `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`,
+              ).toBeNull();
             }
           } else {
             // Non-error-handling fixtures should always detect correctly
@@ -104,8 +115,14 @@ describe('Comprehensive Parser Integration Tests', () => {
               result.error = 'Failed to detect vendor';
             }
             testResults.push(result);
-            expect(detected, `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`).toBeTruthy();
-            expect(detected!.vendor, `Line ${lineIndex + 1} in ${fixture.filename}`).toBe(fixture.vendor);
+            expect(
+              detected,
+              `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`,
+            ).toBeTruthy();
+            expect(
+              detected!.vendor,
+              `Line ${lineIndex + 1} in ${fixture.filename}`,
+            ).toBe(fixture.vendor);
           }
         }
       }
@@ -114,13 +131,14 @@ describe('Comprehensive Parser Integration Tests', () => {
     it('does not false-positive detect wrong vendors', () => {
       const _claudeFixtures = allFixtures.filter(f => f.vendor === 'claude');
       const nonClaudeFixtures = allFixtures.filter(f => f.vendor !== 'claude');
-      
+
       for (const fixture of nonClaudeFixtures) {
         for (const [lineIndex, line] of fixture.lines.entries()) {
           const detected = detectVendor(line);
           if (detected) {
-            expect(detected.vendor, 
-              `Line ${lineIndex + 1} in ${fixture.filename} should not be detected as Claude`
+            expect(
+              detected.vendor,
+              `Line ${lineIndex + 1} in ${fixture.filename} should not be detected as Claude`,
             ).not.toBe('claude');
           }
         }
@@ -131,23 +149,30 @@ describe('Comprehensive Parser Integration Tests', () => {
   describe('Parser Event Generation', () => {
     it('generates valid events for all vendor fixtures', () => {
       const validEventTypes = ['msg', 'tool', 'cost', 'error', 'debug'];
-      
+
       for (const fixture of allFixtures) {
         for (const [lineIndex, line] of fixture.lines.entries()) {
           const parser = selectParser(fixture.vendor as any);
-          
+
           try {
             const events = parser.parse(line);
-            
-            expect(events, `Line ${lineIndex + 1} in ${fixture.filename}`).toBeInstanceOf(Array);
-            
+
+            expect(
+              events,
+              `Line ${lineIndex + 1} in ${fixture.filename}`,
+            ).toBeInstanceOf(Array);
+
             for (const event of events) {
-              expect(validEventTypes, 
-                `Invalid event type '${event.t}' at line ${lineIndex + 1} in ${fixture.filename}`
+              expect(
+                validEventTypes,
+                `Invalid event type '${event.t}' at line ${lineIndex + 1} in ${fixture.filename}`,
               ).toContain(event.t);
-              
+
               // All events must have a 't' field
-              expect(event.t, `Event missing 't' field at line ${lineIndex + 1} in ${fixture.filename}`).toBeTruthy();
+              expect(
+                event.t,
+                `Event missing 't' field at line ${lineIndex + 1} in ${fixture.filename}`,
+              ).toBeTruthy();
             }
           } catch (error) {
             if (error instanceof ParseError) {
@@ -164,12 +189,14 @@ describe('Comprehensive Parser Integration Tests', () => {
     });
 
     it('handles malformed JSON gracefully', () => {
-      const errorFixtures = allFixtures.filter(f => f.filename.includes('error-handling'));
-      
+      const errorFixtures = allFixtures.filter(f =>
+        f.filename.includes('error-handling'),
+      );
+
       for (const fixture of errorFixtures) {
         for (const [_lineIndex, line] of fixture.lines.entries()) {
           const parser = selectParser('claude');
-          
+
           try {
             // Try to parse JSON first
             JSON.parse(line);
@@ -187,13 +214,13 @@ describe('Comprehensive Parser Integration Tests', () => {
 
   describe('Event Pattern Validation', () => {
     it('generates expected event patterns for message exchanges', () => {
-      const basicFixtures = allFixtures.filter(f => 
-        f.vendor === 'claude' && f.filename.includes('basic-message')
+      const basicFixtures = allFixtures.filter(
+        f => f.vendor === 'claude' && f.filename.includes('basic-message'),
       );
-      
+
       for (const fixture of basicFixtures) {
         const allEvents = [];
-        
+
         for (const line of fixture.lines) {
           const parser = selectParser('claude');
           try {
@@ -204,28 +231,39 @@ describe('Comprehensive Parser Integration Tests', () => {
             continue;
           }
         }
-        
+
         // Should have message events
         const messageEvents = allEvents.filter(e => e.t === 'msg');
-        expect(messageEvents.length, `${fixture.filename} should have message events`).toBeGreaterThan(0);
-        
+        expect(
+          messageEvents.length,
+          `${fixture.filename} should have message events`,
+        ).toBeGreaterThan(0);
+
         // Should have user and assistant messages
         const userMessages = messageEvents.filter(e => e.role === 'user');
-        const assistantMessages = messageEvents.filter(e => e.role === 'assistant');
-        
-        expect(userMessages.length, `${fixture.filename} should have user messages`).toBeGreaterThan(0);
-        expect(assistantMessages.length, `${fixture.filename} should have assistant messages`).toBeGreaterThan(0);
+        const assistantMessages = messageEvents.filter(
+          e => e.role === 'assistant',
+        );
+
+        expect(
+          userMessages.length,
+          `${fixture.filename} should have user messages`,
+        ).toBeGreaterThan(0);
+        expect(
+          assistantMessages.length,
+          `${fixture.filename} should have assistant messages`,
+        ).toBeGreaterThan(0);
       }
     });
 
     it('generates expected event patterns for tool usage', () => {
-      const toolFixtures = allFixtures.filter(f => 
-        f.vendor === 'claude' && f.filename.includes('tool-use')
+      const toolFixtures = allFixtures.filter(
+        f => f.vendor === 'claude' && f.filename.includes('tool-use'),
       );
-      
+
       for (const fixture of toolFixtures) {
         const allEvents = [];
-        
+
         for (const line of fixture.lines) {
           const parser = selectParser('claude');
           try {
@@ -236,24 +274,33 @@ describe('Comprehensive Parser Integration Tests', () => {
             continue;
           }
         }
-        
+
         // Should have tool events
         const toolEvents = allEvents.filter(e => e.t === 'tool');
-        expect(toolEvents.length, `${fixture.filename} should have tool events`).toBeGreaterThan(0);
-        
+        expect(
+          toolEvents.length,
+          `${fixture.filename} should have tool events`,
+        ).toBeGreaterThan(0);
+
         // Check for tool lifecycle events
         const toolPhases = toolEvents.map(e => e.phase);
-        expect(toolPhases, `${fixture.filename} should have tool start phase`).toContain('start');
-        expect(toolPhases, `${fixture.filename} should have tool end phase`).toContain('end');
+        expect(
+          toolPhases,
+          `${fixture.filename} should have tool start phase`,
+        ).toContain('start');
+        expect(
+          toolPhases,
+          `${fixture.filename} should have tool end phase`,
+        ).toContain('end');
       }
     });
 
     it('generates cost events for usage tracking', () => {
       const allClaudeFixtures = allFixtures.filter(f => f.vendor === 'claude');
-      
+
       for (const fixture of allClaudeFixtures) {
         const allEvents = [];
-        
+
         for (const line of fixture.lines) {
           const parser = selectParser('claude');
           try {
@@ -264,14 +311,23 @@ describe('Comprehensive Parser Integration Tests', () => {
             continue;
           }
         }
-        
+
         // Should have cost events
         const costEvents = allEvents.filter(e => e.t === 'cost');
         if (costEvents.length > 0) {
           for (const costEvent of costEvents) {
-            expect(costEvent.deltaUsd, `Cost event should have deltaUsd field`).toBeDefined();
-            expect(typeof costEvent.deltaUsd, `deltaUsd should be a number`).toBe('number');
-            expect(costEvent.deltaUsd, `deltaUsd should be non-negative`).toBeGreaterThanOrEqual(0);
+            expect(
+              costEvent.deltaUsd,
+              `Cost event should have deltaUsd field`,
+            ).toBeDefined();
+            expect(
+              typeof costEvent.deltaUsd,
+              `deltaUsd should be a number`,
+            ).toBe('number');
+            expect(
+              costEvent.deltaUsd,
+              `deltaUsd should be non-negative`,
+            ).toBeGreaterThanOrEqual(0);
           }
         }
       }
@@ -281,7 +337,7 @@ describe('Comprehensive Parser Integration Tests', () => {
   describe('Content Preservation', () => {
     it('preserves exact message content including whitespace', () => {
       const claudeFixtures = allFixtures.filter(f => f.vendor === 'claude');
-      
+
       for (const fixture of claudeFixtures) {
         for (const line of fixture.lines) {
           try {
@@ -290,9 +346,12 @@ describe('Comprehensive Parser Integration Tests', () => {
               const parser = selectParser('claude');
               const events = parser.parse(line);
               const msgEvent = events.find(e => e.t === 'msg');
-              
+
               if (msgEvent) {
-                expect(msgEvent.text, `Message content should be preserved exactly`).toBe(data.content);
+                expect(
+                  msgEvent.text,
+                  `Message content should be preserved exactly`,
+                ).toBe(data.content);
               }
             }
           } catch (error) {
@@ -305,25 +364,32 @@ describe('Comprehensive Parser Integration Tests', () => {
 
     it('preserves tool names and IDs correctly', () => {
       const claudeFixtures = allFixtures.filter(f => f.vendor === 'claude');
-      
+
       for (const fixture of claudeFixtures) {
         for (const line of fixture.lines) {
           try {
             const data = JSON.parse(line);
             const parser = selectParser('claude');
             const events = parser.parse(line);
-            
+
             if (data.type === 'tool_use' && data.name) {
-              const toolEvent = events.find(e => e.t === 'tool' && e.phase === 'start');
+              const toolEvent = events.find(
+                e => e.t === 'tool' && e.phase === 'start',
+              );
               if (toolEvent) {
-                expect(toolEvent.name, `Tool name should be preserved`).toBe(data.name);
+                expect(toolEvent.name, `Tool name should be preserved`).toBe(
+                  data.name,
+                );
               }
             }
-            
+
             if (data.type === 'tool_result' && data.tool_use_id) {
               const toolEvents = events.filter(e => e.t === 'tool');
               for (const toolEvent of toolEvents) {
-                expect(toolEvent.name, `Tool ID should be preserved in tool events`).toBe(data.tool_use_id);
+                expect(
+                  toolEvent.name,
+                  `Tool ID should be preserved in tool events`,
+                ).toBe(data.tool_use_id);
               }
             }
           } catch (error) {
@@ -340,7 +406,7 @@ describe('Comprehensive Parser Integration Tests', () => {
       for (const fixture of allFixtures) {
         const startTime = performance.now();
         const parser = selectParser(fixture.vendor as any);
-        
+
         for (const line of fixture.lines) {
           try {
             parser.parse(line);
@@ -349,14 +415,15 @@ describe('Comprehensive Parser Integration Tests', () => {
             continue;
           }
         }
-        
+
         const endTime = performance.now();
         const duration = endTime - startTime;
         const linesPerSecond = (fixture.lines.length / duration) * 1000;
-        
+
         // Should process at least 1000 lines per second
-        expect(linesPerSecond, 
-          `${fixture.vendor} parser should process at least 1000 lines/sec, got ${linesPerSecond.toFixed(2)} for ${fixture.filename}`
+        expect(
+          linesPerSecond,
+          `${fixture.vendor} parser should process at least 1000 lines/sec, got ${linesPerSecond.toFixed(2)} for ${fixture.filename}`,
         ).toBeGreaterThan(1000);
       }
     });
@@ -365,13 +432,22 @@ describe('Comprehensive Parser Integration Tests', () => {
   describe('Error Resilience', () => {
     it('handles empty lines gracefully for all vendors', () => {
       const vendors = ['claude', 'gemini', 'amp'] as const;
-      
+
       for (const vendor of vendors) {
         const parser = selectParser(vendor);
-        
-        expect(() => parser.parse(''), `${vendor} should throw ParseError for empty line`).toThrow(ParseError);
-        expect(() => parser.parse('   '), `${vendor} should throw ParseError for whitespace`).toThrow(ParseError);
-        expect(() => parser.parse('\n'), `${vendor} should throw ParseError for newline`).toThrow(ParseError);
+
+        expect(
+          () => parser.parse(''),
+          `${vendor} should throw ParseError for empty line`,
+        ).toThrow(ParseError);
+        expect(
+          () => parser.parse('   '),
+          `${vendor} should throw ParseError for whitespace`,
+        ).toThrow(ParseError);
+        expect(
+          () => parser.parse('\n'),
+          `${vendor} should throw ParseError for newline`,
+        ).toThrow(ParseError);
       }
     });
 
@@ -383,15 +459,16 @@ describe('Comprehensive Parser Integration Tests', () => {
         '{"type":"message","content":"test"',
         'not json at all',
         '{"type":"message","content":"test"}extra',
-        '{"type":"message","content":"test",}'
+        '{"type":"message","content":"test",}',
       ];
-      
+
       for (const vendor of vendors) {
         const parser = selectParser(vendor);
-        
+
         for (const line of invalidJson) {
-          expect(() => parser.parse(line), 
-            `${vendor} should throw ParseError for: ${line}`
+          expect(
+            () => parser.parse(line),
+            `${vendor} should throw ParseError for: ${line}`,
           ).toThrow(ParseError);
         }
       }
@@ -404,35 +481,44 @@ describe('Comprehensive Parser Integration Tests', () => {
           unknownEvents: [
             '{"type":"unknown_event","data":"test"}',
             '{"type":"future_event","version":"2.0"}',
-            '{"type":"experimental","payload":{}}'
-          ]
+            '{"type":"experimental","payload":{}}',
+          ],
         },
         {
           vendor: 'gemini',
           unknownEvents: [
             '{"type":"unknown_event","data":"test"}',
             '{"type":"future_event","version":"2.0"}',
-            '{"type":"experimental","payload":{}}'
-          ]
+            '{"type":"experimental","payload":{}}',
+          ],
         },
         {
           vendor: 'amp',
           unknownEvents: [
             '{"phase":"unknown_phase","task":"test"}',
             '{"phase":"future_phase","task":"test"}',
-            '{"phase":"experimental","task":"test"}'
-          ]
-        }
+            '{"phase":"experimental","task":"test"}',
+          ],
+        },
       ];
-      
+
       for (const testCase of testCases) {
         const parser = selectParser(testCase.vendor as any);
-        
+
         for (const line of testCase.unknownEvents) {
           const events = parser.parse(line);
-          expect(events, `${testCase.vendor} should return events for unknown: ${line}`).toHaveLength(1);
-          expect(events[0].t, `${testCase.vendor} should return debug event for unknown: ${line}`).toBe('debug');
-          expect(events[0].raw, `${testCase.vendor} debug event should have raw data`).toBeDefined();
+          expect(
+            events,
+            `${testCase.vendor} should return events for unknown: ${line}`,
+          ).toHaveLength(1);
+          expect(
+            events[0].t,
+            `${testCase.vendor} should return debug event for unknown: ${line}`,
+          ).toBe('debug');
+          expect(
+            events[0].raw,
+            `${testCase.vendor} debug event should have raw data`,
+          ).toBeDefined();
         }
       }
     });
@@ -443,37 +529,45 @@ describe('Comprehensive Parser Integration Tests', () => {
       const totalTests = testResults.length;
       const successfulTests = testResults.filter(r => r.success).length;
       const failedTests = testResults.filter(r => !r.success).length;
-      
+
       console.log(`\n=== Parser Integration Test Results ===`);
       console.log(`Total tests: ${totalTests}`);
       console.log(`Successful: ${successfulTests}`);
       console.log(`Failed: ${failedTests}`);
-      console.log(`Success rate: ${((successfulTests / totalTests) * 100).toFixed(2)}%`);
-      
+      console.log(
+        `Success rate: ${((successfulTests / totalTests) * 100).toFixed(2)}%`,
+      );
+
       if (failedTests > 0) {
         console.log(`\nFailed tests by vendor:`);
         const failuresByVendor = testResults
           .filter(r => !r.success)
-          .reduce((acc, r) => {
-            acc[r.vendor] = (acc[r.vendor] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>);
-        
+          .reduce(
+            (acc, r) => {
+              acc[r.vendor] = (acc[r.vendor] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>,
+          );
+
         for (const [vendor, count] of Object.entries(failuresByVendor)) {
           console.log(`  ${vendor}: ${count} failures`);
         }
       }
-      
+
       // For all vendors, we expect high success rate
       const vendors = ['claude', 'gemini', 'amp'] as const;
-      
+
       for (const vendor of vendors) {
         const vendorTests = testResults.filter(r => r.vendor === vendor);
         if (vendorTests.length > 0) {
           const vendorSuccess = vendorTests.filter(r => r.success).length;
           const vendorSuccessRate = (vendorSuccess / vendorTests.length) * 100;
-          
-          expect(vendorSuccessRate, `${vendor} parser should have >95% success rate`).toBeGreaterThan(95);
+
+          expect(
+            vendorSuccessRate,
+            `${vendor} parser should have >95% success rate`,
+          ).toBeGreaterThan(95);
         }
       }
     });

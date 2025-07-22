@@ -302,7 +302,17 @@ export interface StreamFormatOptions extends StreamEventOptions {
   /** Line reader options */
   lineReaderOptions?: {
     maxLineLength?: number;
-    encoding?: 'utf8' | 'ascii' | 'utf-8' | 'utf16le' | 'ucs2' | 'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex';
+    encoding?:
+      | 'utf8'
+      | 'ascii'
+      | 'utf-8'
+      | 'utf16le'
+      | 'ucs2'
+      | 'ucs-2'
+      | 'base64'
+      | 'latin1'
+      | 'binary'
+      | 'hex';
   };
 }
 

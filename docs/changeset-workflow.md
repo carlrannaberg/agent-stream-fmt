@@ -4,7 +4,9 @@ This guide explains how to use changesets for versioning and releases in the Age
 
 ## Overview
 
-We use [changesets](https://github.com/changesets/changesets) to manage package versions and releases. This allows:
+We use [changesets](https://github.com/changesets/changesets) to manage package versions and
+releases. This allows:
+
 - Independent versioning of packages
 - Automatic changelog generation
 - Coordinated releases across packages
@@ -19,6 +21,7 @@ npm run changeset
 ```
 
 This will prompt you to:
+
 1. Select which packages have changed
 2. Choose the type of change (major/minor/patch)
 3. Write a summary of the changes
@@ -32,6 +35,7 @@ npm run version
 ```
 
 This will:
+
 - Update package versions based on changesets
 - Update changelogs
 - Update dependency versions where needed
@@ -46,6 +50,7 @@ npm run release
 ```
 
 This will:
+
 - Run the prerelease script (build and test)
 - Publish changed packages to npm
 - Create git tags for releases
@@ -67,6 +72,7 @@ This will:
 ## CI/CD Integration
 
 The GitHub Actions workflow for releases:
+
 1. Checks for changesets on PRs
 2. Creates a "Version Packages" PR when changesets exist
 3. Publishes packages when the version PR is merged
@@ -82,6 +88,7 @@ The GitHub Actions workflow for releases:
 ## Ignoring Changes
 
 Some changes don't need changesets:
+
 - Documentation updates
 - Test improvements
 - Build configuration
@@ -92,6 +99,7 @@ Some changes don't need changesets:
 ### Missing Changeset
 
 If CI fails due to missing changeset:
+
 1. Run `npm run changeset`
 2. Select affected packages
 3. Commit the `.changeset/*.md` file
@@ -99,6 +107,7 @@ If CI fails due to missing changeset:
 ### Version Conflicts
 
 If you see version conflicts:
+
 1. Pull latest changes
 2. Run `npm run version` again
 3. Resolve any merge conflicts
@@ -106,6 +115,7 @@ If you see version conflicts:
 ### Publishing Failures
 
 If publishing fails:
+
 1. Check npm authentication
 2. Ensure package names are available
 3. Verify `access: "public"` in config
@@ -114,7 +124,8 @@ If publishing fails:
 ## Configuration
 
 Changeset configuration is in `.changeset/config.json`:
+
 - `access`: "public" for npm publishing
-- `baseBranch`: "main" 
+- `baseBranch`: "main"
 - `updateInternalDependencies`: "patch" for automatic updates
 - `changelog`: Generates CHANGELOG.md files

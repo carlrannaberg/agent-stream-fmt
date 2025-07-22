@@ -8,16 +8,13 @@ assignees: ''
 
 ## Feature Overview
 
-**Summary**
-A clear and concise description of the feature you'd like to see added.
+**Summary** A clear and concise description of the feature you'd like to see added.
 
-**Problem Statement**
-What problem does this feature solve? What use case does it address?
+**Problem Statement** What problem does this feature solve? What use case does it address?
 
 ## Use Case & Motivation
 
-**Primary Use Case**
-Describe the main scenario where this feature would be used:
+**Primary Use Case** Describe the main scenario where this feature would be used:
 
 **Example Scenario**
 
@@ -26,8 +23,7 @@ Describe the main scenario where this feature would be used:
 agent-stream-fmt --your-new-feature-flag input.jsonl
 ```
 
-**Target Users**
-Who would benefit from this feature?
+**Target Users** Who would benefit from this feature?
 
 - [ ] CLI users processing agent outputs
 - [ ] Developers integrating agent-stream-fmt
@@ -37,11 +33,9 @@ Who would benefit from this feature?
 
 ## Proposed Solution
 
-**Feature Description**
-Detailed description of how you think this feature should work:
+**Feature Description** Detailed description of how you think this feature should work:
 
-**API/Interface Design**
-How should users interact with this feature?
+**API/Interface Design** How should users interact with this feature?
 
 **Command Line Interface:**
 
@@ -59,8 +53,7 @@ interface NewFeatureOptions {
 }
 ```
 
-**Output Format:**
-Describe what the output should look like (ANSI, HTML, JSON):
+**Output Format:** Describe what the output should look like (ANSI, HTML, JSON):
 
 ## Vendor Compatibility
 
@@ -72,16 +65,13 @@ Which AI CLI vendors should this feature support?
 - [ ] All vendors (vendor-agnostic)
 - [ ] Specific vendor: [specify]
 
-**Vendor-Specific Considerations:**
-Are there any vendor-specific requirements or limitations?
+**Vendor-Specific Considerations:** Are there any vendor-specific requirements or limitations?
 
 ## Implementation Considerations
 
-**Technical Approach**
-How do you think this could be implemented?
+**Technical Approach** How do you think this could be implemented?
 
-**Components Affected**
-Which parts of the codebase would need changes?
+**Components Affected** Which parts of the codebase would need changes?
 
 - [ ] Core streaming engine (`src/stream.ts`)
 - [ ] Parser layer (`src/parsers/`)
@@ -90,8 +80,7 @@ Which parts of the codebase would need changes?
 - [ ] Type definitions (`src/types.ts`)
 - [ ] Other: [specify]
 
-**Performance Impact**
-How might this feature affect performance?
+**Performance Impact** How might this feature affect performance?
 
 - [ ] No expected impact
 - [ ] Minimal overhead
@@ -108,14 +97,11 @@ How might this feature affect performance?
 
 ## Alternatives Considered
 
-**Alternative Solutions**
-Have you considered other ways to solve this problem?
+**Alternative Solutions** Have you considered other ways to solve this problem?
 
-**Workarounds**
-Is there currently a way to achieve similar results?
+**Workarounds** Is there currently a way to achieve similar results?
 
-**External Tools**
-Could this be solved by combining agent-stream-fmt with other tools?
+**External Tools** Could this be solved by combining agent-stream-fmt with other tools?
 
 ## Examples & Test Cases
 
@@ -132,13 +118,11 @@ Could this be solved by combining agent-stream-fmt with other tools?
 # What the output should look like with your feature
 ```
 
-**Edge Cases**
-What edge cases should be considered?
+**Edge Cases** What edge cases should be considered?
 
 ## Acceptance Criteria
 
-**Definition of Done**
-This feature is complete when:
+**Definition of Done** This feature is complete when:
 
 - [ ] [Specific criterion 1]
 - [ ] [Specific criterion 2]
@@ -172,11 +156,9 @@ This feature is complete when:
 
 ## Additional Context
 
-**Related Issues**
-Are there any related issues or discussions?
+**Related Issues** Are there any related issues or discussions?
 
-**Documentation Impact**
-What documentation would need to be updated?
+**Documentation Impact** What documentation would need to be updated?
 
 - [ ] README
 - [ ] CLI help text
@@ -184,8 +166,7 @@ What documentation would need to be updated?
 - [ ] Examples
 - [ ] Contributing guide
 
-**Migration Notes**
-If this involves changes to existing behavior, how should users migrate?
+**Migration Notes** If this involves changes to existing behavior, how should users migrate?
 
 ## Checklist
 

@@ -1,11 +1,14 @@
 # AGENT.md
+
 This file provides guidance to AI coding assistants working in this repository.
 
-**Note:** CLAUDE.md, .clinerules, .cursorrules, .windsurfrules, .replit.md, GEMINI.md, and other AI config files are symlinks to AGENT.md in this project.
+**Note:** CLAUDE.md, .clinerules, .cursorrules, .windsurfrules, .replit.md, GEMINI.md, and other AI
+config files are symlinks to AGENT.md in this project.
 
 # Agent-IO
 
-A universal I/O toolkit for AI agent CLIs that normalizes JSONL output from Claude Code, Gemini CLI, and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
+A universal I/O toolkit for AI agent CLIs that normalizes JSONL output from Claude Code, Gemini CLI,
+and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
 
 ## Project Status
 
@@ -15,9 +18,10 @@ A universal I/O toolkit for AI agent CLIs that normalizes JSONL output from Clau
 ## Build & Commands
 
 ### Development Commands
+
 ```bash
 # Build
-npm run build                 # Build all packages sequentially 
+npm run build                 # Build all packages sequentially
 npm run build:packages        # Build all packages with workspaces
 npm run build:all            # Clean + build everything
 npm run build:core           # Build @agent-io/core package
@@ -66,8 +70,10 @@ git commit -m "type: message" # Commit with conventional format
 ```
 
 ### Script Command Consistency
+
 **Important**: When modifying npm scripts in package.json, ensure all references are updated:
-- GitHub Actions workflows (.github/workflows/*.yml)
+
+- GitHub Actions workflows (.github/workflows/\*.yml)
 - README.md documentation
 - Contributing guides
 - Dockerfile/docker-compose.yml
@@ -75,6 +81,7 @@ git commit -m "type: message" # Commit with conventional format
 - Setup/installation scripts
 
 Common places that reference npm scripts:
+
 - `npm run build` → Check: workflows, README, Dockerfile
 - `npm test` → Check: workflows, contributing docs
 - `npm run typecheck` → Check: pre-commit hooks, workflows
@@ -83,6 +90,7 @@ Common places that reference npm scripts:
 ## Code Style
 
 ### Git Commit Convention
+
 - **Format**: Conventional Commits (https://www.conventionalcommits.org/)
 - **Structure**: `type(scope): description`
 - **Types**: feat, fix, docs, style, refactor, test, chore, perf
@@ -96,10 +104,12 @@ Common places that reference npm scripts:
   ```
 
 ### TypeScript Guidelines
+
 - **Strict mode**: Always use strict TypeScript configuration
 - **Module system**: ESM modules only
 - **Target**: ES2022 or later
 - **Imports**: Use explicit imports, prefer named imports
+
 ```typescript
 // Good
 import { streamEvents, AgentEvent } from './stream';
@@ -110,6 +120,7 @@ import * as stream from './stream';
 ```
 
 ### Naming Conventions
+
 - **Files**: kebab-case (`agent-parser.ts`)
 - **Functions/Variables**: camelCase (`streamEvents`, `parseMessage`)
 - **Types/Interfaces**: PascalCase (`AgentEvent`, `VendorParser`)
@@ -117,6 +128,7 @@ import * as stream from './stream';
 - **Enums**: PascalCase with descriptive names
 
 ### Code Organization
+
 ```typescript
 // File structure order:
 1. Type imports
@@ -144,9 +156,11 @@ export class AnsiRenderer {
 ```
 
 ### Error Handling
+
 - **Graceful degradation**: Never crash on malformed input
 - **Explicit error types**: Use typed errors when possible
 - **Logging**: Use structured logging for debugging
+
 ```typescript
 // Good
 try {
@@ -168,23 +182,28 @@ try {
 ## Testing
 
 ### Framework & Patterns
+
 - **Framework**: Vitest with workspace support
 - **Test files**: `*.test.ts` in `tests/` directory and alongside source files
 - **Fixtures**: Real CLI outputs in `tests/fixtures/`
 - **Coverage**: Aim for >90% coverage
 
 ### Testing Philosophy
+
 **When tests fail, fix the code, not the test.**
 
 Key principles:
+
 - **Tests should be meaningful** - Avoid tests that always pass regardless of behavior
 - **Test actual functionality** - Call the functions being tested, don't just check side effects
 - **Failing tests are valuable** - They reveal bugs or missing features
 - **Fix the root cause** - When a test fails, fix the underlying issue, don't hide the test
 - **Test edge cases** - Tests that reveal limitations help improve the code
-- **Document test purpose** - Each test should include a comment explaining why it exists and what it validates
+- **Document test purpose** - Each test should include a comment explaining why it exists and what
+  it validates
 
 ### Test Categories
+
 1. **Parser tests**: Validate vendor-specific parsing logic
 2. **Stream tests**: Test async iteration and backpressure
 3. **Render tests**: Verify ANSI and HTML output formatting
@@ -192,16 +211,15 @@ Key principles:
 5. **Performance tests**: Throughput and memory benchmarks
 
 ### Testing Examples
+
 ```typescript
 // Good test - tests actual behavior
 describe('Claude parser', () => {
   it('should parse message events correctly', () => {
     const line = '{"type":"message","role":"assistant","content":"Hello"}';
     const events = parseClaudeLine(line);
-    
-    expect(events).toEqual([
-      { t: 'msg', role: 'assistant', text: 'Hello' }
-    ]);
+
+    expect(events).toEqual([{ t: 'msg', role: 'assistant', text: 'Hello' }]);
   });
 });
 
@@ -209,11 +227,11 @@ describe('Claude parser', () => {
 it('should process 50k lines per second', async () => {
   const lines = generateTestLines(50000);
   const start = performance.now();
-  
+
   for await (const event of streamEvents({ vendor: 'claude', source: lines })) {
     // Process events
   }
-  
+
   const elapsed = performance.now() - start;
   const linesPerSecond = 50000 / (elapsed / 1000);
   expect(linesPerSecond).toBeGreaterThan(50000);
@@ -223,17 +241,20 @@ it('should process 50k lines per second', async () => {
 ## Security
 
 ### Input Validation
+
 - **JSON parsing**: Always use try-catch for JSON.parse()
 - **Size limits**: Limit individual line size to prevent DoS
 - **HTML escaping**: Escape all user content in HTML output
 - **No code execution**: Never eval() or execute user content
 
 ### Data Protection
+
 - **No secrets**: Ensure test fixtures contain no API keys or tokens
 - **Sanitize output**: Remove sensitive information from logs
 - **Minimal dependencies**: Only use essential packages (kleur for colors)
 
 ### Security Patterns
+
 ```typescript
 // Safe HTML escaping
 function escapeHtml(text: string): string {
@@ -258,12 +279,14 @@ function safeParse(line: string): unknown {
 ## Performance Requirements
 
 ### Targets
+
 - **Throughput**: >50,000 lines/second
 - **Memory**: <20MB RSS for infinite streams
 - **Latency**: <10ms for first output
 - **Startup**: <100ms from CLI invocation
 
 ### Optimization Guidelines
+
 - **Streaming**: Use async iterators, avoid buffering
 - **Memory**: Constant memory usage regardless of input size
 - **String operations**: Minimize concatenation, use arrays
@@ -272,6 +295,7 @@ function safeParse(line: string): unknown {
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Development
 NODE_ENV=development          # Enable debug logging
@@ -283,11 +307,12 @@ TEST_FIXTURES=/path/to/fixtures  # Custom fixture directory
 ```
 
 ### Dependencies
+
 - **Runtime**: Node.js >=18.0.0
-- **Core dependencies**: 
+- **Core dependencies**:
   - `commander` (^14.0.0) - CLI argument parsing
   - `kleur` (^4.1.5) - ANSI color formatting
-- **Dev dependencies**: 
+- **Dev dependencies**:
   - `typescript` (^5.0.0) - TypeScript compiler
   - `vitest` (^1.0.0) - Test framework
   - `tsup` (^8.0.0) - Build tool
@@ -297,6 +322,7 @@ TEST_FIXTURES=/path/to/fixtures  # Custom fixture directory
 ## Architecture
 
 ### Monorepo Structure
+
 ```
 agent-io/
 ├── packages/                 # Monorepo packages
@@ -345,11 +371,18 @@ agent-io/
 ```
 
 ### Core Types
+
 ```typescript
 // Main event union type
 export type AgentEvent =
   | { t: 'msg'; role: 'user' | 'assistant' | 'system'; text: string }
-  | { t: 'tool'; name: string; phase: 'start' | 'stdout' | 'stderr' | 'end'; text?: string; exitCode?: number }
+  | {
+      t: 'tool';
+      name: string;
+      phase: 'start' | 'stdout' | 'stderr' | 'end';
+      text?: string;
+      exitCode?: number;
+    }
   | { t: 'cost'; deltaUsd: number }
   | { t: 'error'; message: string }
   | { t: 'debug'; raw: any };
@@ -359,6 +392,7 @@ export type Vendor = 'auto' | 'claude' | 'gemini' | 'amp';
 ```
 
 ### Streaming API
+
 ```typescript
 // Core streaming function
 export async function* streamEvents(opts: StreamEventOptions): AsyncIterator<AgentEvent>
@@ -369,9 +403,11 @@ export async function* streamFormat(opts: StreamFormatOptions): AsyncIterator<st
 
 ### Report Generation
 
-**CRITICAL**: ALL reports MUST be saved to the `reports/` directory. NEVER save report files to the project root.
+**CRITICAL**: ALL reports MUST be saved to the `reports/` directory. NEVER save report files to the
+project root.
 
 **❌ INCORRECT (Root Directory):**
+
 ```
 TEST_COVERAGE_REPORT.md         ❌ Wrong location
 TEST_SUITE_SUMMARY.md          ❌ Wrong location
@@ -379,6 +415,7 @@ validation-report.json         ❌ Wrong location and format
 ```
 
 **✅ CORRECT (Reports Directory):**
+
 ```
 reports/TEST_RESULTS_2025-07-20.md       ✅ Correct
 reports/COVERAGE_REPORT_2025-07-20.md    ✅ Correct
@@ -386,28 +423,33 @@ reports/VALIDATION_REPORT_2025-07-20.md  ✅ Correct
 ```
 
 **Implementation Reports:**
+
 - Phase validation: `reports/PHASE_X_VALIDATION_REPORT.md`
 - Implementation summaries: `reports/IMPLEMENTATION_SUMMARY_[FEATURE].md`
 - Feature completion: `reports/FEATURE_[NAME]_REPORT.md`
 
 **Testing & Analysis Reports:**
+
 - Test results: `reports/TEST_RESULTS_[DATE].md`
 - Coverage reports: `reports/COVERAGE_REPORT_[DATE].md`
 - Schema analysis: `reports/SCHEMA_ANALYSIS_[VENDOR].md`
 - Fixture validation: `reports/FIXTURE_VALIDATION_REPORT.md`
 
 **Performance & Benchmarks:**
+
 - Performance benchmarks: `reports/PERFORMANCE_BENCHMARK_[DATE].md`
 - Memory profiling: `reports/MEMORY_PROFILE_[SCENARIO].md`
 - Load testing: `reports/LOAD_TEST_[VERSION].md`
 
 **Quality & Validation:**
+
 - Code quality: `reports/CODE_QUALITY_REPORT.md`
 - Security audit: `reports/SECURITY_AUDIT_[DATE].md`
 - Dependency analysis: `reports/DEPENDENCY_REPORT.md`
 - API compatibility: `reports/API_COMPATIBILITY_REPORT.md`
 
 **Report Creation Checklist:**
+
 1. ✅ Always use the `reports/` directory
 2. ✅ Use Markdown format (.md) for all reports
 3. ✅ Include dates in YYYY-MM-DD format where applicable
@@ -415,11 +457,13 @@ reports/VALIDATION_REPORT_2025-07-20.md  ✅ Correct
 5. ❌ Never save reports to the project root
 6. ❌ Avoid JSON format for human-readable reports
 
-This keeps the project root clean and provides a central location for all project documentation and analysis.
+This keeps the project root clean and provides a central location for all project documentation and
+analysis.
 
 ### Important Note
 
-If you find report files in the project root, they were placed incorrectly. Move them to the `reports/` directory to keep the root clean:
+If you find report files in the project root, they were placed incorrectly. Move them to the
+`reports/` directory to keep the root clean:
 
 ```bash
 # Example: moving misplaced reports
@@ -437,7 +481,11 @@ mv validation-report.json reports/
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
-const reportPath = join(process.cwd(), 'reports', `TEST_RESULTS_${new Date().toISOString().split('T')[0]}.md`);
+const reportPath = join(
+  process.cwd(),
+  'reports',
+  `TEST_RESULTS_${new Date().toISOString().split('T')[0]}.md`,
+);
 writeFileSync(reportPath, reportContent);
 
 // ❌ INCORRECT - Output to root directory
@@ -445,6 +493,7 @@ writeFileSync('TEST_RESULTS.md', reportContent); // Never do this!
 ```
 
 **Directory Rules for Scripts:**
+
 - **Test results** → Always output to `reports/`
 - **Schema analysis** → Output to `fixtures/` (with the fixtures they analyze)
 - **Coverage reports** → Always output to `reports/`
@@ -456,18 +505,21 @@ writeFileSync('TEST_RESULTS.md', reportContent); // Never do this!
 All temporary files, debugging scripts, and test artifacts should be organized in a `/temp` folder:
 
 ### Temporary File Organization
+
 - **Debug scripts**: `temp/debug-*.js`, `temp/analyze-*.py`
 - **Test artifacts**: `temp/test-results/`, `temp/coverage/`
 - **Generated files**: `temp/generated/`, `temp/build-artifacts/`
 - **Logs**: `temp/logs/debug.log`, `temp/logs/error.log`
 
 ### Guidelines
+
 - Never commit files from `/temp` directory
 - Use `/temp` for all debugging and analysis scripts created during development
 - Clean up `/temp` directory regularly or use automated cleanup
 - Include `/temp/` in `.gitignore` to prevent accidental commits
 
 ### Example `.gitignore` patterns
+
 ```
 # Temporary files and debugging
 /temp/
@@ -489,18 +541,22 @@ analyze-*.sh
 
 ### Claude Code Settings (.claude Directory)
 
-The `.claude` directory contains Claude Code configuration files with specific version control rules:
+The `.claude` directory contains Claude Code configuration files with specific version control
+rules:
 
 #### Version Controlled Files (commit these):
+
 - `.claude/settings.json` - Shared team settings for hooks, tools, and environment
 - `.claude/commands/*.md` - Custom slash commands available to all team members
 - `.claude/hooks/*.sh` - Hook scripts for automated validations and actions
 
 #### Ignored Files (do NOT commit):
+
 - `.claude/settings.local.json` - Personal preferences and local overrides
 - Any `*.local.json` files - Personal configuration not meant for sharing
 
 **Important Notes:**
+
 - Claude Code automatically adds `.claude/settings.local.json` to `.gitignore`
 - The shared `settings.json` should contain team-wide standards (linting, type checking, etc.)
 - Personal preferences or experimental settings belong in `settings.local.json`
@@ -509,31 +565,37 @@ The `.claude` directory contains Claude Code configuration files with specific v
 ## Implementation Phases
 
 ### Phase 0: Project Setup & Fixture Collection ✅
+
 - Initialize TypeScript project with modern tooling
 - Capture real JSONL outputs from Claude Code, Gemini CLI, Amp Code
 - Set up testing infrastructure with fixtures
 
 ### Phase 1: Core Types & Parser Infrastructure ✅
+
 - Define TypeScript types for all event formats
 - Implement extensible parser interface
 - Create Claude parser with comprehensive tests
 
 ### Phase 2: Streaming Engine ✅
+
 - Build memory-efficient line reader
 - Implement async iterator streaming pipeline
 - Add error handling and recovery
 
 ### Phase 3: Rendering Engine ✅
+
 - Create ANSI terminal renderer with colors and formatting
 - Implement HTML renderer with semantic structure
 - Build enhanced CLI with filtering options
 
 ### Phase 4: Additional Vendors ✅
+
 - Add Gemini CLI parser
 - Add Amp Code parser
 - Improve auto-detection logic
 
 ### Phase 5: Package & Documentation ✅
+
 - Complete monorepo migration with npm workspaces
 - Set up independent package versioning with Changesets
 - Comprehensive CI/CD with GitHub Actions
@@ -542,6 +604,7 @@ The `.claude` directory contains Claude Code configuration files with specific v
 ## Key Files to Review
 
 Before implementing, review these specification documents:
+
 - `specs/feat-jsonl-stream-formatter.md` - Main feature specification
 - `specs/implementation-roadmap.md` - Complete execution plan
 - `specs/testing-strategy.md` - Testing approach and fixture management
@@ -558,6 +621,7 @@ Before implementing, review these specification documents:
 ## CLI Interface
 
 ### Basic Usage
+
 ```bash
 # Auto-detect vendor and format for terminal
 claude --json "explain recursion" | aio-stream
@@ -573,6 +637,7 @@ cat session.jsonl | aio-stream --only tool,error --collapse-tools
 ```
 
 ### Options
+
 ```bash
 -v, --vendor <type>     # Vendor: auto|claude|gemini|amp (default: auto)
 -f, --format <type>     # Format: ansi|html|json (default: ansi)
@@ -589,12 +654,14 @@ cat session.jsonl | aio-stream --only tool,error --collapse-tools
 ## Troubleshooting
 
 ### Common Issues
+
 - **Memory usage**: Check for buffering in stream processing
 - **Performance**: Profile with `--inspect` flag for bottlenecks
 - **Parsing errors**: Validate fixtures match expected format
 - **Test failures**: Ensure fixtures represent real CLI outputs
 
 ### Debug Commands
+
 ```bash
 # Debug parsing issues
 DEBUG=aio-stream:parser npm test
@@ -637,13 +704,15 @@ Commands:
 
 # Important Instruction Reminders
 
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
-Only use emojis if the user explicitly requests it. Avoid adding emojis to files unless asked.
+Do what has been asked; nothing more, nothing less. NEVER create files unless they're absolutely
+necessary for achieving your goal. ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation
+files if explicitly requested by the User. Only use emojis if the user explicitly requests it. Avoid
+adding emojis to files unless asked.
+
 # important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+Do what has been asked; nothing more, nothing less. NEVER create files unless they're absolutely
+necessary for achieving your goal. ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation
+files if explicitly requested by the User.

@@ -3,20 +3,25 @@
 **Status**: Draft  
 **Authors**: Claude Assistant  
 **Date**: 2025-07-16  
-**Version**: 1.0.0  
+**Version**: 1.0.0
 
 ## Overview
 
-Phase 0 establishes the foundation for the agent-stream-fmt package by initializing the project structure and capturing real JSONL output from various AI agent CLIs. This phase is critical as all subsequent development depends on understanding the actual output formats from Claude Code, Gemini CLI, and Amp Code.
+Phase 0 establishes the foundation for the agent-stream-fmt package by initializing the project
+structure and capturing real JSONL output from various AI agent CLIs. This phase is critical as all
+subsequent development depends on understanding the actual output formats from Claude Code, Gemini
+CLI, and Amp Code.
 
 ## Background/Problem Statement
 
 Before implementing parsers and formatters, we need:
+
 1. A properly configured TypeScript project with the necessary tooling
 2. Real JSONL output samples from each supported agent CLI
 3. Understanding of the actual data structures and event types each agent produces
 
 Without real fixtures, we risk:
+
 - Building parsers based on assumptions rather than reality
 - Missing edge cases and undocumented event types
 - Creating brittle code that breaks with minor format changes
@@ -42,18 +47,22 @@ Without real fixtures, we risk:
 ## Technical Dependencies
 
 ### Build Tools
+
 - **Node.js**: >= 18.0.0 (for native stream support)
 - **TypeScript**: 5.x (latest stable)
 - **tsup**: Zero-config TypeScript bundler
 - **vitest**: Fast unit test framework
 
 ### Runtime Dependencies
+
 - **kleur**: ^4.1.5 (ANSI color library, needed from start)
 
 ### Development Dependencies
+
 - **@types/node**: TypeScript definitions for Node.js
 
 ### Agent CLIs (for fixture generation)
+
 - **Claude Code**: Latest version with `--json` flag support
 - **Gemini CLI**: >= 0.11 with `--jsonl` flag
 - **Amp Code**: Latest version with `-j` or `--output jsonl` flag
@@ -103,6 +112,7 @@ agent-stream-fmt/
 ### 2. Package Configuration
 
 **package.json**:
+
 ```json
 {
   "name": "agent-stream-fmt",
@@ -143,6 +153,7 @@ agent-stream-fmt/
 ```
 
 **tsconfig.json**:
+
 ```json
 {
   "compilerOptions": {
@@ -169,6 +180,7 @@ agent-stream-fmt/
 ### 3. Fixture Capture Strategy
 
 **Manual Capture Commands**:
+
 ```bash
 # Claude Code - Various scenarios
 claude --json "write a hello world function in Python" > tests/fixtures/claude/basic-message.jsonl
@@ -188,6 +200,7 @@ amp-code run test-suite.yml -j > tests/fixtures/amp/test-execution.jsonl
 ```
 
 **Automated Capture Script** (`scripts/capture-fixtures.ts`):
+
 ```typescript
 #!/usr/bin/env tsx
 import { spawn } from 'child_process';
@@ -207,13 +220,13 @@ const TEST_CASES: TestCase[] = [
     vendor: 'claude',
     command: ['claude', '--json', 'write a hello world function'],
     output: 'basic-message.jsonl',
-    description: 'Basic assistant message'
+    description: 'Basic assistant message',
   },
   {
     vendor: 'claude',
     command: ['claude', '--json', 'run npm test and show results'],
     output: 'tool-use.jsonl',
-    description: 'Tool execution with output'
+    description: 'Tool execution with output',
   },
   // Add more test cases...
 ];
@@ -221,17 +234,17 @@ const TEST_CASES: TestCase[] = [
 async function captureFixture(testCase: TestCase) {
   const outputPath = join('tests/fixtures', testCase.vendor, testCase.output);
   console.log(`Capturing ${testCase.vendor}: ${testCase.description}...`);
-  
+
   const output = createWriteStream(outputPath);
   const proc = spawn(testCase.command[0], testCase.command.slice(1));
-  
+
   proc.stdout.pipe(output);
-  proc.stderr.on('data', (data) => {
+  proc.stderr.on('data', data => {
     console.error(`Error capturing ${testCase.vendor}: ${data}`);
   });
-  
+
   return new Promise((resolve, reject) => {
-    proc.on('exit', (code) => {
+    proc.on('exit', code => {
       if (code === 0) {
         console.log(`✓ Captured ${outputPath}`);
         resolve(void 0);
@@ -247,7 +260,7 @@ async function main() {
   for (const vendor of ['claude', 'gemini', 'amp']) {
     mkdirSync(join('tests/fixtures', vendor), { recursive: true });
   }
-  
+
   // Capture fixtures sequentially to avoid rate limits
   for (const testCase of TEST_CASES) {
     try {
@@ -266,7 +279,8 @@ main().catch(console.error);
 ### 4. Schema Analysis
 
 **Schema Discovery Script** (`scripts/analyze-schemas.ts`):
-```typescript
+
+````typescript
 #!/usr/bin/env tsx
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
@@ -285,7 +299,7 @@ function analyzeFile(vendor: string, filename: string): SchemaAnalysis {
   const filepath = join('tests/fixtures', vendor, filename);
   const content = readFileSync(filepath, 'utf-8');
   const lines = content.split('\n').filter(line => line.trim());
-  
+
   const analysis: SchemaAnalysis = {
     vendor,
     file: filename,
@@ -293,17 +307,17 @@ function analyzeFile(vendor: string, filename: string): SchemaAnalysis {
     eventTypes: new Map(),
     uniqueKeys: new Set(),
     samples: new Map(),
-    errors: []
+    errors: [],
   };
-  
+
   for (const [index, line] of lines.entries()) {
     try {
       const obj = JSON.parse(line);
-      
+
       // Determine event type
       const eventType = obj.type || obj.kind || obj.phase || 'unknown';
       analysis.eventTypes.set(eventType, (analysis.eventTypes.get(eventType) || 0) + 1);
-      
+
       // Collect all keys
       const collectKeys = (obj: any, prefix = '') => {
         for (const key of Object.keys(obj)) {
@@ -314,7 +328,7 @@ function analyzeFile(vendor: string, filename: string): SchemaAnalysis {
         }
       };
       collectKeys(obj);
-      
+
       // Save first sample of each type
       if (!analysis.samples.has(eventType)) {
         analysis.samples.set(eventType, obj);
@@ -323,35 +337,34 @@ function analyzeFile(vendor: string, filename: string): SchemaAnalysis {
       analysis.errors.push(`Line ${index + 1}: ${error.message}`);
     }
   }
-  
+
   return analysis;
 }
 
 function generateReport() {
   const vendors = ['claude', 'gemini', 'amp'];
   const report: string[] = ['# JSONL Schema Analysis Report\n'];
-  
+
   for (const vendor of vendors) {
     report.push(`## ${vendor.toUpperCase()}\n`);
-    
+
     try {
-      const files = readdirSync(join('tests/fixtures', vendor))
-        .filter(f => f.endsWith('.jsonl'));
-      
+      const files = readdirSync(join('tests/fixtures', vendor)).filter(f => f.endsWith('.jsonl'));
+
       for (const file of files) {
         const analysis = analyzeFile(vendor, file);
-        
+
         report.push(`### ${file}`);
         report.push(`- Lines: ${analysis.lineCount}`);
         report.push(`- Parse errors: ${analysis.errors.length}`);
         report.push(`\n**Event Types:**`);
-        
+
         for (const [type, count] of analysis.eventTypes) {
           report.push(`- \`${type}\`: ${count} occurrences`);
         }
-        
+
         report.push(`\n**Unique Keys:** ${Array.from(analysis.uniqueKeys).join(', ')}`);
-        
+
         report.push(`\n**Sample Events:**`);
         for (const [type, sample] of analysis.samples) {
           report.push(`\n*${type}:*`);
@@ -359,19 +372,19 @@ function generateReport() {
           report.push(JSON.stringify(sample, null, 2));
           report.push('```');
         }
-        
+
         if (analysis.errors.length > 0) {
           report.push(`\n**Errors:**`);
           analysis.errors.slice(0, 5).forEach(err => report.push(`- ${err}`));
         }
-        
+
         report.push('');
       }
     } catch (error) {
       report.push(`Error reading ${vendor} fixtures: ${error.message}\n`);
     }
   }
-  
+
   return report.join('\n');
 }
 
@@ -383,7 +396,7 @@ console.log(report);
 import { writeFileSync } from 'fs';
 writeFileSync('tests/fixtures/SCHEMA_ANALYSIS.md', report);
 console.log('\nReport saved to tests/fixtures/SCHEMA_ANALYSIS.md');
-```
+````
 
 ## User Experience
 
@@ -395,6 +408,7 @@ During Phase 0, the primary users are developers working on the project:
 4. **Validate fixtures**: Run `npm run fixtures:validate` to ensure integrity
 
 The fixture collection process should be:
+
 - **Documented**: Clear instructions for capturing new fixtures
 - **Reproducible**: Anyone can regenerate fixtures if needed
 - **Versioned**: Git-tracked fixtures show format evolution
@@ -413,30 +427,31 @@ import { join } from 'path';
 
 describe('Fixture validation', () => {
   const vendors = ['claude', 'gemini', 'amp'];
-  
+
   for (const vendor of vendors) {
     describe(vendor, () => {
       const fixtureDir = join('tests/fixtures', vendor);
-      
+
       it('has fixture directory', () => {
         expect(() => readdirSync(fixtureDir)).not.toThrow();
       });
-      
+
       it('has at least one .jsonl file', () => {
         const files = readdirSync(fixtureDir).filter(f => f.endsWith('.jsonl'));
         expect(files.length).toBeGreaterThan(0);
       });
-      
+
       it('all JSONL files are valid', () => {
         const files = readdirSync(fixtureDir).filter(f => f.endsWith('.jsonl'));
-        
+
         for (const file of files) {
           const content = readFileSync(join(fixtureDir, file), 'utf-8');
           const lines = content.split('\n').filter(line => line.trim());
-          
+
           for (const [index, line] of lines.entries()) {
-            expect(() => JSON.parse(line), 
-              `${file} line ${index + 1} should be valid JSON`
+            expect(
+              () => JSON.parse(line),
+              `${file} line ${index + 1} should be valid JSON`,
             ).not.toThrow();
           }
         }
@@ -449,6 +464,7 @@ describe('Fixture validation', () => {
 ## Performance Considerations
 
 Phase 0 performance concerns are minimal, but we should:
+
 - Avoid capturing extremely large fixtures (> 10MB) initially
 - Ensure fixture capture scripts don't consume excessive memory
 - Keep fixture files in Git LFS if they grow large
@@ -463,13 +479,15 @@ Phase 0 performance concerns are minimal, but we should:
 ## Documentation
 
 ### Created in Phase 0:
+
 1. **README.md**: Basic project description and setup instructions
 2. **tests/fixtures/README.md**: How to capture and use fixtures
 3. **tests/fixtures/{vendor}/README.md**: Vendor-specific notes
 4. **SCHEMA_ANALYSIS.md**: Auto-generated schema documentation
 
 ### README.md Template:
-```markdown
+
+````markdown
 # agent-stream-fmt
 
 Universal JSONL formatter for AI agent CLIs (Claude Code, Gemini CLI, Amp Code).
@@ -483,12 +501,14 @@ Currently capturing fixtures and analyzing output formats.
 ```bash
 npm install
 ```
+````
 
 ## Capturing Fixtures
 
 See `tests/fixtures/README.md` for detailed instructions.
 
 Quick start:
+
 ```bash
 npm run fixtures:capture
 npm run fixtures:analyze
@@ -497,6 +517,7 @@ npm run fixtures:analyze
 ## Development
 
 This project is being built in phases. See `specs/implementation-roadmap.md`.
+
 ```
 
 ## Implementation Phases
@@ -545,3 +566,4 @@ After Phase 0 completion:
 1. Review captured fixtures and schema analysis
 2. Update main spec if new event types discovered
 3. Proceed to Phase 1: Core Types & Parser Infrastructure
+```

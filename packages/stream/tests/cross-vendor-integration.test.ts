@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { detectVendor, detectVendorMultiLine, detectVendorWithConfidence, selectParser } from '../src/parsers/index.js';
+import {
+  detectVendor,
+  detectVendorMultiLine,
+  detectVendorWithConfidence,
+  selectParser,
+} from '../src/parsers/index.js';
 import { streamEvents } from '../src/stream.js';
 import { Readable } from 'stream';
 
@@ -8,16 +13,15 @@ import { Readable } from 'stream';
  * Tests vendor detection, mixed format handling, and streaming across vendors
  */
 describe('Cross-Vendor Integration Tests', () => {
-  
   describe('Mixed Format Detection', () => {
     it('should correctly detect different vendors in sequence', () => {
       const lines = [
-        '{"type":"message","role":"user","content":"test"}',        // Claude
-        '{"type":"user","content":"hello"}',                       // Gemini  
-        '{"phase":"start","task":"build"}',                        // Amp
-        '{"type":"assistant","content":"response"}',               // Gemini
-        '{"type":"tool_use","id":"tool_1","name":"bash"}',        // Claude
-        '{"phase":"end","task":"build","exitCode":0}'              // Amp
+        '{"type":"message","role":"user","content":"test"}', // Claude
+        '{"type":"user","content":"hello"}', // Gemini
+        '{"phase":"start","task":"build"}', // Amp
+        '{"type":"assistant","content":"response"}', // Gemini
+        '{"type":"tool_use","id":"tool_1","name":"bash"}', // Claude
+        '{"phase":"end","task":"build","exitCode":0}', // Amp
       ];
 
       const detectedVendors = lines.map(line => {
@@ -26,12 +30,12 @@ describe('Cross-Vendor Integration Tests', () => {
       });
 
       expect(detectedVendors).toEqual([
-        'claude',   // Message with role
-        'gemini',   // User message without role
-        'amp',      // Phase-based
-        'gemini',   // Assistant message
-        'claude',   // Tool use
-        'amp'       // Phase end
+        'claude', // Message with role
+        'gemini', // User message without role
+        'amp', // Phase-based
+        'gemini', // Assistant message
+        'claude', // Tool use
+        'amp', // Phase end
       ]);
     });
 
@@ -40,35 +44,37 @@ describe('Cross-Vendor Integration Tests', () => {
         {
           line: '{"type":"message","role":"assistant","content":"test"}',
           expectedVendor: 'claude',
-          minConfidence: 0.9
+          minConfidence: 0.9,
         },
         {
           line: '{"type":"metadata","usage":{"input_tokens":10,"output_tokens":5}}',
           expectedVendor: 'gemini',
-          minConfidence: 0.8
+          minConfidence: 0.8,
         },
         {
           line: '{"phase":"output","task":"test","type":"stdout","content":"data"}',
           expectedVendor: 'amp',
-          minConfidence: 0.9
-        }
+          minConfidence: 0.9,
+        },
       ];
 
       for (const testCase of testCases) {
         const result = detectVendorWithConfidence(testCase.line);
         expect(result).toBeTruthy();
         expect(result!.parser.vendor).toBe(testCase.expectedVendor);
-        expect(result!.confidence).toBeGreaterThanOrEqual(testCase.minConfidence);
+        expect(result!.confidence).toBeGreaterThanOrEqual(
+          testCase.minConfidence,
+        );
       }
     });
 
     it('should use multi-line detection for better accuracy', () => {
       // Mixed format with some ambiguous lines
       const mixedLines = [
-        '{"type":"user","content":"What is 2+2?"}',                          // Could be Gemini
-        '{"type":"assistant","content":"2+2 equals 4"}',                     // Could be Gemini  
-        '{"type":"metadata","usage":{"input_tokens":5,"output_tokens":8}}',  // Clearly Gemini
-        '{"type":"user","content":"Thanks"}',                                // Could be Gemini
+        '{"type":"user","content":"What is 2+2?"}', // Could be Gemini
+        '{"type":"assistant","content":"2+2 equals 4"}', // Could be Gemini
+        '{"type":"metadata","usage":{"input_tokens":5,"output_tokens":8}}', // Clearly Gemini
+        '{"type":"user","content":"Thanks"}', // Could be Gemini
       ];
 
       const singleLineDetection = detectVendor(mixedLines[0]);
@@ -81,7 +87,7 @@ describe('Cross-Vendor Integration Tests', () => {
     it('should handle priority conflicts correctly', () => {
       // Line that could match multiple parsers (edge case)
       const ambiguousLine = '{"type":"unknown","data":"test"}';
-      
+
       const detected = detectVendor(ambiguousLine);
       // Should return null for truly unknown formats
       expect(detected).toBeNull();
@@ -94,20 +100,20 @@ describe('Cross-Vendor Integration Tests', () => {
       // So we need to test with separate streams for each vendor
       const claudeJsonl = [
         '{"type":"message","role":"user","content":"Hello Claude"}',
-        '{"type":"tool_use","id":"tool_1","name":"bash","input":{"command":"echo hello"}}'
+        '{"type":"tool_use","id":"tool_1","name":"bash","input":{"command":"echo hello"}}',
       ].join('\n');
 
       const events = [];
       for await (const event of streamEvents({
         vendor: 'auto',
-        source: Readable.from([claudeJsonl])
+        source: Readable.from([claudeJsonl]),
       })) {
         events.push(event);
       }
 
       // Should have parsed Claude events successfully
       expect(events.length).toBeGreaterThanOrEqual(2);
-      
+
       // Check we got expected event types from Claude
       const messageEvents = events.filter(e => e.t === 'msg');
       const toolEvents = events.filter(e => e.t === 'tool');
@@ -120,7 +126,7 @@ describe('Cross-Vendor Integration Tests', () => {
       const validWithErrors = [
         '{"type":"message","role":"user","content":"Valid Claude"}',
         'invalid json line',
-        '{"type":"tool_use","id":"tool_1","name":"bash"}'
+        '{"type":"tool_use","id":"tool_1","name":"bash"}',
       ].join('\n');
 
       const events = [];
@@ -128,15 +134,17 @@ describe('Cross-Vendor Integration Tests', () => {
         vendor: 'auto',
         source: Readable.from([validWithErrors]),
         continueOnError: true,
-        emitDebugEvents: true
+        emitDebugEvents: true,
       })) {
         events.push(event);
       }
 
       // Should have some valid events and some error events
-      const validEvents = events.filter(e => e.t !== 'error' && e.t !== 'debug');
+      const validEvents = events.filter(
+        e => e.t !== 'error' && e.t !== 'debug',
+      );
       const errorEvents = events.filter(e => e.t === 'error');
-      
+
       expect(validEvents.length).toBeGreaterThanOrEqual(1);
       expect(errorEvents.length).toBeGreaterThanOrEqual(1);
     });
@@ -145,7 +153,7 @@ describe('Cross-Vendor Integration Tests', () => {
   describe('Parser Selection Logic', () => {
     it('should select correct parser for explicit vendor choice', () => {
       const line = '{"type":"user","content":"test"}';
-      
+
       const claudeParser = selectParser('claude', line);
       const geminiParser = selectParser('gemini', line);
       const ampParser = selectParser('amp', line);
@@ -159,16 +167,16 @@ describe('Cross-Vendor Integration Tests', () => {
       const testCases = [
         {
           line: '{"type":"message","role":"assistant","content":"test"}',
-          expectedVendor: 'claude'
+          expectedVendor: 'claude',
         },
         {
           line: '{"type":"metadata","usage":{"input_tokens":5,"output_tokens":10}}',
-          expectedVendor: 'gemini'
+          expectedVendor: 'gemini',
         },
         {
           line: '{"phase":"start","task":"build"}',
-          expectedVendor: 'amp'
-        }
+          expectedVendor: 'amp',
+        },
       ];
 
       for (const testCase of testCases) {
@@ -178,16 +186,22 @@ describe('Cross-Vendor Integration Tests', () => {
     });
 
     it('should throw error for auto-detection without sample line', () => {
-      expect(() => selectParser('auto')).toThrow('Auto-detection requires at least one line');
+      expect(() => selectParser('auto')).toThrow(
+        'Auto-detection requires at least one line',
+      );
     });
 
     it('should throw error for unknown vendor', () => {
-      expect(() => selectParser('unknown' as any)).toThrow('Unknown vendor: unknown');
+      expect(() => selectParser('unknown' as any)).toThrow(
+        'Unknown vendor: unknown',
+      );
     });
 
     it('should throw error for auto-detection failure', () => {
       const undetectableLine = '{"completely":"unknown","format":true}';
-      expect(() => selectParser('auto', undetectableLine)).toThrow('Failed to auto-detect vendor');
+      expect(() => selectParser('auto', undetectableLine)).toThrow(
+        'Failed to auto-detect vendor',
+      );
     });
   });
 
@@ -197,7 +211,9 @@ describe('Cross-Vendor Integration Tests', () => {
       // Create lines that would all be from the same vendor (Claude format)
       const lines = [];
       for (let i = 0; i < 10; i++) {
-        lines.push('{"type":"message","role":"user","content":"test ' + i + '"}');
+        lines.push(
+          '{"type":"message","role":"user","content":"test ' + i + '"}',
+        );
       }
 
       const start = performance.now();
@@ -205,7 +221,7 @@ describe('Cross-Vendor Integration Tests', () => {
 
       for await (const _event of streamEvents({
         vendor: 'auto',
-        source: Readable.from([lines.join('\n')])
+        source: Readable.from([lines.join('\n')]),
       })) {
         eventCount++;
       }
@@ -249,16 +265,16 @@ describe('Cross-Vendor Integration Tests', () => {
       const testCases = [
         {
           line: '{"type":"tool_use","id":"123","name":"bash"}',
-          expected: 'claude'
+          expected: 'claude',
         },
         {
           line: '{"type":"metadata","timestamp":"2025-01-01"}',
-          expected: 'gemini'
+          expected: 'gemini',
         },
         {
           line: '{"phase":"output","task":"test","content":"data"}',
-          expected: 'amp'
-        }
+          expected: 'amp',
+        },
       ];
 
       for (const testCase of testCases) {
@@ -271,16 +287,16 @@ describe('Cross-Vendor Integration Tests', () => {
       const testCases = [
         {
           line: '{"type":"message"}', // Missing role for Claude, but still has type
-          shouldDetect: false // This is ambiguous, might not detect
+          shouldDetect: false, // This is ambiguous, might not detect
         },
         {
           line: '{"type":"user","content":"test"}', // Valid Gemini format
-          shouldDetect: true
+          shouldDetect: true,
         },
         {
           line: '{"phase":"start","task":"test"}', // Valid Amp format
-          shouldDetect: true
-        }
+          shouldDetect: true,
+        },
       ];
 
       for (const testCase of testCases) {
@@ -301,13 +317,13 @@ describe('Cross-Vendor Integration Tests', () => {
       const claudeWorkflow = [
         '{"type":"message","role":"user","content":"Analyze this data"}',
         '{"type":"message","role":"assistant","content":"I\'ll help you analyze the data"}',
-        '{"type":"tool_use","id":"tool_1","name":"python","input":{"code":"import pandas as pd"}}'
+        '{"type":"tool_use","id":"tool_1","name":"python","input":{"code":"import pandas as pd"}}',
       ].join('\n');
 
       const events = [];
       for await (const event of streamEvents({
         vendor: 'auto',
-        source: Readable.from([claudeWorkflow])
+        source: Readable.from([claudeWorkflow]),
       })) {
         events.push(event);
       }
@@ -326,13 +342,13 @@ describe('Cross-Vendor Integration Tests', () => {
       const claudeContextTest = [
         '{"type":"tool_use","id":"claude_tool","name":"bash","input":{"command":"echo 1"}}',
         '{"type":"tool_result","tool_use_id":"claude_tool","content":"stdout","output":"1"}',
-        '{"type":"message","role":"assistant","content":"Command completed"}'
+        '{"type":"message","role":"assistant","content":"Command completed"}',
       ].join('\n');
 
       const events = [];
       for await (const event of streamEvents({
         vendor: 'auto',
-        source: Readable.from([claudeContextTest])
+        source: Readable.from([claudeContextTest]),
       })) {
         events.push(event);
       }
@@ -342,7 +358,7 @@ describe('Cross-Vendor Integration Tests', () => {
       const msgEvents = events.filter(e => e.t === 'msg');
 
       expect(toolEvents.length).toBeGreaterThanOrEqual(2); // start + stdout + end
-      expect(msgEvents.length).toBeGreaterThanOrEqual(1);  // assistant message
+      expect(msgEvents.length).toBeGreaterThanOrEqual(1); // assistant message
     });
   });
 });

@@ -186,8 +186,8 @@ export class AnsiRenderer implements Renderer {
     const escapedName = event.name.replace(/\x1b/g, '\\x1b');
     const toolName = kleur.bold().blue(escapedName);
     const input = event.text
-      // eslint-disable-next-line no-control-regex
-      ? kleur.dim(` ${event.text.replace(/\x1b/g, '\\x1b')}`)
+      ? // eslint-disable-next-line no-control-regex
+        kleur.dim(` ${event.text.replace(/\x1b/g, '\\x1b')}`)
       : '';
 
     return `${startIcon} ${toolName}${input}\n`;

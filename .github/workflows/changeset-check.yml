@@ -34,15 +34,15 @@ jobs:
         with:
           script: |
             const comment = `⚠️ **Missing Changeset**
-            
+
             This PR is missing a changeset. If these changes should trigger a version bump, please run:
-            
+
             \`\`\`bash
             npm run changeset
             \`\`\`
-            
+
             If no version bump is needed (e.g., documentation, tests, or internal changes), you can ignore this message.`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

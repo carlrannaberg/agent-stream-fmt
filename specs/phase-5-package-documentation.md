@@ -3,22 +3,28 @@
 **Status**: Draft  
 **Authors**: Claude Assistant  
 **Date**: 2025-07-19  
-**Version**: 1.0.0  
+**Version**: 1.0.0
 
 ## Overview
 
-Phase 5 completes the agent-stream-fmt project by preparing it for public release as a production-ready npm package. This phase focuses on comprehensive documentation, publishing infrastructure, and quality assurance to ensure a professional, maintainable package that developers can confidently adopt.
+Phase 5 completes the agent-stream-fmt project by preparing it for public release as a
+production-ready npm package. This phase focuses on comprehensive documentation, publishing
+infrastructure, and quality assurance to ensure a professional, maintainable package that developers
+can confidently adopt.
 
 ## Background/Problem Statement
 
-With Phases 0-4 complete, we have a fully functional JSONL stream formatter supporting Claude, Gemini, and Amp CLIs with excellent performance (2-3M lines/sec). However, the project currently lacks:
+With Phases 0-4 complete, we have a fully functional JSONL stream formatter supporting Claude,
+Gemini, and Amp CLIs with excellent performance (2-3M lines/sec). However, the project currently
+lacks:
 
 1. **Publishing readiness**: No LICENSE, incomplete package metadata, missing CI/CD
 2. **Comprehensive documentation**: Basic README exists but lacks API docs, examples, and guides
 3. **Developer infrastructure**: No contributing guidelines, changelog, or issue templates
 4. **Quality gates**: No automated testing, coverage enforcement, or release process
 
-Without these elements, the package cannot be successfully published or maintained as an open-source project.
+Without these elements, the package cannot be successfully published or maintained as an open-source
+project.
 
 ## Goals
 
@@ -42,16 +48,19 @@ Without these elements, the package cannot be successfully published or maintain
 ## Technical Dependencies
 
 ### Documentation Tools
+
 - **TypeDoc**: ^0.25.0 - Generate API documentation from TypeScript
 - **Markdown**: For all human-readable documentation
 - **Mermaid**: For architecture diagrams in documentation
 
 ### CI/CD Tools
+
 - **GitHub Actions**: For automated workflows
 - **Changesets**: For version management and changelogs
 - **npm**: For package publishing
 
 ### Quality Tools
+
 - **ESLint**: Already configured
 - **Prettier**: Code formatting (if not already configured)
 - **Husky**: Git hooks for pre-commit checks
@@ -62,6 +71,7 @@ Without these elements, the package cannot be successfully published or maintain
 ### 1. Package Configuration
 
 #### 1.1 LICENSE File
+
 ```
 MIT License
 
@@ -78,6 +88,7 @@ furnished to do so, subject to the following conditions:
 ```
 
 #### 1.2 Enhanced package.json
+
 ```json
 {
   "name": "agent-stream-fmt",
@@ -114,12 +125,7 @@ furnished to do so, subject to the following conditions:
   "engines": {
     "node": ">=18.0.0"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
+  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -145,6 +151,7 @@ furnished to do so, subject to the following conditions:
 ```
 
 #### 1.3 .npmignore
+
 ```
 # Source files
 src/
@@ -185,7 +192,8 @@ CONTRIBUTING.md
 ### 2. Documentation Suite
 
 #### 2.1 README.md Structure
-```markdown
+
+````markdown
 # agent-stream-fmt
 
 [![npm version](https://badge.fury.io/js/agent-stream-fmt.svg)](https://www.npmjs.com/package/agent-stream-fmt)
@@ -193,7 +201,8 @@ CONTRIBUTING.md
 [![Coverage Status](https://coveralls.io/repos/github/yourusername/agent-stream-fmt/badge.svg)](https://coveralls.io/github/yourusername/agent-stream-fmt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Universal JSONL formatter for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
+Universal JSONL formatter for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, and
+Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
 
 ## Features
 
@@ -212,6 +221,7 @@ Universal JSONL formatter for AI agent CLIs that normalizes output from Claude C
 npm install -g agent-stream-fmt  # CLI usage
 npm install agent-stream-fmt     # Programmatic usage
 ```
+````
 
 ## Quick Start
 
@@ -234,9 +244,9 @@ amp-code run build.yml -j | agent-stream-fmt --html > report.html
 import { streamEvents, streamFormat } from 'agent-stream-fmt';
 
 // Process events programmatically
-for await (const event of streamEvents({ 
-  vendor: 'claude', 
-  source: process.stdin 
+for await (const event of streamEvents({
+  vendor: 'claude',
+  source: process.stdin,
 })) {
   if (event.t === 'tool' && event.phase === 'end') {
     console.log(`Tool ${event.name} completed with code ${event.exitCode}`);
@@ -245,7 +255,8 @@ for await (const event of streamEvents({
 ```
 
 [... comprehensive sections on API, performance, etc ...]
-```
+
+````
 
 #### 2.2 API Documentation Structure
 
@@ -267,41 +278,44 @@ for await (const event of streamEvents({
   "plugin": ["typedoc-plugin-markdown"],
   "readme": "docs/api-intro.md"
 }
-```
+````
 
 **JSDoc Example**:
-```typescript
+
+````typescript
 /**
  * Stream events from JSONL input with automatic vendor detection
- * 
+ *
  * @param options - Streaming options
  * @param options.vendor - Vendor format to use ('auto' for detection)
  * @param options.source - Readable stream containing JSONL data
  * @returns Async iterator of normalized agent events
- * 
+ *
  * @example
  * ```typescript
- * for await (const event of streamEvents({ 
- *   vendor: 'auto', 
- *   source: process.stdin 
+ * for await (const event of streamEvents({
+ *   vendor: 'auto',
+ *   source: process.stdin
  * })) {
  *   console.log(event);
  * }
  * ```
- * 
+ *
  * @category Main API
  * @since 0.1.0
  */
 export async function* streamEvents(options: StreamEventOptions): AsyncIterator<AgentEvent> {
   // ...
 }
-```
+````
 
 #### 2.3 CONTRIBUTING.md
-```markdown
+
+````markdown
 # Contributing to agent-stream-fmt
 
-We love your input! We want to make contributing to agent-stream-fmt as easy and transparent as possible.
+We love your input! We want to make contributing to agent-stream-fmt as easy and transparent as
+possible.
 
 ## Development Setup
 
@@ -316,12 +330,15 @@ We love your input! We want to make contributing to agent-stream-fmt as easy and
 ## Development Workflow
 
 ### Building
+
 ```bash
 npm run build          # Build TypeScript
 npm run typecheck      # Type checking
 ```
+````
 
 ### Testing
+
 ```bash
 npm test               # Run all tests
 npm run test:watch     # Run tests in watch mode
@@ -329,6 +346,7 @@ npm run test:coverage  # Generate coverage report
 ```
 
 ### Code Style
+
 - We use ESLint and Prettier
 - Run `npm run lint` to check style
 - Commits must follow Conventional Commits format
@@ -342,7 +360,8 @@ npm run test:coverage  # Generate coverage report
 ## Code of Conduct
 
 Be nice, be respectful, and remember we're all here to make great software together!
-```
+
+````
 
 #### 2.4 CHANGELOG.md
 ```markdown
@@ -378,13 +397,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Memory usage: <600 bytes per event
 
 [0.1.0]: https://github.com/yourusername/agent-stream-fmt/releases/tag/v0.1.0
-```
+````
 
 ### 3. CI/CD Infrastructure
 
 #### 3.1 GitHub Actions Workflows
 
 **.github/workflows/ci.yml**:
+
 ```yaml
 name: CI
 
@@ -400,45 +420,46 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run linter
-      run: npm run lint
-    
-    - name: Run type checking
-      run: npm run typecheck
-    
-    - name: Run tests
-      run: npm test -- --coverage
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      if: matrix.node-version == '20.x'
-      with:
-        file: ./coverage/lcov.info
-    
-    - name: Build package
-      run: npm run build
-    
-    - name: Test package installation
-      run: |
-        npm pack
-        npm install -g *.tgz
-        agent-stream-fmt --version
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test -- --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.node-version == '20.x'
+        with:
+          file: ./coverage/lcov.info
+
+      - name: Build package
+        run: npm run build
+
+      - name: Test package installation
+        run: |
+          npm pack
+          npm install -g *.tgz
+          agent-stream-fmt --version
 ```
 
 **.github/workflows/release.yml**:
+
 ```yaml
 name: Release
 
@@ -455,39 +476,40 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        registry-url: 'https://registry.npmjs.org'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run tests
-      run: npm test
-    
-    - name: Build package
-      run: npm run build
-    
-    - name: Publish to npm
-      run: npm publish --provenance
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        generate_release_notes: true
-        files: |
-          CHANGELOG.md
-          dist/*
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          files: |
+            CHANGELOG.md
+            dist/*
 ```
 
 #### 3.2 Pre-commit Hooks
 
 **package.json additions**:
+
 ```json
 {
   "scripts": {
@@ -498,18 +520,14 @@ jobs:
     "lint-staged": "^15.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md}": ["prettier --write"]
   }
 }
 ```
 
 **.husky/pre-commit**:
+
 ```bash
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
@@ -523,6 +541,7 @@ npm run typecheck
 #### 4.1 Bundle Size Analysis
 
 **scripts/analyze-bundle.js**:
+
 ```javascript
 import { analyzeMetafile } from 'esbuild';
 import fs from 'fs';
@@ -546,6 +565,7 @@ if (actualSize > maxSize) {
 #### 4.2 Dependency Audit
 
 **package.json script**:
+
 ```json
 {
   "scripts": {
@@ -558,7 +578,8 @@ if (actualSize > maxSize) {
 ### 5. Performance Documentation
 
 #### 5.1 Performance Guide (docs/performance.md)
-```markdown
+
+````markdown
 # Performance Guide
 
 ## Throughput Characteristics
@@ -566,7 +587,7 @@ if (actualSize > maxSize) {
 agent-stream-fmt is designed for high-throughput stream processing:
 
 - **Claude format**: 2.2M lines/second
-- **Gemini format**: 2.8M lines/second  
+- **Gemini format**: 2.8M lines/second
 - **Amp format**: 3.2M lines/second
 
 ## Memory Usage
@@ -580,15 +601,18 @@ The streaming architecture ensures constant memory usage:
 ## Optimization Tips
 
 ### 1. Use Vendor-Specific Parsers
+
 ```typescript
 // Faster - skips auto-detection
-streamEvents({ vendor: 'claude', source })
+streamEvents({ vendor: 'claude', source });
 
 // Slower - requires format detection
-streamEvents({ vendor: 'auto', source })
+streamEvents({ vendor: 'auto', source });
 ```
+````
 
 ### 2. Filter Early
+
 ```bash
 # More efficient - parser skips unwanted events
 agent-stream-fmt --only tool,error
@@ -598,6 +622,7 @@ agent-stream-fmt | grep "tool:"
 ```
 
 ### 3. Use Streaming APIs
+
 ```typescript
 // ✅ Good - constant memory
 for await (const event of streamEvents(options)) {
@@ -608,31 +633,23 @@ for await (const event of streamEvents(options)) {
 const events = await collectAllEvents(options);
 events.forEach(process);
 ```
+
 ```
 
 ### 6. Examples Enhancement
 
 #### 6.1 Enhanced Examples Structure
 ```
-examples/
-├── README.md              # Guide to all examples
-├── basic/
-│   ├── cli-usage.md      # CLI examples for all vendors
-│   ├── stream-api.js     # Basic streaming API usage
-│   └── filter-events.js  # Event filtering examples
-├── advanced/
-│   ├── custom-renderer.js # Build custom renderers
-│   ├── error-handling.js  # Robust error handling
-│   ├── performance.js     # Performance optimization
-│   └── multi-vendor.js    # Handle mixed formats
-├── integrations/
-│   ├── express-server.js  # Web server integration
-│   ├── discord-bot.js     # Discord bot example
-│   └── log-analyzer.js    # Log analysis tool
-└── benchmarks/
-    ├── throughput-test.js # Measure throughput
-    └── memory-test.js     # Monitor memory usage
-```
+
+examples/ ├── README.md # Guide to all examples ├── basic/ │ ├── cli-usage.md # CLI examples for all
+vendors │ ├── stream-api.js # Basic streaming API usage │ └── filter-events.js # Event filtering
+examples ├── advanced/ │ ├── custom-renderer.js # Build custom renderers │ ├── error-handling.js #
+Robust error handling │ ├── performance.js # Performance optimization │ └── multi-vendor.js # Handle
+mixed formats ├── integrations/ │ ├── express-server.js # Web server integration │ ├──
+discord-bot.js # Discord bot example │ └── log-analyzer.js # Log analysis tool └── benchmarks/ ├──
+throughput-test.js # Measure throughput └── memory-test.js # Monitor memory usage
+
+````
 
 ## User Experience
 
@@ -644,9 +661,10 @@ added 2 packages in 1.337s
 
 $ agent-stream-fmt --version
 agent-stream-fmt v0.1.0
-```
+````
 
 ### First Usage
+
 ```bash
 $ claude --json "Hello" | agent-stream-fmt
 🤖 assistant: Hello! How can I help you today?
@@ -676,18 +694,21 @@ Examples:
 ## Testing Strategy
 
 ### Documentation Tests
+
 - **README examples**: Ensure all code examples work
 - **API documentation**: Validate TypeDoc generation
 - **Link checking**: Verify all documentation links
 - **Example validation**: Test all example scripts
 
 ### Publishing Tests
+
 - **Dry run**: `npm publish --dry-run` validation
 - **Pack test**: Install from tarball before publishing
 - **Cross-platform**: Test on Linux, macOS, Windows
 - **Node versions**: Test on all supported versions (18+)
 
 ### Release Tests
+
 ```bash
 # Pre-release checklist
 npm run test
@@ -701,11 +722,13 @@ npm pack --dry-run
 ## Performance Considerations
 
 ### Documentation Build Performance
+
 - **TypeDoc**: Cache results between builds
 - **README size**: Keep under 10KB for npm display
 - **Example loading**: Lazy load examples in documentation
 
 ### CI/CD Performance
+
 - **Parallel jobs**: Run tests across Node versions in parallel
 - **Caching**: Cache node_modules between runs
 - **Selective tests**: Only run affected tests on PRs
@@ -713,12 +736,14 @@ npm pack --dry-run
 ## Security Considerations
 
 ### Publishing Security
+
 - **npm provenance**: Enable provenance for supply chain security
 - **2FA requirement**: Require 2FA for npm publishing
 - **Token scoping**: Use granular npm tokens
 - **Dependency scanning**: Automated vulnerability scanning
 
 ### Documentation Security
+
 - **No secrets**: Scan docs for accidental secret exposure
 - **Example sanitization**: Use placeholder values in examples
 - **Link validation**: Ensure no malicious links
@@ -726,6 +751,7 @@ npm pack --dry-run
 ## Documentation
 
 ### What This Phase Documents
+
 1. **User Guide**: Comprehensive README with examples
 2. **API Reference**: Full TypeDoc-generated documentation
 3. **Performance Guide**: Optimization tips and benchmarks
@@ -734,6 +760,7 @@ npm pack --dry-run
 6. **Migration Guide**: For future version updates
 
 ### Documentation Standards
+
 - **Clarity**: Write for developers unfamiliar with the project
 - **Examples**: Include working code for every major feature
 - **Versioning**: Tag documentation with version numbers
@@ -742,6 +769,7 @@ npm pack --dry-run
 ## Implementation Phases
 
 ### Phase 5.1: Core Documentation (Days 1-2)
+
 - [ ] Write comprehensive README.md
 - [ ] Add LICENSE file (MIT)
 - [ ] Create CONTRIBUTING.md
@@ -750,6 +778,7 @@ npm pack --dry-run
 - [ ] Add JSDoc comments to all public APIs
 
 ### Phase 5.2: Package Configuration (Days 3-4)
+
 - [ ] Update package.json with full metadata
 - [ ] Create .npmignore file
 - [ ] Configure dual package (ESM/CJS) exports
@@ -758,6 +787,7 @@ npm pack --dry-run
 - [ ] Verify bundle size is acceptable
 
 ### Phase 5.3: CI/CD Infrastructure (Days 5-6)
+
 - [ ] Create GitHub Actions CI workflow
 - [ ] Set up automated testing matrix
 - [ ] Configure coverage reporting
@@ -766,6 +796,7 @@ npm pack --dry-run
 - [ ] Configure automated dependency updates
 
 ### Phase 5.4: Quality & Polish (Days 7-8)
+
 - [ ] Create comprehensive examples
 - [ ] Write performance documentation
 - [ ] Set up issue templates
@@ -785,17 +816,20 @@ npm pack --dry-run
 ## References
 
 ### Documentation Best Practices
+
 - [TypeDoc Documentation](https://typedoc.org/)
 - [npm Publishing Best Practices](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
 - [Keep a Changelog](https://keepachangelog.com/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
 
 ### CI/CD References
+
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [npm Provenance](https://docs.npmjs.com/generating-provenance-statements)
 - [Codecov Documentation](https://docs.codecov.com/)
 
 ### Similar Projects
+
 - [Prettier](https://github.com/prettier/prettier) - Excellent documentation structure
 - [ESLint](https://github.com/eslint/eslint) - Comprehensive contributing guide
 - [Chalk](https://github.com/chalk/chalk) - Clean, focused README

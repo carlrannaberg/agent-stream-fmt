@@ -119,7 +119,9 @@ export const generate = {
   jsonlLines(count: number, template?: Record<string, any>): string[] {
     const lines: string[] = [];
     for (let i = 0; i < count; i++) {
-      const data = template ? { ...template, index: i } : { index: i, message: `Line ${i}` };
+      const data = template
+        ? { ...template, index: i }
+        : { index: i, message: `Line ${i}` };
       lines.push(JSON.stringify(data));
     }
     return lines;
@@ -131,7 +133,7 @@ export const generate = {
   agentEvents(count: number): any[] {
     const events: any[] = [];
     const types = ['msg', 'tool', 'cost', 'error'];
-    
+
     for (let i = 0; i < count; i++) {
       const type = types[i % types.length];
       switch (type) {
@@ -149,7 +151,7 @@ export const generate = {
           break;
       }
     }
-    
+
     return events;
   },
 

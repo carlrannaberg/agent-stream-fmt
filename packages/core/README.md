@@ -3,7 +3,8 @@
 Core types and utilities for Agent-IO packages.
 
 > **⚠️ IMPORTANT: This is a placeholder package**  
-> This package is marked as `private` and should not be published to npm. It's reserved for future implementation of shared core functionality across Agent-IO packages.
+> This package is marked as `private` and should not be published to npm. It's reserved for future
+> implementation of shared core functionality across Agent-IO packages.
 
 ## Installation
 
@@ -17,7 +18,8 @@ pnpm add @agent-io/core
 
 ## Usage
 
-This package provides the core type definitions and guard functions used across all Agent-IO packages.
+This package provides the core type definitions and guard functions used across all Agent-IO
+packages.
 
 ```typescript
 import { AgentEvent, isMessageEvent, isToolEvent } from '@agent-io/core';
@@ -41,12 +43,7 @@ function handleEvent(event: AgentEvent) {
 Union type representing all possible agent events:
 
 ```typescript
-type AgentEvent =
-  | MessageEvent
-  | ToolEvent
-  | CostEvent
-  | ErrorEvent
-  | DebugEvent;
+type AgentEvent = MessageEvent | ToolEvent | CostEvent | ErrorEvent | DebugEvent;
 ```
 
 #### `MessageEvent`
@@ -197,16 +194,19 @@ import { AgentEvent, isMessageEvent, isToolEvent } from '@agent-io/core';
 function processEvents(events: AgentEvent[]) {
   const messages = events.filter(isMessageEvent);
   const tools = events.filter(isToolEvent);
-  
+
   console.log(`Found ${messages.length} messages`);
   console.log(`Found ${tools.length} tool events`);
-  
+
   // Group tool events by name
-  const toolsByName = tools.reduce((acc, event) => {
-    if (!acc[event.name]) acc[event.name] = [];
-    acc[event.name].push(event);
-    return acc;
-  }, {} as Record<string, ToolEvent[]>);
+  const toolsByName = tools.reduce(
+    (acc, event) => {
+      if (!acc[event.name]) acc[event.name] = [];
+      acc[event.name].push(event);
+      return acc;
+    },
+    {} as Record<string, ToolEvent[]>,
+  );
 }
 ```
 
@@ -217,15 +217,15 @@ import { AgentEvent, MessageEvent, ToolEvent } from '@agent-io/core';
 
 class EventHandler {
   private handlers = new Map<AgentEvent['t'], (event: any) => void>();
-  
+
   onMessage(handler: (event: MessageEvent) => void) {
     this.handlers.set('msg', handler);
   }
-  
+
   onTool(handler: (event: ToolEvent) => void) {
     this.handlers.set('tool', handler);
   }
-  
+
   handle(event: AgentEvent) {
     const handler = this.handlers.get(event.t);
     if (handler) {
@@ -258,27 +258,28 @@ const message: MessageEvent = {
   t: 'msg',
   role: 'assistant',
   text: 'Hello! How can I help you today?',
-  timestamp: Date.now()
+  timestamp: Date.now(),
 };
 
 // Create a tool event
 const toolStart: ToolEvent = {
   t: 'tool',
   name: 'calculator',
-  phase: 'start'
+  phase: 'start',
 };
 
 const toolOutput: ToolEvent = {
   t: 'tool',
   name: 'calculator',
   phase: 'stdout',
-  text: 'Result: 42'
+  text: 'Result: 42',
 };
 ```
 
 ## TypeScript Support
 
-This package is written in TypeScript and provides full type definitions. It uses strict type checking and is designed to help you catch errors at compile time.
+This package is written in TypeScript and provides full type definitions. It uses strict type
+checking and is designed to help you catch errors at compile time.
 
 ### Strict Event Discrimination
 

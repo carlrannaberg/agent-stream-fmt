@@ -11,5 +11,7 @@ export interface RenderOptions {
 
 export function createRenderer(_options: RenderOptions) {
   // Placeholder implementation
-  throw new Error('Render functionality will be migrated from agent-stream-fmt package');
+  throw new Error(
+    'Render functionality will be migrated from agent-stream-fmt package',
+  );
 }

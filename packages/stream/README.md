@@ -71,9 +71,9 @@ for await (const event of streamEvents({ vendor: 'claude', source })) {
 import { streamEvents } from '@agent-io/stream';
 
 // Automatically detect vendor format
-for await (const event of streamEvents({ 
-  vendor: 'auto', 
-  source: process.stdin 
+for await (const event of streamEvents({
+  vendor: 'auto',
+  source: process.stdin,
 })) {
   switch (event.t) {
     case 'msg':
@@ -99,7 +99,7 @@ for await (const output of streamFormat({
   vendor: 'claude',
   source: process.stdin,
   format: 'ansi',
-  collapseTools: true
+  collapseTools: true,
 })) {
   process.stdout.write(output);
 }
@@ -113,7 +113,7 @@ import { collectEvents } from '@agent-io/stream';
 // Collect all events into an array
 const events = await collectEvents({
   vendor: 'gemini',
-  source: inputStream
+  source: inputStream,
 });
 
 console.log(`Processed ${events.length} events`);
@@ -128,6 +128,7 @@ console.log(`Processed ${events.length} events`);
 Stream and parse JSONL input into normalized agent events.
 
 **Options:**
+
 - `vendor: Vendor` - Vendor format ('auto', 'claude', 'gemini', 'amp')
 - `source: ReadableStream` - Input stream containing JSONL data
 - `continueOnError?: boolean` - Continue parsing after errors (default: true)
@@ -142,6 +143,7 @@ Stream and parse JSONL input into normalized agent events.
 Stream formatted output with rendering applied.
 
 **Options:**
+
 - All `StreamOptions` plus:
 - `format: 'ansi' | 'html' | 'json'` - Output format
 - `collapseTools?: boolean` - Collapse tool output sections
@@ -159,12 +161,7 @@ Collect all events from a stream into an array.
 ### Event Types
 
 ```typescript
-type AgentEvent =
-  | MessageEvent
-  | ToolEvent
-  | CostEvent
-  | ErrorEvent
-  | DebugEvent;
+type AgentEvent = MessageEvent | ToolEvent | CostEvent | ErrorEvent | DebugEvent;
 
 interface MessageEvent {
   t: 'msg';
@@ -208,7 +205,7 @@ import { createRenderer, AnsiRenderer, HtmlRenderer } from '@agent-io/stream';
 const renderer = createRenderer({
   format: 'ansi',
   collapseTools: true,
-  showTimestamps: true
+  showTimestamps: true,
 });
 
 // Render events
@@ -245,7 +242,7 @@ import { registry, VendorParser } from '@agent-io/stream';
 
 const myParser: VendorParser = {
   vendor: 'mycli',
-  
+
   detect: (line: string) => {
     try {
       const obj = JSON.parse(line);
@@ -254,14 +251,14 @@ const myParser: VendorParser = {
       return false;
     }
   },
-  
+
   parse: (line: string) => {
     const obj = JSON.parse(line);
     if (obj.type === 'message') {
       return [{ t: 'msg', role: obj.role, text: obj.content }];
     }
     return [];
-  }
+  },
 };
 
 // Register with priority (higher = tried first in auto-detection)
@@ -302,7 +299,7 @@ const events = streamEvents({
   source: inputStream,
   continueOnError: true, // Continue parsing despite errors
   emitDebugEvents: true, // Emit debug events for unknown formats
-  maxConsecutiveErrors: 50 // Stop if too many errors in a row
+  maxConsecutiveErrors: 50, // Stop if too many errors in a row
 });
 
 for await (const event of events) {
@@ -342,7 +339,7 @@ for await (const output of streamFormat({
   vendor: 'claude',
   source: claude.stdout,
   format: 'ansi',
-  collapseTools: true
+  collapseTools: true,
 })) {
   process.stdout.write(output);
 }
@@ -356,7 +353,7 @@ import { createServer } from 'http';
 
 createServer(async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' });
-  
+
   res.write(`<!DOCTYPE html>
 <html>
 <head>
@@ -371,11 +368,11 @@ createServer(async (req, res) => {
   for await (const html of streamFormat({
     vendor: 'auto',
     source: getAgentOutputStream(),
-    format: 'html'
+    format: 'html',
   })) {
     res.write(html);
   }
-  
+
   res.write('</body></html>');
   res.end();
 }).listen(3000);
@@ -414,17 +411,17 @@ The library is optimized for high-throughput streaming:
 
 ### Common Issues
 
-**Q: Auto-detection fails with "Unable to detect vendor format"**
-A: Ensure the input contains valid JSONL. Try specifying the vendor explicitly.
+**Q: Auto-detection fails with "Unable to detect vendor format"** A: Ensure the input contains valid
+JSONL. Try specifying the vendor explicitly.
 
-**Q: Colors don't appear in terminal output**
-A: Check if your terminal supports ANSI colors. Try setting `FORCE_COLOR=1`.
+**Q: Colors don't appear in terminal output** A: Check if your terminal supports ANSI colors. Try
+setting `FORCE_COLOR=1`.
 
-**Q: Memory usage grows with large files**
-A: Ensure you're using the streaming API, not `collectEvents()` for large inputs.
+**Q: Memory usage grows with large files** A: Ensure you're using the streaming API, not
+`collectEvents()` for large inputs.
 
-**Q: Parse errors with valid-looking JSON**
-A: Check for line encoding issues. The library expects UTF-8 by default.
+**Q: Parse errors with valid-looking JSON** A: Check for line encoding issues. The library expects
+UTF-8 by default.
 
 ### Debug Mode
 
@@ -454,9 +451,13 @@ npm run test:watch
 npm run test:performance
 ```
 
-**Note:** The test suite includes error handling tests that intentionally throw errors to verify proper error handling. You may see error messages in stderr like "Parser error detection failed" - these are expected and indicate the error handling tests are working correctly.
+**Note:** The test suite includes error handling tests that intentionally throw errors to verify
+proper error handling. You may see error messages in stderr like "Parser error detection failed" -
+these are expected and indicate the error handling tests are working correctly.
 
-**Performance Tests:** Performance benchmarks are excluded from the main test suite because they are extremely CPU-intensive, processing millions of lines to measure throughput. Run them separately with `npm run test:performance` when needed.
+**Performance Tests:** Performance benchmarks are excluded from the main test suite because they are
+extremely CPU-intensive, processing millions of lines to measure throughput. Run them separately
+with `npm run test:performance` when needed.
 
 ## Contributing
 

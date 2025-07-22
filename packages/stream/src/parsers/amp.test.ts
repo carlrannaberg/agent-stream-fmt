@@ -13,7 +13,7 @@ describe('AmpParser', () => {
         '{"phase":"output","task":"test","type":"stdout","content":"Running tests"}',
         '{"phase":"end","task":"deploy","exitCode":0}',
         '{"phase":"start","task":"compile","timestamp":"2024-01-01T10:00:00Z"}',
-        '{"phase":"output","task":"run","type":"stderr","content":"Error occurred"}'
+        '{"phase":"output","task":"run","type":"stderr","content":"Error occurred"}',
       ];
 
       for (const line of validLines) {
@@ -31,7 +31,7 @@ describe('AmpParser', () => {
         'invalid json', // Invalid JSON
         '{"phase":123,"task":"build"}', // Phase not string
         '{"phase":"start","task":123}', // Task not string
-        '{}' // Empty object
+        '{}', // Empty object
       ];
 
       for (const line of invalidLines) {
@@ -44,7 +44,7 @@ describe('AmpParser', () => {
         '{"phase":"START","task":"build"}',
         '{"phase":"Start","task":"build"}',
         '{"phase":"OUTPUT","task":"test"}',
-        '{"phase":"End","task":"deploy"}'
+        '{"phase":"End","task":"deploy"}',
       ];
 
       for (const line of invalidCases) {
@@ -63,128 +63,131 @@ describe('AmpParser', () => {
       it('should parse start phase events correctly', () => {
         const line = '{"phase":"start","task":"build"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'build',
-          phase: 'start'
+          phase: 'start',
         });
       });
 
       it('should handle missing task name in start phase', () => {
         const line = '{"phase":"start"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown',
-          phase: 'start'
+          phase: 'start',
         });
       });
 
       it('should handle null task name in start phase', () => {
         const line = '{"phase":"start","task":null}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown',
-          phase: 'start'
+          phase: 'start',
         });
       });
 
       it('should handle empty task name in start phase', () => {
         const line = '{"phase":"start","task":""}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown',
-          phase: 'start'
+          phase: 'start',
         });
       });
     });
 
     describe('output phase', () => {
       it('should parse stdout output events correctly', () => {
-        const line = '{"phase":"output","task":"test","type":"stdout","content":"Test passed"}';
+        const line =
+          '{"phase":"output","task":"test","type":"stdout","content":"Test passed"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'test',
           phase: 'stdout',
-          text: 'Test passed'
+          text: 'Test passed',
         });
       });
 
       it('should parse stderr output events correctly', () => {
-        const line = '{"phase":"output","task":"test","type":"stderr","content":"Warning: deprecated"}';
+        const line =
+          '{"phase":"output","task":"test","type":"stderr","content":"Warning: deprecated"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'test',
           phase: 'stderr',
-          text: 'Warning: deprecated'
+          text: 'Warning: deprecated',
         });
       });
 
       it('should default to stdout when type is missing', () => {
         const line = '{"phase":"output","task":"run","content":"Output text"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'run',
           phase: 'stdout',
-          text: 'Output text'
+          text: 'Output text',
         });
       });
 
       it('should handle missing content in output phase', () => {
         const line = '{"phase":"output","task":"test","type":"stdout"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'test',
           phase: 'stdout',
-          text: ''
+          text: '',
         });
       });
 
       it('should handle null content in output phase', () => {
-        const line = '{"phase":"output","task":"test","type":"stdout","content":null}';
+        const line =
+          '{"phase":"output","task":"test","type":"stdout","content":null}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'test',
           phase: 'stdout',
-          text: ''
+          text: '',
         });
       });
 
       it('should handle missing task name in output phase', () => {
         const line = '{"phase":"output","type":"stdout","content":"Output"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown',
           phase: 'stdout',
-          text: 'Output'
+          text: 'Output',
         });
       });
     });
@@ -193,65 +196,65 @@ describe('AmpParser', () => {
       it('should parse end phase events correctly', () => {
         const line = '{"phase":"end","task":"deploy","exitCode":0}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'deploy',
           phase: 'end',
-          exitCode: 0
+          exitCode: 0,
         });
       });
 
       it('should handle non-zero exit codes', () => {
         const line = '{"phase":"end","task":"test","exitCode":1}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'test',
           phase: 'end',
-          exitCode: 1
+          exitCode: 1,
         });
       });
 
       it('should default to exit code 0 when missing', () => {
         const line = '{"phase":"end","task":"build"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'build',
           phase: 'end',
-          exitCode: 0
+          exitCode: 0,
         });
       });
 
       it('should handle null exit code', () => {
         const line = '{"phase":"end","task":"run","exitCode":null}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'run',
           phase: 'end',
-          exitCode: 0
+          exitCode: 0,
         });
       });
 
       it('should handle missing task name in end phase', () => {
         const line = '{"phase":"end","exitCode":127}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown',
           phase: 'end',
-          exitCode: 127
+          exitCode: 127,
         });
       });
     });
@@ -260,29 +263,29 @@ describe('AmpParser', () => {
       it('should emit debug events for unknown phases', () => {
         const line = '{"phase":"prepare","task":"setup","data":"initializing"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'debug',
           raw: {
             phase: 'prepare',
             task: 'setup',
-            data: 'initializing'
-          }
+            data: 'initializing',
+          },
         });
       });
 
       it('should handle null phase as debug event', () => {
         const line = '{"phase":null,"task":"test"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'debug',
           raw: {
             phase: null,
-            task: 'test'
-          }
+            task: 'test',
+          },
         });
       });
     });
@@ -316,63 +319,63 @@ describe('AmpParser', () => {
       it('should handle non-string task names', () => {
         const line = '{"phase":"start","task":123}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown', // Parser normalizes non-string values to 'unknown'
-          phase: 'start'
+          phase: 'start',
         });
       });
 
       it('should handle boolean task names', () => {
         const line = '{"phase":"output","task":true,"content":"test"}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown', // Parser normalizes boolean values to 'unknown'
           phase: 'stdout',
-          text: 'test'
+          text: 'test',
         });
       });
 
       it('should handle array task names', () => {
         const line = '{"phase":"end","task":["task1","task2"],"exitCode":0}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown', // Parser normalizes array values to 'unknown'
           phase: 'end',
-          exitCode: 0
+          exitCode: 0,
         });
       });
 
       it('should handle object task names', () => {
         const line = '{"phase":"start","task":{"name":"build"}}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'unknown', // Parser normalizes object values to 'unknown'
-          phase: 'start'
+          phase: 'start',
         });
       });
 
       it('should handle non-string content values', () => {
         const line = '{"phase":"output","task":"log","content":123}';
         const events = parser.parse(line);
-        
+
         expect(events).toHaveLength(1);
         expect(events[0]).toEqual({
           t: 'tool',
           name: 'log',
           phase: 'stdout',
-          text: '' // Parser normalizes non-string content to empty string
+          text: '', // Parser normalizes non-string content to empty string
         });
       });
     });
@@ -384,7 +387,7 @@ describe('AmpParser', () => {
       expect(parser.metadata).toEqual({
         version: '1.0.0',
         supportedVersions: ['1.0', '1.1'],
-        documentationUrl: 'https://docs.amp-code.com/cli'
+        documentationUrl: 'https://docs.amp-code.com/cli',
       });
     });
   });
@@ -395,18 +398,37 @@ describe('AmpParser', () => {
         '{"phase":"start","task":"compile","timestamp":"2024-01-01T10:00:00Z"}',
         '{"phase":"output","task":"compile","type":"stdout","content":"Compiling project..."}',
         '{"phase":"output","task":"compile","type":"stdout","content":"Build successful"}',
-        '{"phase":"end","task":"compile","timestamp":"2024-01-01T10:00:30Z","exitCode":0}'
+        '{"phase":"end","task":"compile","timestamp":"2024-01-01T10:00:30Z","exitCode":0}',
       ];
 
       const allEvents = lines.flatMap(line => parser.parse(line));
 
       expect(allEvents).toHaveLength(4);
-      
+
       // Verify correct sequencing
-      expect(allEvents[0]).toMatchObject({ t: 'tool', phase: 'start', name: 'compile' });
-      expect(allEvents[1]).toMatchObject({ t: 'tool', phase: 'stdout', name: 'compile', text: 'Compiling project...' });
-      expect(allEvents[2]).toMatchObject({ t: 'tool', phase: 'stdout', name: 'compile', text: 'Build successful' });
-      expect(allEvents[3]).toMatchObject({ t: 'tool', phase: 'end', name: 'compile', exitCode: 0 });
+      expect(allEvents[0]).toMatchObject({
+        t: 'tool',
+        phase: 'start',
+        name: 'compile',
+      });
+      expect(allEvents[1]).toMatchObject({
+        t: 'tool',
+        phase: 'stdout',
+        name: 'compile',
+        text: 'Compiling project...',
+      });
+      expect(allEvents[2]).toMatchObject({
+        t: 'tool',
+        phase: 'stdout',
+        name: 'compile',
+        text: 'Build successful',
+      });
+      expect(allEvents[3]).toMatchObject({
+        t: 'tool',
+        phase: 'end',
+        name: 'compile',
+        exitCode: 0,
+      });
     });
 
     it('should handle overlapping tool executions', () => {
@@ -416,21 +438,25 @@ describe('AmpParser', () => {
         '{"phase":"output","task":"build","type":"stdout","content":"Building..."}',
         '{"phase":"output","task":"test","type":"stdout","content":"Testing..."}',
         '{"phase":"end","task":"build","exitCode":0}',
-        '{"phase":"end","task":"test","exitCode":0}'
+        '{"phase":"end","task":"test","exitCode":0}',
       ];
 
       const allEvents = lines.flatMap(line => parser.parse(line));
 
       expect(allEvents).toHaveLength(6);
-      
+
       // Verify each tool maintains its own sequence
-      const buildEvents = allEvents.filter((e): e is ToolEvent => e.t === 'tool' && e.name === 'build');
+      const buildEvents = allEvents.filter(
+        (e): e is ToolEvent => e.t === 'tool' && e.name === 'build',
+      );
       expect(buildEvents).toHaveLength(3);
       expect(buildEvents[0].phase).toBe('start');
       expect(buildEvents[1].phase).toBe('stdout');
       expect(buildEvents[2].phase).toBe('end');
 
-      const testEvents = allEvents.filter((e): e is ToolEvent => e.t === 'tool' && e.name === 'test');
+      const testEvents = allEvents.filter(
+        (e): e is ToolEvent => e.t === 'tool' && e.name === 'test',
+      );
       expect(testEvents).toHaveLength(3);
       expect(testEvents[0].phase).toBe('start');
       expect(testEvents[1].phase).toBe('stdout');

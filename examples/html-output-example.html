@@ -1,354 +1,377 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Stream HTML Example</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      line-height: 1.6;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Stream HTML Example</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
 
-    /* Message styles */
-    .message {
-      margin: 15px 0;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
+      /* Message styles */
+      .message {
+        margin: 15px 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
 
-    .message-header {
-      padding: 10px 15px;
-      font-weight: 600;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+      .message-header {
+        padding: 10px 15px;
+        font-weight: 600;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .message-user .message-header {
-      background-color: #e3f2fd;
-      color: #1565c0;
-    }
+      .message-user .message-header {
+        background-color: #e3f2fd;
+        color: #1565c0;
+      }
 
-    .message-assistant .message-header {
-      background-color: #f3e5f5;
-      color: #6a1b9a;
-    }
+      .message-assistant .message-header {
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+      }
 
-    .message-system .message-header {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-    }
+      .message-system .message-header {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+      }
 
-    .message-content {
-      padding: 15px;
-      white-space: pre-wrap;
-    }
+      .message-content {
+        padding: 15px;
+        white-space: pre-wrap;
+      }
 
-    .message-content code {
-      background-color: #f5f5f5;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-      font-size: 0.9em;
-    }
+      .message-content code {
+        background-color: #f5f5f5;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-family:
+          'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        font-size: 0.9em;
+      }
 
-    /* Tool execution styles */
-    .tool-execution {
-      margin: 15px 0;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
+      /* Tool execution styles */
+      .tool-execution {
+        margin: 15px 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
 
-    .tool-start {
-      padding: 10px 15px;
-      background-color: #fff3e0;
-      border-bottom: 1px solid #ffcc80;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      color: #e65100;
-    }
+      .tool-start {
+        padding: 10px 15px;
+        background-color: #fff3e0;
+        border-bottom: 1px solid #ffcc80;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #e65100;
+      }
 
-    .tool-input {
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-      font-size: 0.9em;
-      background-color: rgba(0,0,0,0.05);
-      padding: 2px 6px;
-      border-radius: 3px;
-      margin-left: 10px;
-      font-weight: normal;
-    }
+      .tool-input {
+        font-family:
+          'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        font-size: 0.9em;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin-left: 10px;
+        font-weight: normal;
+      }
 
-    .tool-output {
-      padding: 10px 15px;
-      background-color: #fafafa;
-      border-left: 3px solid #ff9800;
-      max-height: 400px;
-      overflow-y: auto;
-    }
+      .tool-output {
+        padding: 10px 15px;
+        background-color: #fafafa;
+        border-left: 3px solid #ff9800;
+        max-height: 400px;
+        overflow-y: auto;
+      }
 
-    .tool-stdout, .tool-stderr {
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-      font-size: 0.9em;
-      white-space: pre-wrap;
-      margin: 5px 0;
-    }
+      .tool-stdout,
+      .tool-stderr {
+        font-family:
+          'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        font-size: 0.9em;
+        white-space: pre-wrap;
+        margin: 5px 0;
+      }
 
-    .tool-stderr {
-      color: #d32f2f;
-    }
+      .tool-stderr {
+        color: #d32f2f;
+      }
 
-    .tool-end {
-      padding: 10px 15px;
-      border-top: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-    }
+      .tool-end {
+        padding: 10px 15px;
+        border-top: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
 
-    .tool-end.success {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-    }
+      .tool-end.success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+      }
 
-    .tool-end.error {
-      background-color: #ffebee;
-      color: #c62828;
-    }
+      .tool-end.error {
+        background-color: #ffebee;
+        color: #c62828;
+      }
 
-    .exit-code {
-      font-size: 0.9em;
-      opacity: 0.8;
-      margin-left: auto;
-    }
+      .exit-code {
+        font-size: 0.9em;
+        opacity: 0.8;
+        margin-left: auto;
+      }
 
-    /* Cost info styles */
-    .cost-info {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background-color: #fff8e1;
-      padding: 5px 10px;
-      border-radius: 15px;
-      font-size: 0.9em;
-      color: #f57c00;
-      margin: 10px 0;
-    }
+      /* Cost info styles */
+      .cost-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background-color: #fff8e1;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        color: #f57c00;
+        margin: 10px 0;
+      }
 
-    /* Error message styles */
-    .error-message {
-      margin: 15px 0;
-      padding: 15px;
-      background-color: #ffebee;
-      border: 1px solid #ffcdd2;
-      border-radius: 8px;
-      color: #c62828;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+      /* Error message styles */
+      .error-message {
+        margin: 15px 0;
+        padding: 15px;
+        background-color: #ffebee;
+        border: 1px solid #ffcdd2;
+        border-radius: 8px;
+        color: #c62828;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-    /* Debug info styles */
-    .debug-info {
-      margin: 15px 0;
-      background-color: #f5f5f5;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      overflow: hidden;
-    }
+      /* Debug info styles */
+      .debug-info {
+        margin: 15px 0;
+        background-color: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
 
-    .debug-info > span.debug-icon {
-      display: inline-block;
-      padding: 10px 15px;
-      background-color: #e0e0e0;
-    }
+      .debug-info > span.debug-icon {
+        display: inline-block;
+        padding: 10px 15px;
+        background-color: #e0e0e0;
+      }
 
-    .debug-content {
-      padding: 10px 15px;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-      font-size: 0.85em;
-      overflow-x: auto;
-      margin: 0;
-    }
+      .debug-content {
+        padding: 10px 15px;
+        font-family:
+          'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        font-size: 0.85em;
+        overflow-x: auto;
+        margin: 0;
+      }
 
-    /* Tool interrupted styles */
-    .tool-interrupted {
-      padding: 10px 15px;
-      background-color: #fff3e0;
-      color: #e65100;
-      border-top: 1px solid #ffcc80;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+      /* Tool interrupted styles */
+      .tool-interrupted {
+        padding: 10px 15px;
+        background-color: #fff3e0;
+        color: #e65100;
+        border-top: 1px solid #ffcc80;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-    /* Icons */
-    .role-icon, .tool-icon, .status-icon, .cost-icon, .error-icon, .debug-icon, .interrupted-icon {
-      font-size: 1.2em;
-    }
-  </style>
-</head>
-<body>
-  <h1>Agent Stream HTML Renderer Example</h1>
-  <p>This example demonstrates the HTML output from the agent-stream-fmt HTML renderer.</p>
-  
-  <!-- Example conversation -->
-  <div class="message message-user">
-    <div class="message-header">
-      <span class="role-icon">👤</span>
-      <span class="role-name">user</span>
+      /* Icons */
+      .role-icon,
+      .tool-icon,
+      .status-icon,
+      .cost-icon,
+      .error-icon,
+      .debug-icon,
+      .interrupted-icon {
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Agent Stream HTML Renderer Example</h1>
+    <p>
+      This example demonstrates the HTML output from the agent-stream-fmt HTML
+      renderer.
+    </p>
+
+    <!-- Example conversation -->
+    <div class="message message-user">
+      <div class="message-header">
+        <span class="role-icon">👤</span>
+        <span class="role-name">user</span>
+      </div>
+      <div class="message-content">
+        Can you help me list the files in the current directory and then create
+        a simple Python script?
+      </div>
     </div>
-    <div class="message-content">Can you help me list the files in the current directory and then create a simple Python script?</div>
-  </div>
 
-  <div class="message message-assistant">
-    <div class="message-header">
-      <span class="role-icon">🤖</span>
-      <span class="role-name">assistant</span>
+    <div class="message message-assistant">
+      <div class="message-header">
+        <span class="role-icon">🤖</span>
+        <span class="role-name">assistant</span>
+      </div>
+      <div class="message-content">
+        I'll help you list the files in the current directory and create a
+        simple Python script. First, let me list the files:
+      </div>
     </div>
-    <div class="message-content">I'll help you list the files in the current directory and create a simple Python script.
 
-First, let me list the files:</div>
-  </div>
-
-  <div class="tool-execution" data-tool="bash">
-    <div class="tool-start">
-      <span class="tool-icon">🔧</span>
-      <span class="tool-name">bash</span>
-      <span class="tool-input">ls -la</span>
+    <div class="tool-execution" data-tool="bash">
+      <div class="tool-start">
+        <span class="tool-icon">🔧</span>
+        <span class="tool-name">bash</span>
+        <span class="tool-input">ls -la</span>
+      </div>
+      <div class="tool-output">
+        <div class="tool-stdout">
+          total 48 drwxr-xr-x 8 user staff 256 Dec 15 10:30 . drwxr-xr-x 10 user
+          staff 320 Dec 15 09:45 .. -rw-r--r-- 1 user staff 215 Dec 15 10:30
+          README.md -rw-r--r-- 1 user staff 512 Dec 15 10:25 package.json
+          drwxr-xr-x 5 user staff 160 Dec 15 10:20 src drwxr-xr-x 3 user staff
+          96 Dec 15 10:15 tests
+        </div>
+      </div>
+      <div class="tool-end success">
+        <span class="status-icon">✅</span>
+        <span class="tool-name">bash</span>
+        <span class="exit-code">Exit: 0</span>
+      </div>
     </div>
-    <div class="tool-output">
-      <div class="tool-stdout">total 48
-drwxr-xr-x   8 user  staff   256 Dec 15 10:30 .
-drwxr-xr-x  10 user  staff   320 Dec 15 09:45 ..
--rw-r--r--   1 user  staff   215 Dec 15 10:30 README.md
--rw-r--r--   1 user  staff   512 Dec 15 10:25 package.json
-drwxr-xr-x   5 user  staff   160 Dec 15 10:20 src
-drwxr-xr-x   3 user  staff    96 Dec 15 10:15 tests</div>
+
+    <div class="message message-assistant">
+      <div class="message-header">
+        <span class="role-icon">🤖</span>
+        <span class="role-name">assistant</span>
+      </div>
+      <div class="message-content">
+        Great! I can see the directory structure. Now let me create a simple
+        Python script that demonstrates some basic functionality:
+      </div>
     </div>
-    <div class="tool-end success">
-      <span class="status-icon">✅</span>
-      <span class="tool-name">bash</span>
-      <span class="exit-code">Exit: 0</span>
+
+    <div class="tool-execution" data-tool="write_file">
+      <div class="tool-start">
+        <span class="tool-icon">🔧</span>
+        <span class="tool-name">write_file</span>
+        <span class="tool-input">hello_world.py</span>
+      </div>
+      <div class="tool-output">
+        <div class="tool-stdout">File created successfully</div>
+      </div>
+      <div class="tool-end success">
+        <span class="status-icon">✅</span>
+        <span class="tool-name">write_file</span>
+        <span class="exit-code">Exit: 0</span>
+      </div>
     </div>
-  </div>
 
-  <div class="message message-assistant">
-    <div class="message-header">
-      <span class="role-icon">🤖</span>
-      <span class="role-name">assistant</span>
+    <div class="message message-assistant">
+      <div class="message-header">
+        <span class="role-icon">🤖</span>
+        <span class="role-name">assistant</span>
+      </div>
+      <div class="message-content">
+        I've created a simple Python script called <code>hello_world.py</code>.
+        Let me show you what's in it:
+      </div>
     </div>
-    <div class="message-content">Great! I can see the directory structure. Now let me create a simple Python script that demonstrates some basic functionality:</div>
-  </div>
 
-  <div class="tool-execution" data-tool="write_file">
-    <div class="tool-start">
-      <span class="tool-icon">🔧</span>
-      <span class="tool-name">write_file</span>
-      <span class="tool-input">hello_world.py</span>
+    <div class="tool-execution" data-tool="read_file">
+      <div class="tool-start">
+        <span class="tool-icon">🔧</span>
+        <span class="tool-name">read_file</span>
+        <span class="tool-input">hello_world.py</span>
+      </div>
+      <div class="tool-output">
+        <div class="tool-stdout">
+          #!/usr/bin/env python3 """A simple Hello World script with some basic
+          Python features.""" def greet(name="World"): """Return a greeting
+          message.""" return f"Hello, {name}!" def main(): # Basic greeting
+          print(greet()) # Personalized greeting print(greet("Python
+          Developer")) # List comprehension example numbers = [1, 2, 3, 4, 5]
+          squares = [n**2 for n in numbers] print(f"Squares: {squares}") if
+          __name__ == "__main__": main()
+        </div>
+      </div>
+      <div class="tool-end success">
+        <span class="status-icon">✅</span>
+        <span class="tool-name">read_file</span>
+        <span class="exit-code">Exit: 0</span>
+      </div>
     </div>
-    <div class="tool-output">
-      <div class="tool-stdout">File created successfully</div>
+
+    <div class="cost-info">
+      <span class="cost-icon">💰</span>
+      <span class="cost-amount">$0.0025</span>
     </div>
-    <div class="tool-end success">
-      <span class="status-icon">✅</span>
-      <span class="tool-name">write_file</span>
-      <span class="exit-code">Exit: 0</span>
+
+    <div class="message message-assistant">
+      <div class="message-header">
+        <span class="role-icon">🤖</span>
+        <span class="role-name">assistant</span>
+      </div>
+      <div class="message-content">
+        Perfect! I've created a simple Python script that demonstrates: • A
+        <strong>greeting function</strong> with a default parameter •
+        <strong>Docstrings</strong> for documentation •
+        <strong>String formatting</strong> using f-strings • A
+        <strong>list comprehension</strong> example • Proper
+        <strong>script structure</strong> with a main function The script is
+        ready to run. You can execute it with
+        <code>python hello_world.py</code> to see the output.
+      </div>
     </div>
-  </div>
 
-  <div class="message message-assistant">
-    <div class="message-header">
-      <span class="role-icon">🤖</span>
-      <span class="role-name">assistant</span>
+    <div class="error-message">
+      <span class="error-icon">🚨</span>
+      <span class="error-text"
+        >Network connection lost - some operations may have failed</span
+      >
     </div>
-    <div class="message-content">I've created a simple Python script called <code>hello_world.py</code>. Let me show you what's in it:</div>
-  </div>
 
-  <div class="tool-execution" data-tool="read_file">
-    <div class="tool-start">
-      <span class="tool-icon">🔧</span>
-      <span class="tool-name">read_file</span>
-      <span class="tool-input">hello_world.py</span>
-    </div>
-    <div class="tool-output">
-      <div class="tool-stdout">#!/usr/bin/env python3
-"""A simple Hello World script with some basic Python features."""
-
-def greet(name="World"):
-    """Return a greeting message."""
-    return f"Hello, {name}!"
-
-def main():
-    # Basic greeting
-    print(greet())
-    
-    # Personalized greeting
-    print(greet("Python Developer"))
-    
-    # List comprehension example
-    numbers = [1, 2, 3, 4, 5]
-    squares = [n**2 for n in numbers]
-    print(f"Squares: {squares}")
-
-if __name__ == "__main__":
-    main()</div>
-    </div>
-    <div class="tool-end success">
-      <span class="status-icon">✅</span>
-      <span class="tool-name">read_file</span>
-      <span class="exit-code">Exit: 0</span>
-    </div>
-  </div>
-
-  <div class="cost-info">
-    <span class="cost-icon">💰</span>
-    <span class="cost-amount">$0.0025</span>
-  </div>
-
-  <div class="message message-assistant">
-    <div class="message-header">
-      <span class="role-icon">🤖</span>
-      <span class="role-name">assistant</span>
-    </div>
-    <div class="message-content">Perfect! I've created a simple Python script that demonstrates:
-
-• A <strong>greeting function</strong> with a default parameter
-• <strong>Docstrings</strong> for documentation
-• <strong>String formatting</strong> using f-strings
-• A <strong>list comprehension</strong> example
-• Proper <strong>script structure</strong> with a main function
-
-The script is ready to run. You can execute it with <code>python hello_world.py</code> to see the output.</div>
-  </div>
-
-  <div class="error-message">
-    <span class="error-icon">🚨</span>
-    <span class="error-text">Network connection lost - some operations may have failed</span>
-  </div>
-
-  <div class="debug-info">
-    <span class="debug-icon">🐛</span>
-    <pre class="debug-content">{
+    <div class="debug-info">
+      <span class="debug-icon">🐛</span>
+      <pre class="debug-content">
+{
   "timestamp": "2024-12-15T10:35:42.123Z",
   "event_type": "connection_error",
   "details": {
     "error_code": "ETIMEDOUT",
     "retry_count": 3
   }
-}</pre>
-  </div>
-</body>
+}</pre
+      >
+    </div>
+  </body>
 </html>

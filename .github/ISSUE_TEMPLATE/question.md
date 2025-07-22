@@ -8,11 +8,9 @@ assignees: ''
 
 ## Question Summary
 
-**What are you trying to do?**
-Describe what you're trying to accomplish with agent-stream-fmt.
+**What are you trying to do?** Describe what you're trying to accomplish with agent-stream-fmt.
 
-**What specific help do you need?**
-Be specific about what you're stuck on or confused about.
+**What specific help do you need?** Be specific about what you're stuck on or confused about.
 
 ## Context & Setup
 
@@ -50,8 +48,7 @@ Be specific about what you're stuck on or confused about.
 - [ ] Examples in the repository
 - [ ] Existing issues/discussions
 
-**Attempts Made:**
-Describe what you've already tried:
+**Attempts Made:** Describe what you've already tried:
 
 ## Specific Questions
 

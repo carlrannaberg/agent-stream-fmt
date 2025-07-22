@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  isMessageEvent, 
-  isToolEvent, 
-  isCostEvent, 
-  isErrorEvent, 
-  isDebugEvent, 
+import {
+  isMessageEvent,
+  isToolEvent,
+  isCostEvent,
+  isErrorEvent,
+  isDebugEvent,
   AgentEvent,
   MessageEvent,
   ToolEvent,
   CostEvent,
   ErrorEvent,
-  DebugEvent
+  DebugEvent,
 } from './types.js';
 
 describe('Type guards', () => {
@@ -58,9 +58,13 @@ describe('Type guards', () => {
     expect(isCostEvent(event)).toBe(false);
     expect(isErrorEvent(event)).toBe(false);
   });
-  
+
   it('provides proper type narrowing for message events', () => {
-    const event: AgentEvent = { t: 'msg', role: 'assistant', text: 'Hello world' };
+    const event: AgentEvent = {
+      t: 'msg',
+      role: 'assistant',
+      text: 'Hello world',
+    };
     if (isMessageEvent(event)) {
       // TypeScript should know these properties exist
       expect(event.role).toBe('assistant');
@@ -70,12 +74,12 @@ describe('Type guards', () => {
   });
 
   it('provides proper type narrowing for tool events', () => {
-    const event: AgentEvent = { 
-      t: 'tool', 
-      name: 'bash', 
-      phase: 'stdout', 
+    const event: AgentEvent = {
+      t: 'tool',
+      name: 'bash',
+      phase: 'stdout',
       text: 'command output',
-      exitCode: 0 
+      exitCode: 0,
     };
     if (isToolEvent(event)) {
       // TypeScript should know these properties exist
@@ -118,8 +122,16 @@ describe('Type guards', () => {
 describe('Event types', () => {
   it('allows valid message events', () => {
     const userMessage: MessageEvent = { t: 'msg', role: 'user', text: 'Hello' };
-    const assistantMessage: MessageEvent = { t: 'msg', role: 'assistant', text: 'Hi there' };
-    const systemMessage: MessageEvent = { t: 'msg', role: 'system', text: 'System ready' };
+    const assistantMessage: MessageEvent = {
+      t: 'msg',
+      role: 'assistant',
+      text: 'Hi there',
+    };
+    const systemMessage: MessageEvent = {
+      t: 'msg',
+      role: 'system',
+      text: 'System ready',
+    };
 
     expect(userMessage.t).toBe('msg');
     expect(assistantMessage.role).toBe('assistant');
@@ -128,9 +140,24 @@ describe('Event types', () => {
 
   it('allows valid tool events', () => {
     const toolStart: ToolEvent = { t: 'tool', name: 'grep', phase: 'start' };
-    const toolOutput: ToolEvent = { t: 'tool', name: 'grep', phase: 'stdout', text: 'search results' };
-    const toolError: ToolEvent = { t: 'tool', name: 'grep', phase: 'stderr', text: 'error message' };
-    const toolEnd: ToolEvent = { t: 'tool', name: 'grep', phase: 'end', exitCode: 0 };
+    const toolOutput: ToolEvent = {
+      t: 'tool',
+      name: 'grep',
+      phase: 'stdout',
+      text: 'search results',
+    };
+    const toolError: ToolEvent = {
+      t: 'tool',
+      name: 'grep',
+      phase: 'stderr',
+      text: 'error message',
+    };
+    const toolEnd: ToolEvent = {
+      t: 'tool',
+      name: 'grep',
+      phase: 'end',
+      exitCode: 0,
+    };
 
     expect(toolStart.phase).toBe('start');
     expect(toolOutput.text).toBe('search results');
@@ -149,7 +176,10 @@ describe('Event types', () => {
   });
 
   it('allows valid debug events', () => {
-    const debug: DebugEvent = { t: 'debug', raw: { type: 'unknown', payload: 'data' } };
+    const debug: DebugEvent = {
+      t: 'debug',
+      raw: { type: 'unknown', payload: 'data' },
+    };
     expect((debug.raw as { type: string }).type).toBe('unknown');
   });
 });

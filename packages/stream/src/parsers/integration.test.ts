@@ -21,7 +21,7 @@ describe('Parser Registry Integration Tests', () => {
         // Test parsing
         const events = detected!.parse(line);
         expect(events.length).toBeGreaterThan(0);
-        
+
         // Verify no error events
         expect(events.every(e => e.t !== 'error')).toBe(true);
       }

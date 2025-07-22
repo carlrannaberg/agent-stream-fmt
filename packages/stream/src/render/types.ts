@@ -1,6 +1,6 @@
 /**
  * Type definitions for the rendering system
- * 
+ *
  * This module defines all the core types used by the rendering engine,
  * including options, interfaces, and state management types.
  */
@@ -9,7 +9,7 @@ import type { AgentEvent } from '../types.js';
 
 /**
  * Configuration options for rendering AgentEvents
- * 
+ *
  * These options control how events are formatted and what information
  * is included in the output.
  */
@@ -74,14 +74,14 @@ export interface RenderOptions {
 
 /**
  * Core renderer interface that all renderers must implement
- * 
+ *
  * Renderers are responsible for converting AgentEvents into
  * formatted strings according to their specific format.
  */
 export interface Renderer {
   /**
    * Render a single event to a formatted string
-   * 
+   *
    * @param event - The AgentEvent to render
    * @returns Formatted string representation of the event
    */
@@ -89,10 +89,10 @@ export interface Renderer {
 
   /**
    * Render multiple events in a batch
-   * 
+   *
    * This method enables optimizations for rendering multiple
    * events together, such as grouping or aggregating output.
-   * 
+   *
    * @param events - Array of AgentEvents to render
    * @returns Formatted string representation of all events
    */
@@ -100,11 +100,11 @@ export interface Renderer {
 
   /**
    * Flush any pending state and return final output
-   * 
+   *
    * Called at the end of a stream to ensure all buffered
    * content is rendered. May return empty string if no
    * pending content exists.
-   * 
+   *
    * @returns Any remaining formatted output
    */
   flush(): string;
@@ -112,7 +112,7 @@ export interface Renderer {
 
 /**
  * Context maintained across rendering operations
- * 
+ *
  * This context tracks state that may be needed to properly
  * render events in relation to each other.
  */
@@ -144,7 +144,7 @@ export interface RenderContext {
 
 /**
  * State information for an active tool execution
- * 
+ *
  * Tracks the lifecycle and output of a tool from start to end.
  */
 export interface ToolState {
@@ -173,7 +173,7 @@ export interface ToolState {
 
 /**
  * Factory function type for creating renderer instances
- * 
+ *
  * @param options - Render options to configure the renderer
  * @returns A new renderer instance
  */

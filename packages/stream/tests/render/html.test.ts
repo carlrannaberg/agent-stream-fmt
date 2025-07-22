@@ -4,7 +4,14 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HtmlRenderer } from '../../src/render/html.js';
-import type { AgentEvent, MessageEvent, ToolEvent, CostEvent, ErrorEvent, DebugEvent } from '../../src/types.js';
+import type {
+  AgentEvent,
+  MessageEvent,
+  ToolEvent,
+  CostEvent,
+  ErrorEvent,
+  DebugEvent,
+} from '../../src/types.js';
 import type { RenderOptions } from '../../src/render/types.js';
 
 describe('HtmlRenderer', () => {
@@ -14,7 +21,7 @@ describe('HtmlRenderer', () => {
     collapseTools: false,
     hideTools: false,
     hideCost: false,
-    hideDebug: false
+    hideDebug: false,
   };
 
   beforeEach(() => {
@@ -26,7 +33,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Hello, world!'
+        text: 'Hello, world!',
       };
 
       const output = renderer.render(event);
@@ -35,14 +42,16 @@ describe('HtmlRenderer', () => {
       expect(output).toContain('<div class="message-header">');
       expect(output).toContain('<span class="role-icon">👤</span>');
       expect(output).toContain('<span class="role-name">user</span>');
-      expect(output).toContain('<div class="message-content">Hello, world!</div>');
+      expect(output).toContain(
+        '<div class="message-content">Hello, world!</div>',
+      );
     });
 
     it('should render assistant messages with correct structure', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: 'I can help with that.'
+        text: 'I can help with that.',
       };
 
       const output = renderer.render(event);
@@ -56,7 +65,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'system',
-        text: 'System initialized'
+        text: 'System initialized',
       };
 
       const output = renderer.render(event);
@@ -69,12 +78,14 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: '<script>alert("xss")</script> & <img src=x onerror="alert(\'xss\')">'
+        text: '<script>alert("xss")</script> & <img src=x onerror="alert(\'xss\')">',
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(output).toContain(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+      );
       expect(output).toContain('&amp;');
       expect(output).not.toContain('<script>');
       // The escaped version will contain "onerror=" as part of the escaped text content
@@ -85,7 +96,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: 'This is **bold** and *italic* and `code` with <dangerous>'
+        text: 'This is **bold** and *italic* and `code` with <dangerous>',
       };
 
       const output = renderer.render(event);
@@ -100,7 +111,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Line 1\nLine 2\nLine 3'
+        text: 'Line 1\nLine 2\nLine 3',
       };
 
       const output = renderer.render(event);
@@ -112,7 +123,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: ''
+        text: '',
       };
 
       const output = renderer.render(event);
@@ -127,7 +138,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'npm',
         phase: 'start',
-        text: 'install'
+        text: 'install',
       };
 
       const output = renderer.render(event);
@@ -145,19 +156,21 @@ describe('HtmlRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'stdout',
-        text: 'Installing <package>...'
+        text: 'Installing <package>...',
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('<div class="tool-stdout">Installing &lt;package&gt;...</div>');
+      expect(output).toContain(
+        '<div class="tool-stdout">Installing &lt;package&gt;...</div>',
+      );
     });
 
     it('should render tool stderr with different class', () => {
@@ -165,19 +178,21 @@ describe('HtmlRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'stderr',
-        text: 'Warning: deprecated package'
+        text: 'Warning: deprecated package',
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('<div class="tool-stderr">Warning: deprecated package</div>');
+      expect(output).toContain(
+        '<div class="tool-stderr">Warning: deprecated package</div>',
+      );
     });
 
     it('should render tool end with success status', () => {
@@ -185,14 +200,14 @@ describe('HtmlRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       };
 
       const output = renderer.render(event);
@@ -209,14 +224,14 @@ describe('HtmlRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const event: ToolEvent = {
         t: 'tool',
         name: 'npm',
         phase: 'end',
-        exitCode: 1
+        exitCode: 1,
       };
 
       const output = renderer.render(event);
@@ -229,14 +244,14 @@ describe('HtmlRenderer', () => {
     it('should track tool state across phases', () => {
       const hiddenRenderer = new HtmlRenderer({
         ...defaultOptions,
-        collapseTools: true
+        collapseTools: true,
       });
 
       // Start tool
       hiddenRenderer.render({
         t: 'tool',
         name: 'test-tool',
-        phase: 'start'
+        phase: 'start',
       });
 
       // Add output
@@ -244,14 +259,14 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'test-tool',
         phase: 'stdout',
-        text: 'Output line 1'
+        text: 'Output line 1',
       });
 
       hiddenRenderer.render({
         t: 'tool',
         name: 'test-tool',
         phase: 'stdout',
-        text: 'Output line 2'
+        text: 'Output line 2',
       });
 
       // Tool state should be tracked even though collapse is enabled
@@ -259,7 +274,7 @@ describe('HtmlRenderer', () => {
         t: 'tool',
         name: 'test-tool',
         phase: 'end',
-        exitCode: 0
+        exitCode: 0,
       });
 
       expect(endOutput).toContain('test-tool');
@@ -268,13 +283,13 @@ describe('HtmlRenderer', () => {
     it('should hide tools when option is set', () => {
       const hiddenRenderer = new HtmlRenderer({
         ...defaultOptions,
-        hideTools: true
+        hideTools: true,
       });
 
       const output = hiddenRenderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       expect(output).toBe('');
@@ -284,12 +299,14 @@ describe('HtmlRenderer', () => {
       const event: ToolEvent = {
         t: 'tool',
         name: '<script>alert("xss")</script>',
-        phase: 'start'
+        phase: 'start',
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('data-tool="&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"');
+      expect(output).toContain(
+        'data-tool="&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"',
+      );
       expect(output).not.toContain('<script>');
     });
   });
@@ -298,7 +315,7 @@ describe('HtmlRenderer', () => {
     it('should render cost information with proper formatting', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 0.0234
+        deltaUsd: 0.0234,
       };
 
       const output = renderer.render(event);
@@ -311,7 +328,7 @@ describe('HtmlRenderer', () => {
     it('should format small costs correctly', () => {
       const event: CostEvent = {
         t: 'cost',
-        deltaUsd: 0.000123
+        deltaUsd: 0.000123,
       };
 
       const output = renderer.render(event);
@@ -322,12 +339,12 @@ describe('HtmlRenderer', () => {
     it('should hide cost when option is set', () => {
       const hiddenRenderer = new HtmlRenderer({
         ...defaultOptions,
-        hideCost: true
+        hideCost: true,
       });
 
       const output = hiddenRenderer.render({
         t: 'cost',
-        deltaUsd: 0.0234
+        deltaUsd: 0.0234,
       });
 
       expect(output).toBe('');
@@ -338,25 +355,29 @@ describe('HtmlRenderer', () => {
     it('should render errors with appropriate structure', () => {
       const event: ErrorEvent = {
         t: 'error',
-        message: 'Something went wrong!'
+        message: 'Something went wrong!',
       };
 
       const output = renderer.render(event);
 
       expect(output).toContain('<div class="error-message">');
       expect(output).toContain('<span class="error-icon">🚨</span>');
-      expect(output).toContain('<span class="error-text">Something went wrong!</span>');
+      expect(output).toContain(
+        '<span class="error-text">Something went wrong!</span>',
+      );
     });
 
     it('should escape error messages', () => {
       const event: ErrorEvent = {
         t: 'error',
-        message: 'Error: <script>alert("xss")</script>'
+        message: 'Error: <script>alert("xss")</script>',
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('Error: &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(output).toContain(
+        'Error: &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+      );
       expect(output).not.toContain('<script>');
     });
   });
@@ -365,7 +386,7 @@ describe('HtmlRenderer', () => {
     it('should render debug information in pre-formatted block', () => {
       const event: DebugEvent = {
         t: 'debug',
-        raw: { key: 'value', nested: { data: 123 } }
+        raw: { key: 'value', nested: { data: 123 } },
       };
 
       const output = renderer.render(event);
@@ -380,24 +401,26 @@ describe('HtmlRenderer', () => {
     it('should escape debug content', () => {
       const event: DebugEvent = {
         t: 'debug',
-        raw: { html: '<script>alert("xss")</script>' }
+        raw: { html: '<script>alert("xss")</script>' },
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('&quot;html&quot;: &quot;&lt;script&gt;alert(\\&quot;xss\\&quot;)&lt;/script&gt;&quot;');
+      expect(output).toContain(
+        '&quot;html&quot;: &quot;&lt;script&gt;alert(\\&quot;xss\\&quot;)&lt;/script&gt;&quot;',
+      );
       expect(output).not.toContain('<script>');
     });
 
     it('should hide debug when option is set', () => {
       const hiddenRenderer = new HtmlRenderer({
         ...defaultOptions,
-        hideDebug: true
+        hideDebug: true,
       });
 
       const output = hiddenRenderer.render({
         t: 'debug',
-        raw: { test: true }
+        raw: { test: true },
       });
 
       expect(output).toBe('');
@@ -409,7 +432,7 @@ describe('HtmlRenderer', () => {
 
       const event: DebugEvent = {
         t: 'debug',
-        raw: circular
+        raw: circular,
       };
 
       // Should not throw
@@ -421,7 +444,7 @@ describe('HtmlRenderer', () => {
     it('should render unknown event types gracefully', () => {
       const event: any = {
         t: 'future-event-type',
-        data: 'some data'
+        data: 'some data',
       };
 
       const output = renderer.render(event);
@@ -438,7 +461,7 @@ describe('HtmlRenderer', () => {
       const events: AgentEvent[] = [
         { t: 'msg', role: 'user', text: 'Hello' },
         { t: 'msg', role: 'assistant', text: 'Hi there!' },
-        { t: 'cost', deltaUsd: 0.001 }
+        { t: 'cost', deltaUsd: 0.001 },
       ];
 
       const output = renderer.renderBatch(events);
@@ -460,7 +483,7 @@ describe('HtmlRenderer', () => {
       renderer.render({
         t: 'tool',
         name: 'npm',
-        phase: 'start'
+        phase: 'start',
       });
 
       const output = renderer.flush();
@@ -485,9 +508,9 @@ describe('HtmlRenderer', () => {
 
     it('should clear tool stack after flush', () => {
       renderer.render({ t: 'tool', name: 'npm', phase: 'start' });
-      
+
       renderer.flush();
-      
+
       // Second flush should return empty
       const secondFlush = renderer.flush();
       expect(secondFlush).toBe('');
@@ -499,7 +522,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: undefined as any
+        text: undefined as any,
       };
 
       // Should not throw
@@ -511,7 +534,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: longText
+        text: longText,
       };
 
       const output = renderer.render(event);
@@ -522,19 +545,21 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'assistant',
-        text: '**Bold with *nested italic* and `code`** plus regular text'
+        text: '**Bold with *nested italic* and `code`** plus regular text',
       };
 
       const output = renderer.render(event);
 
-      expect(output).toContain('<strong>Bold with <em>nested italic</em> and <code>code</code></strong>');
+      expect(output).toContain(
+        '<strong>Bold with <em>nested italic</em> and <code>code</code></strong>',
+      );
     });
 
     it('should handle special characters in tool names', () => {
       const event: ToolEvent = {
         t: 'tool',
         name: 'tool-with-special-chars!@#$%',
-        phase: 'start'
+        phase: 'start',
       };
 
       const output = renderer.render(event);
@@ -555,14 +580,14 @@ describe('HtmlRenderer', () => {
         '<script>alert(1)</script>',
         '<style>body{background:url("javascript:alert(1)")}</style>',
         '"><script>alert(1)</script>',
-        '\' onmouseover=\'alert(1)'
+        "' onmouseover='alert(1)",
       ];
 
       xssVectors.forEach(vector => {
         const event: MessageEvent = {
           t: 'msg',
           role: 'user',
-          text: vector
+          text: vector,
         };
 
         const output = renderer.render(event);
@@ -575,10 +600,10 @@ describe('HtmlRenderer', () => {
         expect(output).not.toContain('<embed');
         expect(output).not.toContain('<script');
         expect(output).not.toContain('<style');
-        
+
         // For vectors with HTML tags, they should be escaped
         if (vector.includes('<') || vector.includes('>')) {
-          expect(output).toContain('&lt;');  // Shows escaping is working
+          expect(output).toContain('&lt;'); // Shows escaping is working
         }
         // The dangerous patterns should not appear as actual HTML
         expect(output).toContain('<div class="message-content">');
@@ -589,11 +614,11 @@ describe('HtmlRenderer', () => {
       const event: ToolEvent = {
         t: 'tool',
         name: '" onmouseover="alert(1)" data-evil="',
-        phase: 'start'
+        phase: 'start',
       };
 
       const output = renderer.render(event);
-      
+
       // Should escape quotes in attributes
       expect(output).toContain('data-tool=');
       // The attribute content should be escaped
@@ -605,18 +630,18 @@ describe('HtmlRenderer', () => {
       const entities = [
         '&lt;script&gt;alert(1)&lt;/script&gt;',
         '&#60;script&#62;alert(1)&#60;/script&#62;',
-        '&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;'
+        '&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;',
       ];
 
       entities.forEach(entity => {
         const event: MessageEvent = {
           t: 'msg',
           role: 'user',
-          text: entity
+          text: entity,
         };
 
         const output = renderer.render(event);
-        
+
         // Should double-escape entities
         expect(output).toContain('&amp;');
         expect(output).not.toContain('<script>');
@@ -627,7 +652,7 @@ describe('HtmlRenderer', () => {
       const event: MessageEvent = {
         t: 'msg',
         role: 'user',
-        text: 'Unicode: 你好 🌍 𝔘𝔫𝔦𝔠𝔬𝔡𝔢'
+        text: 'Unicode: 你好 🌍 𝔘𝔫𝔦𝔠𝔬𝔡𝔢',
       };
 
       const output = renderer.render(event);
@@ -641,17 +666,27 @@ describe('HtmlRenderer', () => {
       // Start multiple tools
       renderer.render({ t: 'tool', name: 'outer', phase: 'start' });
       renderer.render({ t: 'tool', name: 'inner', phase: 'start' });
-      
+
       // Add content
-      renderer.render({ t: 'tool', name: 'outer', phase: 'stdout', text: 'Outer output' });
-      renderer.render({ t: 'tool', name: 'inner', phase: 'stdout', text: 'Inner output' });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'outer',
+        phase: 'stdout',
+        text: 'Outer output',
+      });
+      renderer.render({
+        t: 'tool',
+        name: 'inner',
+        phase: 'stdout',
+        text: 'Inner output',
+      });
+
       // End in correct order
       renderer.render({ t: 'tool', name: 'inner', phase: 'end', exitCode: 0 });
       renderer.render({ t: 'tool', name: 'outer', phase: 'end', exitCode: 0 });
-      
+
       const flushed = renderer.flush();
-      
+
       // Should have no unclosed tags
       expect(flushed).toBe('');
     });
@@ -662,18 +697,18 @@ describe('HtmlRenderer', () => {
         largeObject[`key${i}`] = {
           nested: {
             value: `data${i}`,
-            array: [1, 2, 3, 4, 5]
-          }
+            array: [1, 2, 3, 4, 5],
+          },
         };
       }
 
       const event: DebugEvent = {
         t: 'debug',
-        raw: largeObject
+        raw: largeObject,
       };
 
       const output = renderer.render(event);
-      
+
       expect(output).toContain('<pre class="debug-content">');
       expect(output).toContain('key0');
       expect(output).toContain('key9');
@@ -685,7 +720,7 @@ describe('HtmlRenderer', () => {
       const undefinedEvent: any = {
         t: 'msg',
         role: undefined,
-        text: undefined
+        text: undefined,
       };
 
       expect(() => renderer.render(undefinedEvent)).not.toThrow();
@@ -697,7 +732,7 @@ describe('HtmlRenderer', () => {
         { t: 'tool', name: null, phase: null, text: null },
         { t: 'cost', deltaUsd: null },
         { t: 'error', message: null },
-        { t: 'debug', raw: null }
+        { t: 'debug', raw: null },
       ];
 
       nullEvents.forEach(event => {
@@ -708,14 +743,14 @@ describe('HtmlRenderer', () => {
     it('should handle NaN and Infinity in cost events', () => {
       const nanEvent: CostEvent = {
         t: 'cost',
-        deltaUsd: NaN
+        deltaUsd: NaN,
       };
-      
+
       const infinityEvent: CostEvent = {
         t: 'cost',
-        deltaUsd: Infinity
+        deltaUsd: Infinity,
       };
-      
+
       expect(() => renderer.render(nanEvent)).not.toThrow();
       expect(() => renderer.render(infinityEvent)).not.toThrow();
     });
@@ -725,17 +760,22 @@ describe('HtmlRenderer', () => {
     it('should handle tool events out of order', () => {
       // End before start
       renderer.render({ t: 'tool', name: 'test1', phase: 'end', exitCode: 0 });
-      
+
       // Output before start
-      renderer.render({ t: 'tool', name: 'test2', phase: 'stdout', text: 'orphan output' });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'test2',
+        phase: 'stdout',
+        text: 'orphan output',
+      });
+
       // Start after output
       renderer.render({ t: 'tool', name: 'test2', phase: 'start' });
-      
+
       // Multiple starts
       renderer.render({ t: 'tool', name: 'test3', phase: 'start' });
       renderer.render({ t: 'tool', name: 'test3', phase: 'start' });
-      
+
       // Should handle gracefully
       const flush = renderer.flush();
       expect(flush).toContain('test3');
@@ -743,13 +783,18 @@ describe('HtmlRenderer', () => {
 
     it('should handle deeply nested tool output', () => {
       renderer.render({ t: 'tool', name: 'parent', phase: 'start' });
-      
+
       // Create deeply nested structure in output
       const deeplyNested = '  '.repeat(50) + 'Deeply nested content';
-      renderer.render({ t: 'tool', name: 'parent', phase: 'stdout', text: deeplyNested });
-      
+      renderer.render({
+        t: 'tool',
+        name: 'parent',
+        phase: 'stdout',
+        text: deeplyNested,
+      });
+
       renderer.render({ t: 'tool', name: 'parent', phase: 'end', exitCode: 0 });
-      
+
       // Should preserve structure
       expect(renderer.flush()).toBe('');
     });
@@ -759,30 +804,63 @@ describe('HtmlRenderer', () => {
     it('should handle complex mixed event sequences', () => {
       const complexSequence: AgentEvent[] = [
         { t: 'msg', role: 'user', text: 'Start a complex task' },
-        { t: 'msg', role: 'assistant', text: 'I\'ll help you with that. Let me run some tools.' },
+        {
+          t: 'msg',
+          role: 'assistant',
+          text: "I'll help you with that. Let me run some tools.",
+        },
         { t: 'tool', name: 'analyze', phase: 'start', text: 'data.json' },
-        { t: 'tool', name: 'analyze', phase: 'stdout', text: 'Analyzing file...' },
-        { t: 'tool', name: 'process', phase: 'start', text: '--input data.json' },
-        { t: 'tool', name: 'analyze', phase: 'stdout', text: 'Found 1000 records' },
-        { t: 'tool', name: 'process', phase: 'stdout', text: 'Processing records...' },
+        {
+          t: 'tool',
+          name: 'analyze',
+          phase: 'stdout',
+          text: 'Analyzing file...',
+        },
+        {
+          t: 'tool',
+          name: 'process',
+          phase: 'start',
+          text: '--input data.json',
+        },
+        {
+          t: 'tool',
+          name: 'analyze',
+          phase: 'stdout',
+          text: 'Found 1000 records',
+        },
+        {
+          t: 'tool',
+          name: 'process',
+          phase: 'stdout',
+          text: 'Processing records...',
+        },
         { t: 'cost', deltaUsd: 0.0012 },
         { t: 'tool', name: 'analyze', phase: 'end', exitCode: 0 },
         { t: 'error', message: 'Warning: Some records skipped' },
-        { t: 'tool', name: 'process', phase: 'stderr', text: 'Skipped 5 invalid records' },
+        {
+          t: 'tool',
+          name: 'process',
+          phase: 'stderr',
+          text: 'Skipped 5 invalid records',
+        },
         { t: 'tool', name: 'process', phase: 'end', exitCode: 0 },
-        { t: 'msg', role: 'assistant', text: 'Task completed with minor warnings.' },
+        {
+          t: 'msg',
+          role: 'assistant',
+          text: 'Task completed with minor warnings.',
+        },
         { t: 'debug', raw: { processed: 995, skipped: 5, total: 1000 } },
-        { t: 'cost', deltaUsd: 0.0008 }
+        { t: 'cost', deltaUsd: 0.0008 },
       ];
 
       complexSequence.forEach(event => {
         const output = renderer.render(event);
         expect(output).toBeTruthy();
-        
+
         // Check for well-formed HTML
         const openTags = (output.match(/<[^/][^>]*>/g) || []).length;
         const closeTags = (output.match(/<\/[^>]+>/g) || []).length;
-        
+
         // Most tags should be balanced (some are self-contained)
         expect(Math.abs(openTags - closeTags)).toBeLessThanOrEqual(2);
       });

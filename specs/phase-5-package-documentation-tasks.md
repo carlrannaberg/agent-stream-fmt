@@ -1,11 +1,13 @@
 # Task Breakdown: Phase 5 - Package & Documentation
 
-Generated: 2025-07-19
-Source: specs/phase-5-package-documentation.md
+Generated: 2025-07-19 Source: specs/phase-5-package-documentation.md
 
 ## Overview
 
-Phase 5 prepares agent-stream-fmt for public release as a production-ready npm package. This involves creating comprehensive documentation, establishing CI/CD infrastructure, implementing quality gates, and preparing all necessary publishing materials. The phase transforms a working codebase into a professional, maintainable open-source package.
+Phase 5 prepares agent-stream-fmt for public release as a production-ready npm package. This
+involves creating comprehensive documentation, establishing CI/CD infrastructure, implementing
+quality gates, and preparing all necessary publishing materials. The phase transforms a working
+codebase into a professional, maintainable open-source package.
 
 ## Task Dependency Graph
 
@@ -47,11 +49,8 @@ Phase 5.4: Quality & Polish (depends on 5.2, 5.3)
 
 ### Task 5.1.1: Create LICENSE file (MIT)
 
-**Description**: Add MIT license file with proper copyright attribution
-**Size**: Small
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: All other Phase 5.1 tasks
+**Description**: Add MIT license file with proper copyright attribution **Size**: Small
+**Priority**: High **Dependencies**: None **Can run parallel with**: All other Phase 5.1 tasks
 
 **Technical Requirements**:
 
@@ -95,10 +94,8 @@ furnished to do so, subject to the following conditions:
 ### Task 5.1.2: Write comprehensive README.md
 
 **Description**: Create professional README with badges, examples, and complete documentation
-**Size**: Large
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: All other Phase 5.1 tasks
+**Size**: Large **Priority**: High **Dependencies**: None **Can run parallel with**: All other Phase
+5.1 tasks
 
 **Technical Requirements**:
 
@@ -128,7 +125,8 @@ furnished to do so, subject to the following conditions:
 [![Coverage Status](https://coveralls.io/repos/github/yourusername/agent-stream-fmt/badge.svg)](https://coveralls.io/github/yourusername/agent-stream-fmt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Universal JSONL formatter for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, and Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
+Universal JSONL formatter for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, and
+Amp Code into unified event streams with beautiful ANSI terminal and HTML rendering.
 
 ## Features
 
@@ -156,11 +154,9 @@ Universal JSONL formatter for AI agent CLIs that normalizes output from Claude C
 
 ### Task 5.1.3: Create CONTRIBUTING.md
 
-**Description**: Write contributor guidelines with development workflow and standards
-**Size**: Medium
-**Priority**: Medium
-**Dependencies**: None
-**Can run parallel with**: All other Phase 5.1 tasks
+**Description**: Write contributor guidelines with development workflow and standards **Size**:
+Medium **Priority**: Medium **Dependencies**: None **Can run parallel with**: All other Phase 5.1
+tasks
 
 **Technical Requirements**:
 
@@ -185,7 +181,8 @@ Universal JSONL formatter for AI agent CLIs that normalizes output from Claude C
 ```markdown
 # Contributing to agent-stream-fmt
 
-We love your input! We want to make contributing to agent-stream-fmt as easy and transparent as possible.
+We love your input! We want to make contributing to agent-stream-fmt as easy and transparent as
+possible.
 
 ## Development Setup
 
@@ -211,11 +208,8 @@ We love your input! We want to make contributing to agent-stream-fmt as easy and
 
 ### Task 5.1.4: Initialize CHANGELOG.md
 
-**Description**: Create changelog following Keep a Changelog format
-**Size**: Small
-**Priority**: Medium
-**Dependencies**: None
-**Can run parallel with**: All other Phase 5.1 tasks
+**Description**: Create changelog following Keep a Changelog format **Size**: Small **Priority**:
+Medium **Dependencies**: None **Can run parallel with**: All other Phase 5.1 tasks
 
 **Technical Requirements**:
 
@@ -241,8 +235,8 @@ We love your input! We want to make contributing to agent-stream-fmt as easy and
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
@@ -252,8 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release with support for Claude, Gemini, and Amp CLI formats
 - ANSI terminal rendering with color support
-- HTML rendering for web display
-  [... full list from spec ...]
+- HTML rendering for web display [... full list from spec ...]
 
 ### Performance
 
@@ -276,11 +269,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Task 5.1.5: Configure TypeDoc for API documentation
 
-**Description**: Set up TypeDoc to generate comprehensive API documentation
-**Size**: Medium
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: All other Phase 5.1 tasks
+**Description**: Set up TypeDoc to generate comprehensive API documentation **Size**: Medium
+**Priority**: High **Dependencies**: None **Can run parallel with**: All other Phase 5.1 tasks
 
 **Technical Requirements**:
 
@@ -326,10 +316,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Task 5.1.6: Add JSDoc comments to all public APIs
 
 **Description**: Document all exported functions, types, and classes with comprehensive JSDoc
-**Size**: Large
-**Priority**: High
-**Dependencies**: Task 5.1.5 (TypeDoc configuration)
-**Can run parallel with**: None (depends on TypeDoc setup)
+**Size**: Large **Priority**: High **Dependencies**: Task 5.1.5 (TypeDoc configuration) **Can run
+parallel with**: None (depends on TypeDoc setup)
 
 **Technical Requirements**:
 
@@ -372,9 +360,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * @category Main API
  * @since 0.1.0
  */
-export async function* streamEvents(
-  options: StreamEventOptions,
-): AsyncIterator<AgentEvent> {
+export async function* streamEvents(options: StreamEventOptions): AsyncIterator<AgentEvent> {
   // ...
 }
 ````
@@ -392,11 +378,9 @@ export async function* streamEvents(
 
 ### Task 5.2.1: Update package.json with full metadata
 
-**Description**: Enhance package.json with complete npm publishing metadata
-**Size**: Medium
-**Priority**: High
-**Dependencies**: Phase 5.1 completion
-**Can run parallel with**: Other Phase 5.2 tasks
+**Description**: Enhance package.json with complete npm publishing metadata **Size**: Medium
+**Priority**: High **Dependencies**: Phase 5.1 completion **Can run parallel with**: Other Phase 5.2
+tasks
 
 **Technical Requirements**:
 
@@ -469,11 +453,8 @@ export async function* streamEvents(
 
 ### Task 5.2.2: Create .npmignore file
 
-**Description**: Configure files to exclude from npm package
-**Size**: Small
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.2 tasks
+**Description**: Configure files to exclude from npm package **Size**: Small **Priority**: High
+**Dependencies**: None **Can run parallel with**: Other Phase 5.2 tasks
 
 **Technical Requirements**:
 
@@ -542,11 +523,8 @@ CONTRIBUTING.md
 
 ### Task 5.2.3: Configure dual package (ESM/CJS) exports
 
-**Description**: Set up package.json exports for both ESM and CommonJS compatibility
-**Size**: Medium
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.2 tasks
+**Description**: Set up package.json exports for both ESM and CommonJS compatibility **Size**:
+Medium **Priority**: High **Dependencies**: None **Can run parallel with**: Other Phase 5.2 tasks
 
 **Technical Requirements**:
 
@@ -597,11 +575,8 @@ CONTRIBUTING.md
 
 ### Task 5.2.4: Add npm lifecycle scripts
 
-**Description**: Configure npm scripts for publishing workflow
-**Size**: Small
-**Priority**: Medium
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.2 tasks
+**Description**: Configure npm scripts for publishing workflow **Size**: Small **Priority**: Medium
+**Dependencies**: None **Can run parallel with**: Other Phase 5.2 tasks
 
 **Technical Requirements**:
 
@@ -643,11 +618,8 @@ CONTRIBUTING.md
 
 ### Task 5.2.5: Test local package installation
 
-**Description**: Verify package installs correctly from tarball
-**Size**: Small
-**Priority**: High
-**Dependencies**: Tasks 5.2.1-5.2.4
-**Can run parallel with**: None (depends on other configs)
+**Description**: Verify package installs correctly from tarball **Size**: Small **Priority**: High
+**Dependencies**: Tasks 5.2.1-5.2.4 **Can run parallel with**: None (depends on other configs)
 
 **Technical Requirements**:
 
@@ -697,11 +669,8 @@ tar -tzf agent-stream-fmt-0.1.0.tgz
 
 ### Task 5.2.6: Verify bundle size and analyze
 
-**Description**: Ensure bundle size is within limits and analyze composition
-**Size**: Small
-**Priority**: Medium
-**Dependencies**: Task 5.2.5
-**Can run parallel with**: None
+**Description**: Ensure bundle size is within limits and analyze composition **Size**: Small
+**Priority**: Medium **Dependencies**: Task 5.2.5 **Can run parallel with**: None
 
 **Technical Requirements**:
 
@@ -737,9 +706,7 @@ const maxSize = 50 * 1024; // 50KB
 const actualSize = fs.statSync('dist/index.js').size;
 
 if (actualSize > maxSize) {
-  console.error(
-    `Bundle size (${actualSize} bytes) exceeds limit (${maxSize} bytes)`,
-  );
+  console.error(`Bundle size (${actualSize} bytes) exceeds limit (${maxSize} bytes)`);
   process.exit(1);
 }
 ```
@@ -757,11 +724,8 @@ if (actualSize > maxSize) {
 
 ### Task 5.3.1: Create GitHub Actions CI workflow
 
-**Description**: Set up continuous integration workflow for automated testing
-**Size**: Medium
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.3 tasks
+**Description**: Set up continuous integration workflow for automated testing **Size**: Medium
+**Priority**: High **Dependencies**: None **Can run parallel with**: Other Phase 5.3 tasks
 
 **Technical Requirements**:
 
@@ -829,11 +793,9 @@ jobs:
 
 ### Task 5.3.2: Set up automated test matrix
 
-**Description**: Configure comprehensive test matrix across platforms and Node versions
-**Size**: Small
-**Priority**: High
-**Dependencies**: Task 5.3.1
-**Can run parallel with**: None (extends CI workflow)
+**Description**: Configure comprehensive test matrix across platforms and Node versions **Size**:
+Small **Priority**: High **Dependencies**: Task 5.3.1 **Can run parallel with**: None (extends CI
+workflow)
 
 **Technical Requirements**:
 
@@ -870,11 +832,8 @@ strategy:
 
 ### Task 5.3.3: Configure coverage reporting
 
-**Description**: Set up code coverage collection and reporting
-**Size**: Small
-**Priority**: Medium
-**Dependencies**: Task 5.3.1
-**Can run parallel with**: Other Phase 5.3 tasks
+**Description**: Set up code coverage collection and reporting **Size**: Small **Priority**: Medium
+**Dependencies**: Task 5.3.1 **Can run parallel with**: Other Phase 5.3 tasks
 
 **Technical Requirements**:
 
@@ -912,11 +871,8 @@ strategy:
 
 ### Task 5.3.4: Create release workflow
 
-**Description**: Automate npm publishing and GitHub releases
-**Size**: Medium
-**Priority**: High
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.3 tasks
+**Description**: Automate npm publishing and GitHub releases **Size**: Medium **Priority**: High
+**Dependencies**: None **Can run parallel with**: Other Phase 5.3 tasks
 
 **Technical Requirements**:
 
@@ -974,11 +930,8 @@ jobs:
 
 ### Task 5.3.5: Set up pre-commit hooks with Husky
 
-**Description**: Configure Git hooks for code quality checks
-**Size**: Medium
-**Priority**: Medium
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.3 tasks
+**Description**: Configure Git hooks for code quality checks **Size**: Medium **Priority**: Medium
+**Dependencies**: None **Can run parallel with**: Other Phase 5.3 tasks
 
 **Technical Requirements**:
 
@@ -1037,11 +990,8 @@ npm run typecheck
 
 ### Task 5.3.6: Configure automated dependency updates
 
-**Description**: Set up Dependabot for automated dependency management
-**Size**: Small
-**Priority**: Low
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.3 tasks
+**Description**: Set up Dependabot for automated dependency management **Size**: Small **Priority**:
+Low **Dependencies**: None **Can run parallel with**: Other Phase 5.3 tasks
 
 **Technical Requirements**:
 
@@ -1088,11 +1038,8 @@ updates:
 
 ### Task 5.4.1: Create comprehensive example suite
 
-**Description**: Build complete set of examples showing all features and use cases
-**Size**: Large
-**Priority**: Medium
-**Dependencies**: Phases 5.1-5.3 complete
-**Can run parallel with**: Task 5.4.2
+**Description**: Build complete set of examples showing all features and use cases **Size**: Large
+**Priority**: Medium **Dependencies**: Phases 5.1-5.3 complete **Can run parallel with**: Task 5.4.2
 
 **Technical Requirements**:
 
@@ -1147,11 +1094,8 @@ examples/
 
 ### Task 5.4.2: Write performance documentation guide
 
-**Description**: Create comprehensive performance guide with optimization tips
-**Size**: Medium
-**Priority**: Medium
-**Dependencies**: None
-**Can run parallel with**: Task 5.4.1
+**Description**: Create comprehensive performance guide with optimization tips **Size**: Medium
+**Priority**: Medium **Dependencies**: None **Can run parallel with**: Task 5.4.1
 
 **Technical Requirements**:
 
@@ -1205,11 +1149,8 @@ The streaming architecture ensures constant memory usage:
 
 ### Task 5.4.3: Set up GitHub issue and PR templates
 
-**Description**: Create templates for consistent issue reporting and pull requests
-**Size**: Small
-**Priority**: Low
-**Dependencies**: None
-**Can run parallel with**: Other Phase 5.4 tasks
+**Description**: Create templates for consistent issue reporting and pull requests **Size**: Small
+**Priority**: Low **Dependencies**: None **Can run parallel with**: Other Phase 5.4 tasks
 
 **Technical Requirements**:
 
@@ -1238,18 +1179,15 @@ labels: 'bug'
 assignees: ''
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Describe the bug** A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
+**To Reproduce** Steps to reproduce the behavior:
 
 1. Run command '...'
 2. Pipe output to '...'
 3. See error
 
-**Expected behavior**
-What you expected to happen.
+**Expected behavior** What you expected to happen.
 
 **Environment:**
 
@@ -1268,11 +1206,8 @@ What you expected to happen.
 
 ### Task 5.4.4: Cross-platform testing verification
 
-**Description**: Test package on Linux, macOS, and Windows
-**Size**: Medium
-**Priority**: High
-**Dependencies**: All other tasks
-**Can run parallel with**: None (final testing)
+**Description**: Test package on Linux, macOS, and Windows **Size**: Medium **Priority**: High
+**Dependencies**: All other tasks **Can run parallel with**: None (final testing)
 
 **Technical Requirements**:
 
@@ -1320,11 +1255,8 @@ claude --json "test" | agent-stream-fmt
 
 ### Task 5.4.5: Final quality checks and audit
 
-**Description**: Run comprehensive quality and security checks before release
-**Size**: Medium
-**Priority**: High
-**Dependencies**: All other tasks
-**Can run parallel with**: None (final check)
+**Description**: Run comprehensive quality and security checks before release **Size**: Medium
+**Priority**: High **Dependencies**: All other tasks **Can run parallel with**: None (final check)
 
 **Technical Requirements**:
 
@@ -1379,11 +1311,8 @@ npx markdown-link-check CONTRIBUTING.md
 
 ### Task 5.4.6: Prepare for npm publication
 
-**Description**: Final preparation and checklist for npm publish
-**Size**: Small
-**Priority**: High
-**Dependencies**: Task 5.4.5
-**Can run parallel with**: None (final step)
+**Description**: Final preparation and checklist for npm publish **Size**: Small **Priority**: High
+**Dependencies**: Task 5.4.5 **Can run parallel with**: None (final step)
 
 **Technical Requirements**:
 
@@ -1441,8 +1370,7 @@ npm publish --provenance
 
 ## Summary
 
-**Total Tasks**: 24
-**By Phase**:
+**Total Tasks**: 24 **By Phase**:
 
 - Phase 5.1 (Core Documentation): 6 tasks
 - Phase 5.2 (Package Configuration): 6 tasks

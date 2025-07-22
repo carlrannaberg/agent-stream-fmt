@@ -14,7 +14,8 @@ pnpm add @agent-io/invoke
 
 ## Usage
 
-This package provides CLI building blocks and utilities for creating AI agent command-line interfaces.
+This package provides CLI building blocks and utilities for creating AI agent command-line
+interfaces.
 
 ```typescript
 import { createCLI, CommandBuilder } from '@agent-io/invoke';
@@ -23,7 +24,7 @@ import { createCLI, CommandBuilder } from '@agent-io/invoke';
 const cli = createCLI({
   name: 'my-agent',
   version: '1.0.0',
-  description: 'AI agent with streaming output'
+  description: 'AI agent with streaming output',
 });
 
 cli
@@ -64,16 +65,16 @@ interface CLIOptions {
 interface CLI {
   // Add a command
   command(name: string): CommandBuilder;
-  
+
   // Add global option
   option(flags: string, description: string, defaultValue?: any): CLI;
-  
+
   // Set custom help
   help(text: string): CLI;
-  
+
   // Parse arguments
   parse(argv: string[]): void;
-  
+
   // Get parsed options
   opts(): Record<string, any>;
 }
@@ -87,16 +88,16 @@ interface CLI {
 interface CommandBuilder {
   // Set command description
   description(text: string): CommandBuilder;
-  
+
   // Add command option
   option(flags: string, description: string, defaultValue?: any): CommandBuilder;
-  
+
   // Set command action
   action(handler: CommandHandler): CommandBuilder;
-  
+
   // Add argument
   argument(name: string, description?: string): CommandBuilder;
-  
+
   // Set streaming options
   stream(options: StreamOptions): CommandBuilder;
 }
@@ -104,7 +105,7 @@ interface CommandBuilder {
 type CommandHandler = (
   ...args: any[],
   options: Record<string, any>,
-  command: Command
+  command: Command,
 ) => void | Promise<void>;
 ```
 
@@ -120,11 +121,11 @@ import { streamEvents } from '@agent-io/stream';
 
 const chatHandler = withStreaming(async ({ args, options, stream }) => {
   const response = await callAIAgent(args[0]);
-  
+
   // Stream the response
-  for await (const event of streamEvents({ 
+  for await (const event of streamEvents({
     vendor: options.vendor || 'auto',
-    source: response.stream 
+    source: response.stream,
   })) {
     await stream.write(event);
   }
@@ -153,7 +154,7 @@ interface FormatOptions {
 const formatter = formatOutput({
   format: 'ansi',
   colors: true,
-  timestamps: false
+  timestamps: false,
 });
 
 // Use formatter
@@ -176,7 +177,7 @@ interface ProgressOptions {
 
 const progress = createProgress({
   format: 'spinner',
-  message: 'Processing...'
+  message: 'Processing...',
 });
 
 progress.start();
@@ -195,7 +196,7 @@ import { createCLI } from '@agent-io/invoke';
 const cli = createCLI({
   name: 'agent-cli',
   version: '1.0.0',
-  description: 'AI agent command-line interface'
+  description: 'AI agent command-line interface',
 });
 
 // Global options
@@ -223,7 +224,7 @@ cli
   .option('-f, --format <type>', 'Output format', 'ansi')
   .action(async (prompt, options) => {
     const response = await getAIStream(prompt);
-    
+
     for await (const chunk of response) {
       if (options.format === 'ansi') {
         console.log(formatAnsi(chunk));
@@ -247,8 +248,8 @@ const cli = createCLI({
   version: '1.0.0',
   streamDefaults: {
     vendor: 'auto',
-    format: 'ansi'
-  }
+    format: 'ansi',
+  },
 });
 
 cli
@@ -257,20 +258,22 @@ cli
   .option('--vendor <type>', 'AI vendor')
   .option('--format <type>', 'Output format')
   .option('--collapse-tools', 'Collapse tool output')
-  .action(withStreaming(async ({ args, options, stream }) => {
-    const [task] = args;
-    const aiResponse = await runAITask(task);
-    
-    // Stream formatted output
-    for await (const output of streamFormat({
-      vendor: options.vendor,
-      source: aiResponse.stream,
-      format: options.format,
-      collapseTools: options.collapseTools
-    })) {
-      process.stdout.write(output);
-    }
-  }));
+  .action(
+    withStreaming(async ({ args, options, stream }) => {
+      const [task] = args;
+      const aiResponse = await runAITask(task);
+
+      // Stream formatted output
+      for await (const output of streamFormat({
+        vendor: options.vendor,
+        source: aiResponse.stream,
+        format: options.format,
+        collapseTools: options.collapseTools,
+      })) {
+        process.stdout.write(output);
+      }
+    }),
+  );
 
 cli.parse(process.argv);
 ```
@@ -282,7 +285,7 @@ import { createCLI, createPrompt } from '@agent-io/invoke';
 
 const cli = createCLI({
   name: 'interactive-agent',
-  version: '1.0.0'
+  version: '1.0.0',
 });
 
 cli
@@ -292,21 +295,21 @@ cli
   .action(async () => {
     const prompt = createPrompt({
       message: 'agent> ',
-      history: true
+      history: true,
     });
-    
+
     console.log('Interactive mode. Type "exit" to quit.');
-    
+
     while (true) {
       const input = await prompt.ask();
-      
+
       if (input === 'exit') break;
-      
+
       // Process input
       const response = await processCommand(input);
       console.log(response);
     }
-    
+
     prompt.close();
   });
 
@@ -321,7 +324,7 @@ import { createReadStream } from 'fs';
 
 const cli = createCLI({
   name: 'file-processor',
-  version: '1.0.0'
+  version: '1.0.0',
 });
 
 cli
@@ -332,20 +335,20 @@ cli
   .action(async (file, options) => {
     const input = createReadStream(file);
     let eventCount = 0;
-    
-    for await (const event of streamEvents({ 
-      vendor: 'auto', 
-      source: input 
+
+    for await (const event of streamEvents({
+      vendor: 'auto',
+      source: input,
     })) {
       eventCount++;
-      
+
       if (options.output) {
         await writeOutput(options.output, event);
       } else {
         console.log(JSON.stringify(event));
       }
     }
-    
+
     if (options.stats) {
       console.log(`\nProcessed ${eventCount} events`);
     }
@@ -361,7 +364,7 @@ import { createCLI, CLIError } from '@agent-io/invoke';
 
 const cli = createCLI({
   name: 'error-aware-cli',
-  version: '1.0.0'
+  version: '1.0.0',
 });
 
 // Custom error handler
@@ -378,18 +381,18 @@ cli.on('error', (error: CLIError) => {
   } else {
     console.error(`Error: ${error.message}`);
   }
-  
+
   process.exit(1);
 });
 
 cli
   .command('validate <input>')
   .description('Validate input')
-  .action(async (input) => {
+  .action(async input => {
     if (!isValid(input)) {
       throw new CLIError('INVALID_ARGUMENT', `Invalid input: ${input}`);
     }
-    
+
     console.log('Input is valid!');
   });
 
@@ -405,11 +408,11 @@ import { createCLI, OutputHandler } from '@agent-io/invoke';
 
 class TableOutputHandler implements OutputHandler {
   private rows: any[] = [];
-  
+
   write(data: any): void {
     this.rows.push(data);
   }
-  
+
   flush(): void {
     console.table(this.rows);
     this.rows = [];
@@ -418,17 +421,15 @@ class TableOutputHandler implements OutputHandler {
 
 const cli = createCLI({
   name: 'table-cli',
-  version: '1.0.0'
+  version: '1.0.0',
 });
 
 cli
   .command('list')
   .option('--table', 'Output as table')
-  .action(async (options) => {
-    const handler = options.table 
-      ? new TableOutputHandler()
-      : new DefaultOutputHandler();
-    
+  .action(async options => {
+    const handler = options.table ? new TableOutputHandler() : new DefaultOutputHandler();
+
     const items = await fetchItems();
     items.forEach(item => handler.write(item));
     handler.flush();
@@ -443,29 +444,29 @@ import { createCLI, Plugin } from '@agent-io/invoke';
 // Define a plugin
 const loggingPlugin: Plugin = {
   name: 'logging',
-  
+
   install(cli) {
     cli.on('command:before', (cmd, args) => {
       console.log(`Running command: ${cmd.name()}`);
       console.log(`Arguments:`, args);
     });
-    
+
     cli.on('command:after', (cmd, result) => {
       console.log(`Command completed: ${cmd.name()}`);
     });
-    
+
     cli.on('command:error', (cmd, error) => {
       console.error(`Command failed: ${cmd.name()}`);
       console.error(error);
     });
-  }
+  },
 };
 
 // Use plugin
 const cli = createCLI({
   name: 'plugin-cli',
   version: '1.0.0',
-  plugins: [loggingPlugin]
+  plugins: [loggingPlugin],
 });
 ```
 
@@ -476,7 +477,7 @@ import { createCLI, loadConfig, saveConfig } from '@agent-io/invoke';
 
 const cli = createCLI({
   name: 'configurable-cli',
-  version: '1.0.0'
+  version: '1.0.0',
 });
 
 cli
@@ -492,7 +493,7 @@ cli
 cli
   .command('config get <key>')
   .description('Get configuration value')
-  .action(async (key) => {
+  .action(async key => {
     const config = await loadConfig();
     console.log(config[key] || 'Not set');
   });
@@ -522,17 +523,15 @@ describe('CLI Commands', () => {
     const cli = createCLI({
       name: 'test-cli',
       version: '1.0.0',
-      output
+      output,
     });
-    
-    cli
-      .command('chat <message>')
-      .action(async (message) => {
-        output.write(`Received: ${message}`);
-      });
-    
+
+    cli.command('chat <message>').action(async message => {
+      output.write(`Received: ${message}`);
+    });
+
     await cli.parseAsync(['node', 'test', 'chat', 'Hello']);
-    
+
     expect(output.toString()).toContain('Received: Hello');
   });
 });

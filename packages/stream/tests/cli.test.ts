@@ -11,32 +11,32 @@ import { Readable } from 'stream';
 // Helper to run the CLI with given arguments and input
 async function runCLI(
   args: string[],
-  input?: string | Readable
+  input?: string | Readable,
 ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
   return new Promise((resolve, reject) => {
     const cliPath = join(__dirname, '..', 'dist', 'cli.js');
     const cwd = join(__dirname, '..');
     const child = spawn('node', [cliPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      cwd // Set working directory to package root
+      cwd, // Set working directory to package root
     });
 
     let stdout = '';
     let stderr = '';
 
-    child.stdout.on('data', (data) => {
+    child.stdout.on('data', data => {
       stdout += data.toString();
     });
 
-    child.stderr.on('data', (data) => {
+    child.stderr.on('data', data => {
       stderr += data.toString();
     });
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       reject(error);
     });
 
-    child.on('close', (exitCode) => {
+    child.on('close', exitCode => {
       resolve({ stdout, stderr, exitCode });
     });
 
@@ -56,7 +56,16 @@ async function runCLI(
 
 // Helper to read fixture file
 function readFixture(vendor: string, filename: string): string {
-  const fixturePath = join(__dirname, '..', '..', '..', 'tests', 'fixtures', vendor, filename);
+  const fixturePath = join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'tests',
+    'fixtures',
+    vendor,
+    filename,
+  );
   return readFileSync(fixturePath, 'utf8');
 }
 
@@ -176,7 +185,7 @@ describe('CLI Integration Tests', () => {
 
       const lines = stdout.trim().split('\n');
       expect(lines.length).toBeGreaterThan(0);
-      
+
       // Verify it's proper AgentEvent format
       const firstEvent = JSON.parse(lines[0]);
       expect(firstEvent).toHaveProperty('t');
@@ -237,7 +246,16 @@ describe('CLI Integration Tests', () => {
 
   describe('File Input', () => {
     it('should read from file when provided as argument', async () => {
-      const filePath = join(__dirname, '..', '..', '..', 'tests', 'fixtures', 'claude', 'basic-message.jsonl');
+      const filePath = join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'tests',
+        'fixtures',
+        'claude',
+        'basic-message.jsonl',
+      );
       const { stdout, exitCode } = await runCLI([filePath]);
 
       expect(exitCode).toBe(0);
@@ -257,15 +275,22 @@ describe('CLI Integration Tests', () => {
     it('should write to file with --output flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
       // Always use absolute path with unique timestamp to avoid conflicts
-      const outputPath = join(__dirname, '..', `temp-test-output-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
-      
-      const { exitCode, stdout, stderr } = await runCLI(['--output', outputPath], input);
+      const outputPath = join(
+        __dirname,
+        '..',
+        `temp-test-output-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`,
+      );
+
+      const { exitCode, stdout, stderr } = await runCLI(
+        ['--output', outputPath],
+        input,
+      );
 
       expect(exitCode).toBe(0);
       expect(stderr).toBe('');
       // When using --output, stdout should be empty
       expect(stdout).toBe('');
-      
+
       // Wait for file to be fully written and process to complete
       // Increase timeout and add retry logic for CI environments
       let retries = 0;
@@ -274,16 +299,18 @@ describe('CLI Integration Tests', () => {
         await new Promise(resolve => setTimeout(resolve, 200));
         retries++;
       }
-      
+
       // Check if file exists after retries
       if (!existsSync(outputPath)) {
         const cliPath = join(__dirname, '..', 'dist', 'cli.js');
-        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, outputPath: ${outputPath}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+        throw new Error(
+          `Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, outputPath: ${outputPath}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`,
+        );
       }
-      
+
       // Check file was created and has content
       const output = readFileSync(outputPath, 'utf8');
-      
+
       // If file is empty, wait a bit more and retry
       if (output.length === 0) {
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -292,7 +319,7 @@ describe('CLI Integration Tests', () => {
       } else {
         expect(output).toContain('user:');
       }
-      
+
       // Clean up
       if (existsSync(outputPath)) {
         unlinkSync(outputPath);
@@ -302,13 +329,20 @@ describe('CLI Integration Tests', () => {
     it('should write to file with -o flag', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
       // Always use absolute path with unique timestamp to avoid conflicts
-      const outputPath = join(__dirname, '..', `temp-test-output-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
-      
-      const { exitCode, stdout, stderr } = await runCLI(['-o', outputPath], input);
+      const outputPath = join(
+        __dirname,
+        '..',
+        `temp-test-output-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`,
+      );
+
+      const { exitCode, stdout, stderr } = await runCLI(
+        ['-o', outputPath],
+        input,
+      );
 
       expect(exitCode).toBe(0);
       expect(stderr).toBe('');
-      
+
       // Wait for file to be fully written and process to complete
       // Increase timeout and add retry logic for CI environments
       let retries = 0;
@@ -317,22 +351,26 @@ describe('CLI Integration Tests', () => {
         await new Promise(resolve => setTimeout(resolve, 200));
         retries++;
       }
-      
+
       // Check if file exists after retries
       if (!existsSync(outputPath)) {
         const cliPath = join(__dirname, '..', 'dist', 'cli.js');
-        throw new Error(`Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, outputPath: ${outputPath}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`);
+        throw new Error(
+          `Output file not created after ${maxRetries} retries. CLI path: ${cliPath}, exists: ${existsSync(cliPath)}, outputPath: ${outputPath}, CLI stdout: '${stdout}', stderr: '${stderr}', exitCode: ${exitCode}`,
+        );
       }
-      
+
       // Check file was created and has content
       const output = readFileSync(outputPath, 'utf8');
-      
+
       // If file is empty, wait a bit more and retry
       if (output.length === 0) {
         await new Promise(resolve => setTimeout(resolve, 500));
         // Check if file still exists before trying to read again
         if (!existsSync(outputPath)) {
-          throw new Error(`Output file disappeared after being created. This suggests a race condition.`);
+          throw new Error(
+            `Output file disappeared after being created. This suggests a race condition.`,
+          );
         }
         const retryOutput = readFileSync(outputPath, 'utf8');
         expect(retryOutput.length).toBeGreaterThan(0);
@@ -341,7 +379,7 @@ describe('CLI Integration Tests', () => {
         expect(output.length).toBeGreaterThan(0);
         expect(output).toContain('user:');
       }
-      
+
       // Clean up
       if (existsSync(outputPath)) {
         unlinkSync(outputPath);
@@ -378,7 +416,7 @@ describe('CLI Integration Tests', () => {
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain('👤'); // User messages
-      expect(stdout).toContain('🤖'); // Assistant messages  
+      expect(stdout).toContain('🤖'); // Assistant messages
       expect(stdout).toContain('🔧'); // Tool usage
       expect(stdout).toContain('💰'); // Cost info
     });
@@ -422,7 +460,8 @@ describe('CLI Integration Tests', () => {
     });
 
     it('should escape user content in HTML', async () => {
-      const input = '{"t":"msg","role":"user","text":"<script>alert(\\"xss\\")</script>"}\n';
+      const input =
+        '{"t":"msg","role":"user","text":"<script>alert(\\"xss\\")</script>"}\n';
       const { stdout } = await runCLI(['--html'], input);
 
       expect(stdout).not.toContain('<script>alert');
@@ -435,7 +474,13 @@ describe('CLI Integration Tests', () => {
       // Generate a large input
       const events = [];
       for (let i = 0; i < 10; i++) {
-        events.push(JSON.stringify({ type: 'message', role: 'user', content: `Message ${i}` }));
+        events.push(
+          JSON.stringify({
+            type: 'message',
+            role: 'user',
+            content: `Message ${i}`,
+          }),
+        );
       }
       const largeInput = events.join('\n');
 
@@ -451,10 +496,10 @@ describe('CLI Integration Tests', () => {
   describe('Pipe Support', () => {
     it('should work as part of a pipeline', async () => {
       const input = readFixture('claude', 'basic-message.jsonl');
-      
+
       // Simulate: cat file | agent-stream-fmt | grep "user"
       const { stdout } = await runCLI([], input);
-      
+
       expect(stdout).toContain('user:');
       expect(stdout).toContain('assistant:');
     });
@@ -474,10 +519,10 @@ describe('CLI Integration Tests', () => {
       // This test is skipped as the CLI doesn't currently implement --no-color flag
       // or check NO_COLOR environment variable
       const input = readFixture('claude', 'basic-message.jsonl');
-      
+
       // Would need to spawn with env vars - simplified test
       const { stdout } = await runCLI([], input);
-      
+
       // Should not contain ANSI codes when colors disabled
       // This test is simplified - real implementation would check env vars
       expect(stdout).toBeTruthy();

@@ -35,9 +35,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: npm ci
@@ -48,8 +48,8 @@ jobs:
         with:
           publish: npm run release
           version: npm run version
-          commit: 'chore: release packages'
-          title: 'chore: release packages'
+          commit: "chore: release packages"
+          title: "chore: release packages"
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,9 +69,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: npm ci
@@ -83,7 +83,7 @@ jobs:
         run: |
           # Check that all packages build successfully
           npm run validate
-          
+
           # Verify package contents
           for pkg in packages/*/; do
             if [ -f "$pkg/package.json" ]; then
@@ -102,13 +102,13 @@ jobs:
           # Parse published packages
           PACKAGES='${{ needs.release-pr.outputs.publishedPackages }}'
           echo "Published packages: $PACKAGES"
-          
+
           # Create release notes
           RELEASE_NOTES="## Published Packages\n\n"
           echo "$PACKAGES" | jq -r '.[] | "- \(.name)@\(.version)"' | while read line; do
             RELEASE_NOTES="${RELEASE_NOTES}${line}\n"
           done
-          
+
           echo -e "$RELEASE_NOTES"
 
   # Post-release tasks

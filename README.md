@@ -5,11 +5,14 @@
 [![codecov](https://codecov.io/gh/yourusername/agent-io/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/agent-io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Agent-IO** is a universal I/O toolkit for AI agent CLIs that normalizes output from Claude Code, Gemini CLI, Amp Code, and other AI assistants into unified event streams with beautiful terminal and HTML rendering.
+**Agent-IO** is a universal I/O toolkit for AI agent CLIs that normalizes output from Claude Code,
+Gemini CLI, Amp Code, and other AI assistants into unified event streams with beautiful terminal and
+HTML rendering.
 
 ## Overview
 
-Working with different AI agent CLIs means dealing with different output formats. Agent-IO solves this by providing:
+Working with different AI agent CLIs means dealing with different output formats. Agent-IO solves
+this by providing:
 
 - 🚀 **Universal Format**: Normalize JSONL outputs from Claude, Gemini, Amp, and more
 - 🎨 **Beautiful Rendering**: ANSI colors for terminals, semantic HTML for web
@@ -132,7 +135,7 @@ const formatted = streamFormat({
   renderOptions: {
     collapseTools: true,
     hideDebug: true,
-  }
+  },
 });
 ```
 
@@ -145,7 +148,7 @@ import { invokeClaude, invokeGemini } from '@agent-io/invoke';
 
 // Invoke AI agents with proper streaming
 const stream = await invokeClaude({
-  prompt: "Explain quantum computing",
+  prompt: 'Explain quantum computing',
   json: true,
 });
 
@@ -232,6 +235,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### Development Workflow
 
 1. **Create a feature branch**
+
    ```bash
    git checkout -b feature/your-feature
    ```
@@ -243,9 +247,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
    - Format code with `npm run format`
 
 3. **Create a changeset**
+
    ```bash
    npm run changeset
    ```
+
    Follow the prompts to describe your changes.
 
 4. **Submit a pull request**
@@ -272,17 +278,19 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 Agent-IO is designed for high-throughput stream processing:
 
-| Format | Throughput | Memory Usage |
-|--------|------------|--------------|
-| Claude | ~900K lines/sec | <20MB |
-| Gemini | ~668K lines/sec | <20MB |
-| Amp | ~797K lines/sec | <20MB |
+| Format | Throughput      | Memory Usage |
+| ------ | --------------- | ------------ |
+| Claude | ~900K lines/sec | <20MB        |
+| Gemini | ~668K lines/sec | <20MB        |
+| Amp    | ~797K lines/sec | <20MB        |
 
-Benchmarks run on M1 MacBook Pro. See [Performance Guide](docs/performance.md) for optimization tips.
+Benchmarks run on M1 MacBook Pro. See [Performance Guide](docs/performance.md) for optimization
+tips.
 
 ## API Documentation
 
 Complete API documentation is available:
+
 - [API Reference](docs/api/)
 - [Core Types](docs/api/interfaces/)
 - [Streaming Guide](docs/api/modules.md)
@@ -290,6 +298,7 @@ Complete API documentation is available:
 ## Examples
 
 Explore the [examples/](examples/) directory for:
+
 - Basic usage patterns
 - Advanced filtering and rendering
 - Integration with web frameworks

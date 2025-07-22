@@ -1,5 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ParserRegistry, registry, registerParser, getParser, detectVendor, detectVendorMultiLine, detectVendorWithConfidence, listParsers, selectParser } from './index.js';
+import {
+  ParserRegistry,
+  registry,
+  registerParser,
+  getParser,
+  detectVendor,
+  detectVendorMultiLine,
+  detectVendorWithConfidence,
+  listParsers,
+  selectParser,
+} from './index.js';
 import { VendorParser } from './types.js';
 import { claudeParser } from './claude.js';
 
@@ -29,7 +39,7 @@ describe('ParserRegistry', () => {
       const mockParser: VendorParser = {
         vendor: 'test',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       testRegistry.registerParser(mockParser);
@@ -41,7 +51,7 @@ describe('ParserRegistry', () => {
       const mockParser: VendorParser = {
         vendor: 'test',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       testRegistry.registerParser(mockParser, 75);
@@ -52,18 +62,18 @@ describe('ParserRegistry', () => {
       const parser1: VendorParser = {
         vendor: 'test',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       const parser2: VendorParser = {
         vendor: 'test',
         detect: () => false,
-        parse: () => []
+        parse: () => [],
       };
 
       testRegistry.registerParser(parser1);
       testRegistry.registerParser(parser2);
-      
+
       expect(testRegistry.getParser('test' as any)).toBe(parser2);
       expect(testRegistry.size()).toBe(4); // claude + gemini + amp + test
     });
@@ -84,7 +94,7 @@ describe('ParserRegistry', () => {
       const mockParser: VendorParser = {
         vendor: '',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       expect(() => {
@@ -96,7 +106,7 @@ describe('ParserRegistry', () => {
       const mockParser: VendorParser = {
         vendor: '   ',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       expect(() => {
@@ -108,19 +118,21 @@ describe('ParserRegistry', () => {
       const mockParser: VendorParser = {
         vendor: 'auto',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       expect(() => {
         testRegistry.registerParser(mockParser);
-      }).toThrow("Cannot register parser with vendor 'auto' (reserved for auto-detection)");
+      }).toThrow(
+        "Cannot register parser with vendor 'auto' (reserved for auto-detection)",
+      );
     });
 
     it('throws error for invalid priority', () => {
       const mockParser: VendorParser = {
         vendor: 'test',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       expect(() => {
@@ -152,16 +164,17 @@ describe('ParserRegistry', () => {
 
   describe('detectVendor', () => {
     it('detects Claude format correctly', () => {
-      const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+      const claudeLine =
+        '{"type":"message","role":"assistant","content":"Hello"}';
       const detected = testRegistry.detectVendor(claudeLine);
-      
+
       expect(detected).toBe(claudeParser);
     });
 
     it('returns null for unrecognized format', () => {
       const unknownLine = '{"unknown":"format"}';
       const detected = testRegistry.detectVendor(unknownLine);
-      
+
       expect(detected).toBeNull();
     });
 
@@ -179,13 +192,13 @@ describe('ParserRegistry', () => {
       const highPriorityParser: VendorParser = {
         vendor: 'high',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       const lowPriorityParser: VendorParser = {
         vendor: 'low',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       testRegistry.registerParser(lowPriorityParser, 10);
@@ -198,14 +211,17 @@ describe('ParserRegistry', () => {
     it('handles parser detection errors gracefully', () => {
       const errorParser: VendorParser = {
         vendor: 'error',
-        detect: () => { throw new Error('Detection error'); },
-        parse: () => []
+        detect: () => {
+          throw new Error('Detection error');
+        },
+        parse: () => [],
       };
 
       testRegistry.registerParser(errorParser, 200);
 
       // Should still work despite error parser
-      const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+      const claudeLine =
+        '{"type":"message","role":"assistant","content":"Hello"}';
       const detected = testRegistry.detectVendor(claudeLine);
       expect(detected?.vendor).toBe('claude');
     });
@@ -221,13 +237,13 @@ describe('ParserRegistry', () => {
       const parser1: VendorParser = {
         vendor: 'zebra',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       const parser2: VendorParser = {
         vendor: 'alpha',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       testRegistry.registerParser(parser1);
@@ -251,7 +267,7 @@ describe('ParserRegistry', () => {
       const mockParser: VendorParser = {
         vendor: 'test',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       testRegistry.registerParser(mockParser);
@@ -297,9 +313,9 @@ describe('ParserRegistry', () => {
           '{"type":"message","role":"user","content":"Hello"}',
           '{"type":"message","role":"assistant","content":"Hi there!"}',
           '{"type":"tool_use","id":"toolu_123","name":"Write","input":{"file_path":"test.txt"}}',
-          '{"type":"usage","input_tokens":10,"output_tokens":5}'
+          '{"type":"usage","input_tokens":10,"output_tokens":5}',
         ];
-        
+
         const detected = testRegistry.detectVendorMultiLine(claudeLines);
         expect(detected?.vendor).toBe('claude');
       });
@@ -309,9 +325,9 @@ describe('ParserRegistry', () => {
           '{"type":"message","role":"user","content":"Hello"}', // Claude
           '{"type":"user","content":"Hello"}', // Gemini
           '{"type":"message","role":"assistant","content":"Hi"}', // Claude
-          '{"type":"message","role":"user","content":"Test"}' // Claude
+          '{"type":"message","role":"user","content":"Test"}', // Claude
         ];
-        
+
         const detected = testRegistry.detectVendorMultiLine(mixedLines);
         expect(detected?.vendor).toBe('claude'); // Should win with 3/4 matches
       });
@@ -326,17 +342,19 @@ describe('ParserRegistry', () => {
           '',
           '{"type":"message","role":"user","content":"Hello"}',
           '   ',
-          '{"type":"message","role":"assistant","content":"Hi"}'
+          '{"type":"message","role":"assistant","content":"Hi"}',
         ];
-        
+
         const detected = testRegistry.detectVendorMultiLine(linesWithEmpties);
         expect(detected?.vendor).toBe('claude');
       });
 
       it('limits analysis to first 10 lines', () => {
-        const manyLines = Array(15).fill('{"type":"message","role":"user","content":"Hello"}');
+        const manyLines = Array(15).fill(
+          '{"type":"message","role":"user","content":"Hello"}',
+        );
         manyLines[11] = '{"phase":"start","task":"test"}'; // Amp format after 10th line
-        
+
         const detected = testRegistry.detectVendorMultiLine(manyLines);
         expect(detected?.vendor).toBe('claude'); // Should not see the Amp line
       });
@@ -345,9 +363,9 @@ describe('ParserRegistry', () => {
         const unknownLines = [
           '{"unknown":"format"}',
           '{"another":"unknown"}',
-          '{"different":"structure"}'
+          '{"different":"structure"}',
         ];
-        
+
         const detected = testRegistry.detectVendorMultiLine(unknownLines);
         expect(detected).toBeNull();
       });
@@ -355,8 +373,9 @@ describe('ParserRegistry', () => {
 
     describe('detectVendorWithConfidence', () => {
       it('returns high confidence for Claude message events', () => {
-        const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
-        
+        const claudeLine =
+          '{"type":"message","role":"assistant","content":"Hello"}';
+
         const result = testRegistry.detectVendorWithConfidence(claudeLine);
         expect(result).not.toBeNull();
         expect(result!.parser.vendor).toBe('claude');
@@ -365,8 +384,9 @@ describe('ParserRegistry', () => {
       });
 
       it('returns medium confidence for less specific formats', () => {
-        const claudeLine = '{"type":"usage","input_tokens":10,"output_tokens":5}';
-        
+        const claudeLine =
+          '{"type":"usage","input_tokens":10,"output_tokens":5}';
+
         const result = testRegistry.detectVendorWithConfidence(claudeLine);
         expect(result).not.toBeNull();
         expect(result!.parser.vendor).toBe('claude');
@@ -375,8 +395,9 @@ describe('ParserRegistry', () => {
       });
 
       it('returns high confidence for Gemini metadata with usage', () => {
-        const geminiLine = '{"type":"metadata","usage":{"input_tokens":10,"output_tokens":5}}';
-        
+        const geminiLine =
+          '{"type":"metadata","usage":{"input_tokens":10,"output_tokens":5}}';
+
         const result = testRegistry.detectVendorWithConfidence(geminiLine);
         expect(result).not.toBeNull();
         expect(result!.parser.vendor).toBe('gemini');
@@ -385,8 +406,9 @@ describe('ParserRegistry', () => {
       });
 
       it('returns high confidence for Amp tool execution with output type', () => {
-        const ampLine = '{"phase":"output","task":"npm_test","type":"stdout","content":"Running tests..."}';
-        
+        const ampLine =
+          '{"phase":"output","task":"npm_test","type":"stdout","content":"Running tests..."}';
+
         const result = testRegistry.detectVendorWithConfidence(ampLine);
         expect(result).not.toBeNull();
         expect(result!.parser.vendor).toBe('amp');
@@ -396,7 +418,7 @@ describe('ParserRegistry', () => {
 
       it('returns null for unrecognized format', () => {
         const unknownLine = '{"unknown":"format","data":"test"}';
-        
+
         const result = testRegistry.detectVendorWithConfidence(unknownLine);
         expect(result).toBeNull();
       });
@@ -404,15 +426,18 @@ describe('ParserRegistry', () => {
       it('handles parser detection errors gracefully', () => {
         const errorParser: VendorParser = {
           vendor: 'error',
-          detect: () => { throw new Error('Detection error'); },
-          parse: () => []
+          detect: () => {
+            throw new Error('Detection error');
+          },
+          parse: () => [],
         };
 
         testRegistry.registerParser(errorParser, 200);
 
-        const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+        const claudeLine =
+          '{"type":"message","role":"assistant","content":"Hello"}';
         const result = testRegistry.detectVendorWithConfidence(claudeLine);
-        
+
         // Should still detect Claude despite error parser
         expect(result?.parser.vendor).toBe('claude');
 
@@ -424,14 +449,15 @@ describe('ParserRegistry', () => {
         const alwaysMatchParser: VendorParser = {
           vendor: 'always-match',
           detect: () => true,
-          parse: () => []
+          parse: () => [],
         };
 
         testRegistry.registerParser(alwaysMatchParser, 50); // Lower priority than Claude
 
-        const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+        const claudeLine =
+          '{"type":"message","role":"assistant","content":"Hello"}';
         const result = testRegistry.detectVendorWithConfidence(claudeLine);
-        
+
         // Should prefer Claude due to higher confidence
         expect(result?.parser.vendor).toBe('claude');
         expect(result?.confidence).toBeGreaterThan(0.8);
@@ -443,15 +469,15 @@ describe('ParserRegistry', () => {
         // Mock a parser that detects non-JSON
         const nonJsonParser: VendorParser = {
           vendor: 'non-json',
-          detect: (line) => line.includes('special-marker'),
-          parse: () => []
+          detect: line => line.includes('special-marker'),
+          parse: () => [],
         };
 
         testRegistry.registerParser(nonJsonParser, 60);
 
         const nonJsonLine = 'not-json-but-has-special-marker';
         const result = testRegistry.detectVendorWithConfidence(nonJsonLine);
-        
+
         expect(result?.parser.vendor).toBe('non-json');
         expect(result?.confidence).toBe(0.2); // Low confidence for non-JSON
         expect(result?.reason).toContain('(non-JSON)');
@@ -461,8 +487,9 @@ describe('ParserRegistry', () => {
 
       it('caps confidence at 1.0', () => {
         // Test that confidence never exceeds 1.0 even with highly specific formats
-        const claudeLine = '{"type":"message","role":"assistant","content":"Hello","extra_specific_field":"value"}';
-        
+        const claudeLine =
+          '{"type":"message","role":"assistant","content":"Hello","extra_specific_field":"value"}';
+
         const result = testRegistry.detectVendorWithConfidence(claudeLine);
         expect(result?.confidence).toBeLessThanOrEqual(1.0);
       });
@@ -474,13 +501,13 @@ describe('ParserRegistry', () => {
         const parser1: VendorParser = {
           vendor: 'test1',
           detect: () => true,
-          parse: () => []
+          parse: () => [],
         };
 
         const parser2: VendorParser = {
           vendor: 'test2',
           detect: () => true,
-          parse: () => []
+          parse: () => [],
         };
 
         testRegistry.registerParser(parser1, 70);
@@ -496,15 +523,18 @@ describe('ParserRegistry', () => {
       it('continues processing after parser detection error', () => {
         const errorParser: VendorParser = {
           vendor: 'error',
-          detect: () => { throw new Error('Detection failed'); },
-          parse: () => []
+          detect: () => {
+            throw new Error('Detection failed');
+          },
+          parse: () => [],
         };
 
         testRegistry.registerParser(errorParser, 200); // Higher priority than Claude
 
-        const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+        const claudeLine =
+          '{"type":"message","role":"assistant","content":"Hello"}';
         const result = testRegistry.detectVendor(claudeLine);
-        
+
         // Should still detect Claude despite error in higher priority parser
         expect(result?.vendor).toBe('claude');
 
@@ -529,12 +559,12 @@ describe('Default registry and convenience functions', () => {
       const mockParser: VendorParser = {
         vendor: 'test-convenience',
         detect: () => true,
-        parse: () => []
+        parse: () => [],
       };
 
       registerParser(mockParser, 75);
       expect(registry.hasParser('test-convenience')).toBe(true);
-      
+
       // Cleanup
       registry.unregisterParser('test-convenience');
     });
@@ -554,16 +584,17 @@ describe('Default registry and convenience functions', () => {
 
   describe('detectVendor function', () => {
     it('detects vendor using default registry', () => {
-      const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+      const claudeLine =
+        '{"type":"message","role":"assistant","content":"Hello"}';
       const detected = detectVendor(claudeLine);
-      
+
       expect(detected).toBe(claudeParser);
     });
 
     it('returns null for unrecognized format', () => {
       const unknownLine = '{"unknown":"format"}';
       const detected = detectVendor(unknownLine);
-      
+
       expect(detected).toBeNull();
     });
   });
@@ -588,9 +619,10 @@ describe('Default registry and convenience functions', () => {
     });
 
     it('auto-detects vendor when vendor is auto', () => {
-      const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
+      const claudeLine =
+        '{"type":"message","role":"assistant","content":"Hello"}';
       const parser = selectParser('auto', claudeLine);
-      
+
       expect(parser).toBe(claudeParser);
     });
 
@@ -602,7 +634,7 @@ describe('Default registry and convenience functions', () => {
 
     it('throws error for auto with unrecognized format', () => {
       const unknownLine = '{"unknown":"format"}';
-      
+
       expect(() => {
         selectParser('auto', unknownLine);
       }).toThrow('Failed to auto-detect vendor from line');
@@ -610,15 +642,14 @@ describe('Default registry and convenience functions', () => {
   });
 });
 
-
 describe('Enhanced convenience functions', () => {
   describe('detectVendorMultiLine function', () => {
     it('uses default registry for multi-line detection', () => {
       const claudeLines = [
         '{"type":"message","role":"user","content":"Hello"}',
-        '{"type":"message","role":"assistant","content":"Hi there!"}'
+        '{"type":"message","role":"assistant","content":"Hi there!"}',
       ];
-      
+
       const detected = detectVendorMultiLine(claudeLines);
       expect(detected?.vendor).toBe('claude');
     });
@@ -631,8 +662,9 @@ describe('Enhanced convenience functions', () => {
 
   describe('detectVendorWithConfidence function', () => {
     it('uses default registry for confidence detection', () => {
-      const claudeLine = '{"type":"message","role":"assistant","content":"Hello"}';
-      
+      const claudeLine =
+        '{"type":"message","role":"assistant","content":"Hello"}';
+
       const result = detectVendorWithConfidence(claudeLine);
       expect(result?.parser.vendor).toBe('claude');
       expect(result?.confidence).toBeGreaterThan(0.8);
@@ -640,7 +672,7 @@ describe('Enhanced convenience functions', () => {
 
     it('returns null for unrecognized format', () => {
       const unknownLine = '{"unknown":"format"}';
-      
+
       const result = detectVendorWithConfidence(unknownLine);
       expect(result).toBeNull();
     });
@@ -650,29 +682,31 @@ describe('Enhanced convenience functions', () => {
 describe('Integration tests with real fixtures', () => {
   it('detects Claude format from real fixture', () => {
     // Sample line from Claude fixtures
-    const claudeLine = '{"type":"message","role":"assistant","content":"I\'ll help you create a simple test file."}';
-    
+    const claudeLine =
+      '{"type":"message","role":"assistant","content":"I\'ll help you create a simple test file."}';
+
     const detected = detectVendor(claudeLine);
     expect(detected?.vendor).toBe('claude');
   });
 
   it('detects Claude tool_use format', () => {
-    const toolUseLine = '{"type":"tool_use","id":"toolu_123","name":"Write","input":{"file_path":"test.txt","content":"Hello"}}';
-    
+    const toolUseLine =
+      '{"type":"tool_use","id":"toolu_123","name":"Write","input":{"file_path":"test.txt","content":"Hello"}}';
+
     const detected = detectVendor(toolUseLine);
     expect(detected?.vendor).toBe('claude');
   });
 
   it('detects Claude usage format', () => {
     const usageLine = '{"type":"usage","input_tokens":142,"output_tokens":89}';
-    
+
     const detected = detectVendor(usageLine);
     expect(detected?.vendor).toBe('claude');
   });
 
   it('does not detect non-Claude format', () => {
     const nonClaudeLine = '{"kind":"content","data":{"text":"Hello World"}}';
-    
+
     const detected = detectVendor(nonClaudeLine);
     expect(detected).toBeNull();
   });
@@ -683,18 +717,33 @@ describe('Integration tests with real fixtures', () => {
       '{"type":"message","role":"assistant","content":"Claude response"}',
       '{"type":"tool_use","id":"toolu_123","name":"Write","input":{}}',
       '{"type":"tool_result","tool_use_id":"toolu_123","content":"Success"}',
-      '{"type":"usage","input_tokens":50,"output_tokens":25}'
+      '{"type":"usage","input_tokens":50,"output_tokens":25}',
     ];
-    
+
     const detected = detectVendorMultiLine(sessionLines);
     expect(detected?.vendor).toBe('claude');
   });
 
   it('confidence scoring provides meaningful results for real formats', () => {
     const samples = [
-      { line: '{"type":"message","role":"assistant","content":"Hello"}', expectedVendor: 'claude', minConfidence: 0.9, expectedReason: 'Claude format detected' },
-      { line: '{"type":"user","content":"Hello"}', expectedVendor: 'gemini', minConfidence: 0.7, expectedReason: 'Gemini format detected' },
-      { line: '{"phase":"start","task":"build"}', expectedVendor: 'amp', minConfidence: 0.8, expectedReason: 'Amp format detected' }
+      {
+        line: '{"type":"message","role":"assistant","content":"Hello"}',
+        expectedVendor: 'claude',
+        minConfidence: 0.9,
+        expectedReason: 'Claude format detected',
+      },
+      {
+        line: '{"type":"user","content":"Hello"}',
+        expectedVendor: 'gemini',
+        minConfidence: 0.7,
+        expectedReason: 'Gemini format detected',
+      },
+      {
+        line: '{"phase":"start","task":"build"}',
+        expectedVendor: 'amp',
+        minConfidence: 0.8,
+        expectedReason: 'Amp format detected',
+      },
     ];
 
     for (const sample of samples) {

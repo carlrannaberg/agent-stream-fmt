@@ -1,6 +1,6 @@
 /**
  * Render module exports
- * 
+ *
  * This module provides the rendering system for formatting AgentEvents
  * into different output formats (ANSI, HTML, JSON).
  */
@@ -12,7 +12,7 @@ export type {
   RenderContext,
   ToolState,
   RendererFactory,
-  RendererRegistry
+  RendererRegistry,
 } from './types.js';
 
 // Export renderer implementations
@@ -21,8 +21,8 @@ export { HtmlRenderer } from './html.js';
 export { JsonRenderer } from './json.js';
 
 // Export factory functions
-export { 
-  createRenderer, 
-  isFormatSupported, 
-  getSupportedFormats 
+export {
+  createRenderer,
+  isFormatSupported,
+  getSupportedFormats,
 } from './factory.js';

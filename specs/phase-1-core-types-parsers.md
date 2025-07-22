@@ -3,15 +3,19 @@
 **Status**: Draft  
 **Authors**: Claude Assistant  
 **Date**: 2025-07-16  
-**Version**: 1.0.0  
+**Version**: 1.0.0
 
 ## Overview
 
-Phase 1 establishes the foundational type system and parser infrastructure for the agent-stream-fmt package. This phase focuses on defining the core data structures, implementing the Claude parser (as the primary parser), and creating a flexible parser registry that can accommodate additional vendors. This phase assumes Phase 0 has been completed and fixtures are available for testing.
+Phase 1 establishes the foundational type system and parser infrastructure for the agent-stream-fmt
+package. This phase focuses on defining the core data structures, implementing the Claude parser (as
+the primary parser), and creating a flexible parser registry that can accommodate additional
+vendors. This phase assumes Phase 0 has been completed and fixtures are available for testing.
 
 ## Background/Problem Statement
 
 With fixtures captured in Phase 0, we now need to:
+
 1. Define a unified event model that can represent all vendor-specific formats
 2. Create a parser architecture that's extensible and maintainable
 3. Implement the first parser (Claude) to validate our design
@@ -19,6 +23,7 @@ With fixtures captured in Phase 0, we now need to:
 5. Build a test framework that validates parsers against real fixtures
 
 The core challenge is creating abstractions that are:
+
 - **Specific enough** to capture important event details
 - **Generic enough** to work across all vendors
 - **Efficient enough** for streaming processing
@@ -45,11 +50,13 @@ The core challenge is creating abstractions that are:
 ## Technical Dependencies
 
 ### From Phase 0
+
 - **Captured fixtures**: Real JSONL outputs in `tests/fixtures/`
 - **Schema analysis**: Understanding of event types from each vendor
 - **TypeScript setup**: Configured build environment
 
 ### New in Phase 1
+
 - No new runtime dependencies (staying minimal)
 - Development dependencies already installed in Phase 0
 
@@ -63,12 +70,7 @@ The core challenge is creating abstractions that are:
 /**
  * Normalized event types emitted by the parser
  */
-export type AgentEvent =
-  | MessageEvent
-  | ToolEvent
-  | CostEvent
-  | ErrorEvent
-  | DebugEvent;
+export type AgentEvent = MessageEvent | ToolEvent | CostEvent | ErrorEvent | DebugEvent;
 
 export interface MessageEvent {
   t: 'msg';
@@ -118,19 +120,19 @@ export interface StreamEventOptions {
 export interface FmtOptions {
   /** Group tool phases into collapsible blocks */
   collapseTools?: boolean;
-  
+
   /** Completely hide tool events */
   hideTools?: boolean;
-  
+
   /** Hide cost information */
   hideCost?: boolean;
-  
+
   /** Output format: true = ANSI, false = plain, 'html' = HTML */
   ansi?: boolean | 'html';
-  
+
   /** Callback for every parsed event (before filtering) */
   onEvent?: (ev: AgentEvent) => void;
-  
+
   /** Batch size for write operations (performance tuning) */
   chunkSize?: number;
 }
@@ -158,19 +160,19 @@ import { AgentEvent } from '../types.js';
 export interface VendorParser {
   /** Unique vendor identifier */
   vendor: string;
-  
-  /** 
+
+  /**
    * Detect if a line belongs to this vendor's format
    * Should be fast and avoid throwing errors
    */
   detect: (line: string) => boolean;
-  
+
   /**
    * Parse a single line into zero or more events
    * May throw errors for invalid JSON
    */
   parse: (line: string) => AgentEvent[];
-  
+
   /**
    * Optional metadata about the parser
    */
@@ -197,7 +199,7 @@ export class ParseError extends Error {
     message: string,
     public readonly vendor: string,
     public readonly line: string,
-    public readonly cause?: unknown
+    public readonly cause?: unknown,
   ) {
     super(message);
     this.name = 'ParseError';
@@ -219,143 +221,138 @@ import { AgentEvent, MessageEvent, ToolEvent, CostEvent } from '../types.js';
  */
 export class ClaudeParser implements VendorParser {
   vendor = 'claude';
-  
+
   metadata = {
     version: '1.0.0',
     supportedVersions: ['3.5', '3.6'],
-    documentationUrl: 'https://docs.anthropic.com/claude-code/cli-reference'
+    documentationUrl: 'https://docs.anthropic.com/claude-code/cli-reference',
   };
-  
+
   detect(line: string): boolean {
     try {
       const obj = JSON.parse(line);
       // Claude messages have type field
-      return typeof obj.type === 'string' && (
-        obj.type === 'message' ||
-        obj.type === 'tool_use' ||
-        obj.type === 'tool_result' ||
-        obj.type === 'usage'
+      return (
+        typeof obj.type === 'string' &&
+        (obj.type === 'message' ||
+          obj.type === 'tool_use' ||
+          obj.type === 'tool_result' ||
+          obj.type === 'usage')
       );
     } catch {
       return false;
     }
   }
-  
+
   parse(line: string): AgentEvent[] {
     let obj: any;
     try {
       obj = JSON.parse(line);
     } catch (error) {
-      throw new ParseError(
-        'Invalid JSON',
-        this.vendor,
-        line,
-        error
-      );
+      throw new ParseError('Invalid JSON', this.vendor, line, error);
     }
-    
+
     const events: AgentEvent[] = [];
-    
+
     switch (obj.type) {
       case 'message':
         events.push(this.parseMessage(obj));
         break;
-        
+
       case 'tool_use':
         events.push(this.parseToolStart(obj));
         break;
-        
+
       case 'tool_result':
         events.push(...this.parseToolResult(obj));
         break;
-        
+
       case 'usage':
         const cost = this.parseUsage(obj);
         if (cost) events.push(cost);
         break;
-        
+
       default:
         // Unknown event type - emit as debug
         events.push({
           t: 'debug',
-          raw: obj
+          raw: obj,
         });
     }
-    
+
     return events;
   }
-  
+
   private parseMessage(obj: any): MessageEvent {
     return {
       t: 'msg',
       role: obj.role || 'assistant',
-      text: obj.content || ''
+      text: obj.content || '',
     };
   }
-  
+
   private parseToolStart(obj: any): ToolEvent {
     return {
       t: 'tool',
       name: obj.name || 'unknown',
       phase: 'start',
-      text: obj.input ? JSON.stringify(obj.input, null, 2) : undefined
+      text: obj.input ? JSON.stringify(obj.input, null, 2) : undefined,
     };
   }
-  
+
   private parseToolResult(obj: any): ToolEvent[] {
     const events: ToolEvent[] = [];
-    
+
     // Tool output (stdout)
     if (obj.content) {
       events.push({
         t: 'tool',
         name: obj.tool_use_id || 'unknown',
         phase: 'stdout',
-        text: typeof obj.content === 'string' ? obj.content : JSON.stringify(obj.content)
+        text: typeof obj.content === 'string' ? obj.content : JSON.stringify(obj.content),
       });
     }
-    
-    // Tool errors (stderr) 
+
+    // Tool errors (stderr)
     if (obj.error) {
       events.push({
         t: 'tool',
         name: obj.tool_use_id || 'unknown',
         phase: 'stderr',
-        text: obj.error.message || JSON.stringify(obj.error)
+        text: obj.error.message || JSON.stringify(obj.error),
       });
     }
-    
+
     // Tool completion
     events.push({
       t: 'tool',
       name: obj.tool_use_id || 'unknown',
       phase: 'end',
-      exitCode: obj.error ? 1 : 0
+      exitCode: obj.error ? 1 : 0,
     });
-    
+
     return events;
   }
-  
+
   private parseUsage(obj: any): CostEvent | null {
     // Calculate cost based on token usage
     // Prices are approximate and should be configurable
     const inputTokens = obj.usage?.input_tokens || 0;
     const outputTokens = obj.usage?.output_tokens || 0;
-    
+
     if (inputTokens === 0 && outputTokens === 0) {
       return null;
     }
-    
+
     // Claude 3.5 Sonnet pricing (example)
     const inputCostPerToken = 0.000003;
     const outputCostPerToken = 0.000015;
-    
-    const deltaUsd = (inputTokens * inputCostPerToken) + 
-                     (outputTokens * outputCostPerToken);
-    
+
+    const deltaUsd = inputTokens * inputCostPerToken + outputTokens * outputCostPerToken;
+
     return {
       t: 'cost',
-      deltaUsd
+      deltaUsd,
     };
   }
 }
@@ -379,45 +376,44 @@ import { claudeParser } from './claude.js';
  */
 export class ParserRegistry {
   private parsers: Map<string, ParserEntry> = new Map();
-  
+
   constructor() {
     // Register built-in parsers
     this.register(claudeParser, 100);
     // Future: this.register(geminiParser, 90);
     // Future: this.register(ampParser, 80);
   }
-  
+
   /**
    * Register a parser with priority
    */
   register(parser: VendorParser, priority = 50): void {
     this.parsers.set(parser.vendor, { parser, priority });
   }
-  
+
   /**
    * Get parser by vendor name
    */
   get(vendor: string): VendorParser | undefined {
     return this.parsers.get(vendor)?.parser;
   }
-  
+
   /**
    * Auto-detect vendor from a line
    */
   detect(line: string): VendorParser | undefined {
     // Sort by priority (highest first)
-    const entries = Array.from(this.parsers.values())
-      .sort((a, b) => b.priority - a.priority);
-    
+    const entries = Array.from(this.parsers.values()).sort((a, b) => b.priority - a.priority);
+
     for (const entry of entries) {
       if (entry.parser.detect(line)) {
         return entry.parser;
       }
     }
-    
+
     return undefined;
   }
-  
+
   /**
    * Get all registered vendors
    */
@@ -437,24 +433,20 @@ export function selectParser(vendor: string, firstLine?: string): VendorParser {
     if (!firstLine) {
       throw new Error('Auto-detection requires at least one line');
     }
-    
+
     const detected = registry.detect(firstLine);
     if (!detected) {
-      throw new Error(
-        `Failed to auto-detect vendor from line: ${firstLine.substring(0, 100)}...`
-      );
+      throw new Error(`Failed to auto-detect vendor from line: ${firstLine.substring(0, 100)}...`);
     }
-    
+
     return detected;
   }
-  
+
   const parser = registry.get(vendor);
   if (!parser) {
-    throw new Error(
-      `Unknown vendor: ${vendor}. Available: ${registry.getVendors().join(', ')}`
-    );
+    throw new Error(`Unknown vendor: ${vendor}. Available: ${registry.getVendors().join(', ')}`);
   }
-  
+
   return parser;
 }
 ```
@@ -493,26 +485,29 @@ export { registry, selectParser } from './parsers/index.js';
 Phase 1 provides the foundation that future phases will build upon. Developers can:
 
 1. **Import types** for TypeScript projects:
+
    ```typescript
    import { AgentEvent, isMessageEvent } from 'agent-stream-fmt';
    ```
 
 2. **Test parsers** directly:
+
    ```typescript
    import { registry } from 'agent-stream-fmt';
-   
+
    const parser = registry.get('claude');
    const events = parser.parse(jsonLine);
    ```
 
 3. **Extend with custom parsers**:
+
    ```typescript
    import { registry, VendorParser } from 'agent-stream-fmt';
-   
+
    class CustomParser implements VendorParser {
      // Implementation
    }
-   
+
    registry.register(new CustomParser(), 70);
    ```
 
@@ -532,7 +527,7 @@ describe('Type guards', () => {
     expect(isMessageEvent(event)).toBe(true);
     expect(isToolEvent(event)).toBe(false);
   });
-  
+
   it('provides type narrowing', () => {
     const event: AgentEvent = { t: 'msg', role: 'user', text: 'hello' };
     if (isMessageEvent(event)) {
@@ -556,68 +551,62 @@ import { MessageEvent, ToolEvent } from '../../types.js';
 
 describe('Claude parser', () => {
   const fixturesDir = join(process.cwd(), 'tests/fixtures/claude');
-  
+
   describe('detection', () => {
     it('detects Claude message format', () => {
       const line = '{"type":"message","role":"assistant","content":"Hello"}';
       expect(claudeParser.detect(line)).toBe(true);
     });
-    
+
     it('rejects non-Claude formats', () => {
       const line = '{"kind":"content","data":{"text":"Hello"}}'; // Gemini
       expect(claudeParser.detect(line)).toBe(false);
     });
   });
-  
+
   describe('parsing real fixtures', () => {
     it('parses basic-message.jsonl', () => {
-      const content = readFileSync(
-        join(fixturesDir, 'basic-message.jsonl'), 
-        'utf-8'
-      );
+      const content = readFileSync(join(fixturesDir, 'basic-message.jsonl'), 'utf-8');
       const lines = content.split('\n').filter(Boolean);
-      
+
       for (const line of lines) {
         const events = claudeParser.parse(line);
         expect(events.length).toBeGreaterThan(0);
-        
+
         // Verify no parse errors
         expect(events.every(e => e.t !== 'error')).toBe(true);
       }
     });
-    
+
     it('parses tool-use.jsonl correctly', () => {
-      const content = readFileSync(
-        join(fixturesDir, 'tool-use.jsonl'), 
-        'utf-8'
-      );
+      const content = readFileSync(join(fixturesDir, 'tool-use.jsonl'), 'utf-8');
       const lines = content.split('\n').filter(Boolean);
-      
+
       const allEvents: AgentEvent[] = [];
       for (const line of lines) {
         allEvents.push(...claudeParser.parse(line));
       }
-      
+
       // Verify tool lifecycle
       const toolEvents = allEvents.filter(e => e.t === 'tool') as ToolEvent[];
       const toolStarts = toolEvents.filter(e => e.phase === 'start');
       const toolEnds = toolEvents.filter(e => e.phase === 'end');
-      
+
       expect(toolStarts.length).toBeGreaterThan(0);
       expect(toolEnds.length).toBe(toolStarts.length);
     });
   });
-  
+
   describe('edge cases', () => {
     it('handles malformed JSON', () => {
       const line = '{"type":"message","content":"unclosed';
       expect(() => claudeParser.parse(line)).toThrow('Invalid JSON');
     });
-    
+
     it('handles unknown event types as debug', () => {
       const line = '{"type":"unknown","data":"something"}';
       const events = claudeParser.parse(line);
-      
+
       expect(events).toHaveLength(1);
       expect(events[0].t).toBe('debug');
     });
@@ -636,42 +625,42 @@ import { VendorParser } from '../types.js';
 
 describe('Parser registry', () => {
   let registry: ParserRegistry;
-  
+
   beforeEach(() => {
     registry = new ParserRegistry();
   });
-  
+
   it('auto-detects Claude format', () => {
     const line = '{"type":"message","role":"assistant","content":"Hi"}';
     const parser = registry.detect(line);
-    
+
     expect(parser).toBeDefined();
     expect(parser?.vendor).toBe('claude');
   });
-  
+
   it('returns undefined for unknown formats', () => {
     const line = '{"unknown":"format"}';
     const parser = registry.detect(line);
-    
+
     expect(parser).toBeUndefined();
   });
-  
+
   it('respects parser priority', () => {
     const mockParser1: VendorParser = {
       vendor: 'mock1',
       detect: () => true,
-      parse: () => []
+      parse: () => [],
     };
-    
+
     const mockParser2: VendorParser = {
       vendor: 'mock2',
       detect: () => true,
-      parse: () => []
+      parse: () => [],
     };
-    
+
     registry.register(mockParser1, 50);
     registry.register(mockParser2, 100);
-    
+
     const detected = registry.detect('anything');
     expect(detected?.vendor).toBe('mock2'); // Higher priority
   });
@@ -708,7 +697,7 @@ Benchmarking will be added in Phase 5.
 
 Create `docs/adding-parsers.md`:
 
-```markdown
+````markdown
 # Adding a New Parser
 
 To add support for a new agent CLI:
@@ -723,20 +712,22 @@ To add support for a new agent CLI:
 ```typescript
 export class YourParser implements VendorParser {
   vendor = 'yourvendor';
-  
+
   detect(line: string): boolean {
     // Quick detection logic
   }
-  
+
   parse(line: string): AgentEvent[] {
     // Full parsing logic
   }
 }
 ```
+````
 
 ## Testing
 
 Always test against real fixtures captured from the agent.
+
 ```
 
 ## Implementation Phases
@@ -791,3 +782,4 @@ After Phase 1 completion:
 2. Verify Claude parser handles all event types
 3. Document any new event types discovered
 4. Proceed to Phase 2: Streaming Engine
+```

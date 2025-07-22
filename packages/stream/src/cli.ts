@@ -53,7 +53,7 @@ const HTML_DOCUMENT_END = `
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const packageJson = JSON.parse(
-  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8')
+  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'),
 );
 const packageVersion = packageJson.version;
 
@@ -171,7 +171,7 @@ Vendor auto-detection:
 
   // Setup output stream
   const output = opts.output ? createWriteStream(opts.output) : process.stdout;
-  
+
   // Disable output buffering for real-time streaming when writing to stdout
   if (!opts.output && process.stdout) {
     // Use a type assertion to access internal Node.js properties
@@ -219,7 +219,12 @@ Vendor auto-detection:
     try {
       output.write(HTML_DOCUMENT_START);
     } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'EPIPE'
+      ) {
         process.exit(0);
       }
       throw error;
@@ -235,7 +240,7 @@ Vendor auto-detection:
     // Configure stdin if using it
     if (!inputFile) {
       process.stdin.setEncoding('utf8');
-      process.stdin.on('error', (err) => {
+      process.stdin.on('error', err => {
         // Handle stdin errors gracefully
         if ('code' in err && err.code === 'EPIPE') {
           process.exit(0);
@@ -258,14 +263,21 @@ Vendor auto-detection:
       try {
         // Write to output stream
         const writeSuccessful = output.write(formatted);
-        
+
         // If write returned false (backpressure), wait for drain
         if (!writeSuccessful && output !== process.stdout) {
-          await new Promise<void>(resolve => output.once('drain', () => resolve()));
+          await new Promise<void>(resolve =>
+            output.once('drain', () => resolve()),
+          );
         }
       } catch (error) {
         // Handle EPIPE errors gracefully - the output pipe was closed
-        if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'code' in error &&
+          error.code === 'EPIPE'
+        ) {
           process.exit(0);
         }
         throw error;
@@ -293,7 +305,12 @@ Vendor auto-detection:
         output.write(HTML_DOCUMENT_END);
       } catch (error) {
         // Ignore EPIPE errors in cleanup
-        if (error && typeof error === 'object' && 'code' in error && error.code !== 'EPIPE') {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'code' in error &&
+          error.code !== 'EPIPE'
+        ) {
           console.error('Error writing HTML end:', error);
         }
       }
@@ -328,9 +345,7 @@ process.on('uncaughtException', (error: Error) => {
     process.exit(0);
   }
   // For other errors, log and exit
-  process.stderr.write(
-    `Uncaught error: ${error.message}\n`,
-  );
+  process.stderr.write(`Uncaught error: ${error.message}\n`);
   process.exit(1);
 });
 
@@ -338,7 +353,12 @@ process.on('uncaughtException', (error: Error) => {
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(error => {
     // Handle EPIPE errors gracefully
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'EPIPE') {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'EPIPE'
+    ) {
       process.exit(0);
     }
     process.stderr.write(
