@@ -1,5 +1,11 @@
 # @agent-io/stream
 
+## 0.1.3
+
+### Patch Changes
+
+- chore(scripts): improve prepare-release.sh formatting and timeout
+
 ## 0.1.2
 
 ### Patch Changes
