@@ -150,7 +150,11 @@ Vendor auto-detection:
     process.stderr.write(
       `Error: Invalid format '${opts.format}'. Must be one of: ansi, html, json\n`,
     );
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+      process.exit(1);
+    } else {
+      throw new Error(`Invalid format '${opts.format}'`);
+    }
   }
 
   // Validate vendor
@@ -158,7 +162,11 @@ Vendor auto-detection:
     process.stderr.write(
       `Error: Invalid vendor '${opts.vendor}'. Must be one of: auto, claude, gemini, amp\n`,
     );
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+      process.exit(1);
+    } else {
+      throw new Error(`Invalid vendor '${opts.vendor}'`);
+    }
   }
 
   // Setup output stream
@@ -166,8 +174,10 @@ Vendor auto-detection:
   
   // Disable output buffering for real-time streaming when writing to stdout
   if (!opts.output && process.stdout) {
-    // Use a type assertion to access internal properties
-    const stdoutInternal = process.stdout as any;
+    // Use a type assertion to access internal Node.js properties
+    const stdoutInternal = process.stdout as {
+      _handle?: { setBlocking?: (blocking: boolean) => void };
+    };
     if (stdoutInternal._handle && stdoutInternal._handle.setBlocking) {
       stdoutInternal._handle.setBlocking(true);
     }
@@ -184,7 +194,11 @@ Vendor auto-detection:
         process.stderr.write(
           `Error: Invalid event type '${type}'. Valid types: ${Array.from(validTypes).join(', ')}\n`,
         );
-        process.exit(1);
+        if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+          process.exit(1);
+        } else {
+          throw new Error(`Invalid event type '${type}'`);
+        }
       }
     }
   }
@@ -268,7 +282,11 @@ Vendor auto-detection:
         `\nError: ${error instanceof Error ? error.message : String(error)}\n`,
       );
     }
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+      process.exit(1);
+    } else {
+      throw error; // Re-throw in test environment instead of calling process.exit
+    }
   } finally {
     if (opts.format === 'html') {
       try {

@@ -24,7 +24,6 @@ vi.mock('fs', async () => {
 describe('Enhanced CLI', () => {
   let mockStdoutWrite: any;
   let mockStderrWrite: any;
-  let mockExit: any;
   let mockStreamFormat: any;
   
   beforeEach(() => {
@@ -34,10 +33,6 @@ describe('Enhanced CLI', () => {
     // Mock process methods
     mockStdoutWrite = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     mockStderrWrite = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
-    
-    mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit called');
-    });
     
     // Get mocked streamFormat
     mockStreamFormat = vi.mocked(streamModule.streamFormat);
@@ -130,42 +125,45 @@ describe('Enhanced CLI', () => {
   it('should validate vendor type', async () => {
     process.argv = ['node', 'cli.js', '--vendor', 'invalid'];
     
-    await expect(main()).rejects.toThrow('process.exit called');
+    await expect(main()).rejects.toThrow("Invalid vendor 'invalid'");
     
     expect(mockStderrWrite).toHaveBeenCalledWith(
       expect.stringContaining("Invalid vendor 'invalid'")
     );
-    expect(mockExit).toHaveBeenCalledWith(1);
   });
   
   it('should validate format type', async () => {
     process.argv = ['node', 'cli.js', '--format', 'invalid'];
     
-    await expect(main()).rejects.toThrow('process.exit called');
+    await expect(main()).rejects.toThrow("Invalid format 'invalid'");
     
     expect(mockStderrWrite).toHaveBeenCalledWith(
       expect.stringContaining("Invalid format 'invalid'")
     );
-    expect(mockExit).toHaveBeenCalledWith(1);
   });
   
   it('should validate event types in --only option', async () => {
     process.argv = ['node', 'cli.js', '--only', 'msg,invalid,tool'];
     
-    await expect(main()).rejects.toThrow('process.exit called');
+    await expect(main()).rejects.toThrow("Invalid event type 'invalid'");
     
     expect(mockStderrWrite).toHaveBeenCalledWith(
       expect.stringContaining("Invalid event type 'invalid'")
     );
-    expect(mockExit).toHaveBeenCalledWith(1);
   });
   
   it('should handle file output correctly', async () => {
     const mockWriteStream = {
-      write: vi.fn(),
+      write: vi.fn().mockReturnValue(true), // Return true to indicate successful write without backpressure
       end: vi.fn((cb?: (error?: Error | null) => void) => {
         // Simulate successful stream end
         if (cb) cb();
+      }),
+      once: vi.fn((event: string, cb: () => void) => {
+        // Simulate drain event callback for backpressure handling
+        if (event === 'drain') {
+          setImmediate(cb);
+        }
       })
     };
     vi.mocked(fs.createWriteStream).mockReturnValue(mockWriteStream as any);
@@ -235,13 +233,12 @@ describe('Enhanced CLI', () => {
     
     process.argv = ['node', 'cli.js', '--html'];
     
-    await expect(main()).rejects.toThrow('process.exit called');
+    await expect(main()).rejects.toThrow('Test error');
     
     // Should write HTML error
     expect(mockStdoutWrite).toHaveBeenCalledWith(
       expect.stringContaining('<div class="error-message">Error: Test error</div>')
     );
-    expect(mockExit).toHaveBeenCalledWith(1);
   });
   
   it('should include comprehensive help text', async () => {
