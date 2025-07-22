@@ -58,7 +58,7 @@ npm install @agent-io/stream    # Full formatter
 
 ```bash
 # Auto-detect format and display in terminal
-claude --output-format stream-json -p "explain recursion" | aio-stream
+claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
 # Specify vendor and filter output
 gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
