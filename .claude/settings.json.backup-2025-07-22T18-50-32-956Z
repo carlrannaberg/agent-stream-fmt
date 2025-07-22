@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "PostToolUse": [],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/auto-checkpoint.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-todo-completion.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
