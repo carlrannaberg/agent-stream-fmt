@@ -19,10 +19,10 @@ export const fixtures = {
     toolUse: () => loadFixture('claude/tool-use.jsonl'),
   },
 
-  // Gemini JSONL fixtures
+  // Gemini TXT fixtures
   gemini: {
-    basicContent: () => loadFixture('gemini/basic-content.jsonl'),
-    codeGeneration: () => loadFixture('gemini/code-generation.jsonl'),
+    basicContent: () => loadFixture('gemini/basic-content.txt'),
+    codeGeneration: () => loadFixture('gemini/code-generation.txt'),
   },
 
   // Amp JSONL fixtures

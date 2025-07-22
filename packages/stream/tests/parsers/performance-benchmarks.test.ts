@@ -506,7 +506,7 @@ describe('Parser Performance Benchmarks', () => {
       // Skip if fixtures don't exist
       let lines: string[];
       try {
-        lines = loadFixture('gemini', 'code-generation.jsonl');
+        lines = loadFixture('gemini', 'code-generation.txt');
       } catch (e) {
         console.log('Skipping real fixture test - fixtures not available');
         return;

@@ -153,7 +153,7 @@ async function vendorSpecificPipelines() {
   // Load different vendor fixtures
   const vendorFixtures = [
     { name: 'Claude', path: '../../tests/fixtures/claude/basic-message.jsonl' },
-    { name: 'Gemini', path: '../../tests/fixtures/gemini/basic-content.jsonl' },
+    { name: 'Gemini', path: '../../tests/fixtures/gemini/basic-content.txt' },
     { name: 'Amp', path: '../../tests/fixtures/amp/simple-task.jsonl' },
   ];
 
@@ -380,7 +380,7 @@ async function crossVendorAggregation() {
     },
     {
       vendor: 'gemini',
-      path: '../../tests/fixtures/gemini/basic-content.jsonl',
+      path: '../../tests/fixtures/gemini/basic-content.txt',
     },
     { vendor: 'amp', path: '../../tests/fixtures/amp/simple-task.jsonl' },
   ];
@@ -663,7 +663,7 @@ async function vendorAgnosticPipeline() {
     },
     {
       vendor: 'gemini',
-      path: '../../tests/fixtures/gemini/basic-content.jsonl',
+      path: '../../tests/fixtures/gemini/basic-content.txt',
     },
     { vendor: 'amp', path: '../../tests/fixtures/amp/simple-task.jsonl' },
   ];

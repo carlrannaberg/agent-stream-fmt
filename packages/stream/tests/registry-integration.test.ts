@@ -45,11 +45,13 @@ describe('Registry Integration Tests', () => {
                     `Line ${lineIndex + 1} in ${vendor}/${filename} should be detected as ${vendor}`,
                   ).toBe(vendor);
                 } catch (e) {
-                  // Invalid JSON should return null
-                  expect(
-                    detected,
-                    `Line ${lineIndex + 1} in ${vendor}/${filename} with invalid JSON should return null`,
-                  ).toBeNull();
+                  // Invalid JSON will be detected by Gemini as plain text
+                  if (detected) {
+                    expect(
+                      detected.vendor,
+                      `Line ${lineIndex + 1} in ${vendor}/${filename} with invalid JSON should be detected by Gemini`,
+                    ).toBe('gemini');
+                  }
                 }
               } else {
                 // Valid fixtures should always detect correctly
@@ -62,10 +64,12 @@ describe('Registry Integration Tests', () => {
               // Test selectParser auto mode
               if (detected) {
                 const parser = selectParser('auto', line);
+                // For invalid JSON, Gemini will detect it as plain text
+                const expectedVendor = detected.vendor === 'gemini' ? 'gemini' : vendor;
                 expect(
                   parser.vendor,
-                  `selectParser auto should detect ${vendor} for line ${lineIndex + 1} in ${filename}`,
-                ).toBe(vendor);
+                  `selectParser auto should detect ${expectedVendor} for line ${lineIndex + 1} in ${filename}`,
+                ).toBe(expectedVendor);
               }
             } catch (error) {
               // Log context for debugging
@@ -97,15 +101,18 @@ describe('Registry Integration Tests', () => {
       for (const line of edgeCases) {
         const detected = detectVendor(line);
 
-        if (
-          line.trim() === '' ||
-          line === 'not json' ||
-          line.includes('malformed')
-        ) {
+        if (line.trim() === '') {
+          // Empty lines should not be detected
           expect(
             detected,
-            `Edge case should return null: ${JSON.stringify(line)}`,
+            `Empty line should return null: ${JSON.stringify(line)}`,
           ).toBeNull();
+        } else if (line === 'not json' || line.includes('malformed')) {
+          // Non-JSON will be detected by Gemini
+          expect(
+            detected?.vendor,
+            `Non-JSON should be detected by Gemini: ${JSON.stringify(line)}`,
+          ).toBe('gemini');
         }
 
         // selectParser should handle these gracefully
@@ -265,8 +272,8 @@ describe('Registry Integration Tests', () => {
       const detected = detectVendor(claudeLine);
       expect(detected?.vendor).toBe('claude');
 
-      // Gemini should have priority 90
-      const geminiLine = '{"type":"user","content":"test"}';
+      // Gemini should have priority 10 (lowest) and detects plain text
+      const geminiLine = 'This is plain text from Gemini';
       const geminiDetected = detectVendor(geminiLine);
       expect(geminiDetected?.vendor).toBe('gemini');
 

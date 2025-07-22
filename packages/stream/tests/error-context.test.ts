@@ -72,7 +72,7 @@ describe('Enhanced ParseError Context', () => {
       expect(debugEvent).toBeDefined();
     });
 
-    it('should include expected format in Gemini parser errors', async () => {
+    it('should handle plain text for Gemini parser', async () => {
       const input = new PassThrough();
       const events: any[] = [];
 
@@ -85,15 +85,21 @@ describe('Enhanced ParseError Context', () => {
         }
       })();
 
-      // Write invalid JSON for Gemini
+      // Write plain text for Gemini (not JSON)
       input.write('MALFORMED_JSON\n');
       input.end();
 
       await eventPromise;
 
+      // Gemini treats non-JSON as plain text, so we should get a message event
+      const messageEvent = events.find(e => e.t === 'msg');
+      expect(messageEvent).toBeDefined();
+      expect(messageEvent.role).toBe('assistant');
+      expect(messageEvent.text).toBe('MALFORMED_JSON');
+      
+      // No error event for Gemini with plain text
       const errorEvent = events.find(e => e.t === 'error');
-      expect(errorEvent.message).toContain('Invalid JSON');
-      expect(errorEvent.message).toContain('Line 1:');
+      expect(errorEvent).toBeUndefined();
     });
 
     it('should include expected format in Amp parser errors', async () => {

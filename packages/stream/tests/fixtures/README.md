@@ -21,8 +21,8 @@ claude --json "write a hello world function in Python" > tests/fixtures/claude/b
 claude --json "run the tests and fix any failures" > tests/fixtures/claude/tool-use.jsonl
 
 # Gemini CLI examples (if available)
-gemini --jsonl "explain how recursion works" > tests/fixtures/gemini/basic-content.jsonl
-gemini --jsonl "write a sorting algorithm" > tests/fixtures/gemini/code-generation.jsonl
+gemini --jsonl "explain how recursion works" > tests/fixtures/gemini/basic-content.txt
+gemini --jsonl "write a sorting algorithm" > tests/fixtures/gemini/code-generation.txt
 
 # Amp Code examples (if available)
 amp-code run hello-world.yml -j > tests/fixtures/amp/simple-task.jsonl

@@ -16,21 +16,29 @@ describe('Fixture validation', () => {
         ).toBe(true);
       });
 
-      it('has at least one .jsonl file', () => {
+      it('has at least one fixture file', () => {
         let files: string[] = [];
         try {
-          files = readdirSync(fixtureDir).filter(f => f.endsWith('.jsonl'));
+          // Gemini uses .txt files, others use .jsonl
+          const extension = vendor === 'gemini' ? '.txt' : '.jsonl';
+          files = readdirSync(fixtureDir).filter(f => f.endsWith(extension));
         } catch (error) {
           throw new Error(`Failed to read fixture directory: ${fixtureDir}`);
         }
 
+        const extension = vendor === 'gemini' ? '.txt' : '.jsonl';
         expect(
           files.length,
-          `${vendor} should have at least one .jsonl fixture file`,
+          `${vendor} should have at least one ${extension} fixture file`,
         ).toBeGreaterThan(0);
       });
 
-      it('all JSONL files are valid', () => {
+      it('all fixture files are valid', () => {
+        // Skip validation for Gemini since it uses plain text
+        if (vendor === 'gemini') {
+          return;
+        }
+
         let files: string[] = [];
         try {
           files = readdirSync(fixtureDir).filter(f => f.endsWith('.jsonl'));

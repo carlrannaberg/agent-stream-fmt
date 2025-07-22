@@ -92,16 +92,27 @@ describe('Comprehensive Parser Integration Tests', () => {
                 `Line ${lineIndex + 1} in ${fixture.filename}`,
               ).toBe(fixture.vendor);
             } catch (e) {
-              // Invalid JSON should return null - this is expected
-              result.success = detected === null;
-              result.error = detected
-                ? 'Unexpected detection of invalid JSON'
-                : null;
-              testResults.push(result);
-              expect(
-                detected,
-                `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`,
-              ).toBeNull();
+              // Invalid JSON will be detected by Gemini as plain text
+              if (detected && detected.vendor === 'gemini') {
+                // Gemini detected the non-JSON as plain text - this is expected
+                result.success = true;
+                testResults.push(result);
+                expect(
+                  detected.vendor,
+                  `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`,
+                ).toBe('gemini');
+              } else {
+                // Other parsers should not detect invalid JSON
+                result.success = detected === null;
+                result.error = detected
+                  ? `Unexpected detection by ${detected.vendor}`
+                  : null;
+                testResults.push(result);
+                expect(
+                  detected,
+                  `Line ${lineIndex + 1} in ${fixture.filename}: ${line}`,
+                ).toBeNull();
+              }
             }
           } else {
             // Non-error-handling fixtures should always detect correctly
@@ -436,18 +447,26 @@ describe('Comprehensive Parser Integration Tests', () => {
       for (const vendor of vendors) {
         const parser = selectParser(vendor);
 
-        expect(
-          () => parser.parse(''),
-          `${vendor} should throw ParseError for empty line`,
-        ).toThrow(ParseError);
-        expect(
-          () => parser.parse('   '),
-          `${vendor} should throw ParseError for whitespace`,
-        ).toThrow(ParseError);
-        expect(
-          () => parser.parse('\n'),
-          `${vendor} should throw ParseError for newline`,
-        ).toThrow(ParseError);
+        if (vendor === 'gemini') {
+          // Gemini returns empty array for empty lines (plain text behavior)
+          expect(parser.parse('')).toEqual([]);
+          expect(parser.parse('   ')).toEqual([]);
+          expect(parser.parse('\n')).toEqual([]);
+        } else {
+          // Claude and Amp throw ParseError for empty lines
+          expect(
+            () => parser.parse(''),
+            `${vendor} should throw ParseError for empty line`,
+          ).toThrow(ParseError);
+          expect(
+            () => parser.parse('   '),
+            `${vendor} should throw ParseError for whitespace`,
+          ).toThrow(ParseError);
+          expect(
+            () => parser.parse('\n'),
+            `${vendor} should throw ParseError for newline`,
+          ).toThrow(ParseError);
+        }
       }
     });
 
@@ -465,11 +484,25 @@ describe('Comprehensive Parser Integration Tests', () => {
       for (const vendor of vendors) {
         const parser = selectParser(vendor);
 
-        for (const line of invalidJson) {
-          expect(
-            () => parser.parse(line),
-            `${vendor} should throw ParseError for: ${line}`,
-          ).toThrow(ParseError);
+        if (vendor === 'gemini') {
+          // Gemini treats non-JSON as plain text and returns message events
+          for (const line of invalidJson) {
+            const events = parser.parse(line);
+            expect(events).toHaveLength(1);
+            expect(events[0]).toEqual({
+              t: 'msg',
+              role: 'assistant',
+              text: line,
+            });
+          }
+        } else {
+          // Claude and Amp throw ParseError for invalid JSON
+          for (const line of invalidJson) {
+            expect(
+              () => parser.parse(line),
+              `${vendor} should throw ParseError for: ${line}`,
+            ).toThrow(ParseError);
+          }
         }
       }
     });
@@ -511,14 +544,26 @@ describe('Comprehensive Parser Integration Tests', () => {
             events,
             `${testCase.vendor} should return events for unknown: ${line}`,
           ).toHaveLength(1);
-          expect(
-            events[0].t,
-            `${testCase.vendor} should return debug event for unknown: ${line}`,
-          ).toBe('debug');
-          expect(
-            events[0].raw,
-            `${testCase.vendor} debug event should have raw data`,
-          ).toBeDefined();
+          
+          if (testCase.vendor === 'gemini') {
+            // Gemini treats everything as plain text messages
+            expect(
+              events[0].t,
+              `${testCase.vendor} should return message event for: ${line}`,
+            ).toBe('msg');
+            expect(events[0].role).toBe('assistant');
+            expect(events[0].text).toBe(line);
+          } else {
+            // Claude and Amp return debug events for unknown types
+            expect(
+              events[0].t,
+              `${testCase.vendor} should return debug event for unknown: ${line}`,
+            ).toBe('debug');
+            expect(
+              events[0].raw,
+              `${testCase.vendor} debug event should have raw data`,
+            ).toBeDefined();
+          }
         }
       }
     });

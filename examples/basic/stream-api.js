@@ -243,7 +243,7 @@ async function multiVendorExample() {
 
   const vendors = [
     { name: 'Claude', path: '../../tests/fixtures/claude/basic-message.jsonl' },
-    { name: 'Gemini', path: '../../tests/fixtures/gemini/basic-content.jsonl' },
+    { name: 'Gemini', path: '../../tests/fixtures/gemini/basic-content.txt' },
     { name: 'Amp', path: '../../tests/fixtures/amp/simple-task.jsonl' },
   ];
 

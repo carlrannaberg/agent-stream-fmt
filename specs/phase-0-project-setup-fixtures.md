@@ -189,9 +189,9 @@ claude --json "create a React component with TypeScript and tests" > tests/fixtu
 claude --json "explain this error: TypeError: Cannot read property 'x' of undefined" > tests/fixtures/claude/error-handling.jsonl
 
 # Gemini CLI - If available
-gemini --jsonl "explain how recursion works" > tests/fixtures/gemini/basic-content.jsonl
-gemini --jsonl "write a sorting algorithm" > tests/fixtures/gemini/code-generation.jsonl
-gemini --stream-json -i conversation.txt > tests/fixtures/gemini/multi-turn.jsonl
+gemini -p "explain how recursion works" > tests/fixtures/gemini/basic-content.txt
+gemini -p "write a sorting algorithm" > tests/fixtures/gemini/code-generation.txt
+gemini -f conversation.txt > tests/fixtures/gemini/multi-turn.txt
 
 # Amp Code - If available
 amp-code run hello-world.yml -j > tests/fixtures/amp/simple-task.jsonl

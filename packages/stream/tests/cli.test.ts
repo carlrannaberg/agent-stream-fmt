@@ -126,7 +126,7 @@ describe('CLI Integration Tests', () => {
     });
 
     it('should handle Gemini format', async () => {
-      const input = readFixture('gemini', 'basic-content.jsonl');
+      const input = readFixture('gemini', 'basic-content.txt');
       const { stdout, exitCode } = await runCLI(['--vendor', 'gemini'], input);
 
       expect(exitCode).toBe(0);
@@ -393,7 +393,9 @@ describe('CLI Integration Tests', () => {
       const { stdout, exitCode } = await runCLI([], input);
 
       expect(exitCode).toBe(0); // Should not crash
-      expect(stdout).toContain('🚨'); // Error events for malformed lines
+      // With auto-detection, non-JSON lines are handled by Gemini as plain text
+      // So we expect assistant messages, not error events
+      expect(stdout).toContain('🤖 assistant:'); // Message events for plain text
     });
 
     it('should handle empty input', async () => {

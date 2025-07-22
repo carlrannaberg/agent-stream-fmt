@@ -1,47 +1,44 @@
 # Gemini CLI Fixtures
 
-This directory contains JSONL output samples from Gemini CLI.
+This directory contains plain text output samples from Gemini CLI.
 
-## Gemini CLI JSONL Format
+## Gemini CLI Output Format
 
-Gemini CLI uses the `--jsonl` flag to output structured JSONL data. The format may include:
+**Important**: As of version 0.1.x, Gemini CLI does NOT support JSONL output. It outputs plain text responses directly to stdout.
 
-- Content generation events
-- Code blocks
-- Reasoning steps
-- Error messages
-- Metadata events
+The CLI outputs:
+- A system message "Loaded cached credentials." at startup
+- Plain text responses from the model
+- Code blocks formatted with markdown-style triple backticks
+- Empty lines for paragraph separation
 
-## Common Event Types
+## Common Patterns
 
-Based on our analysis, Gemini CLI typically emits these event types:
-
-- `content` - Generated content
-- `code` - Code generation events
-- `reasoning` - Reasoning/thinking steps
-- `error` - Error events
-- `metadata` - Session metadata
+- **System messages**: "Loaded cached credentials." (filtered out by parser)
+- **Content**: Direct text output from the model
+- **Code blocks**: Wrapped in ``` with optional language identifier
+- **Multi-line responses**: Each line is treated as part of the assistant's response
 
 ## Capture Examples
 
 ```bash
 # Basic content generation
-gemini --jsonl "explain the concept of dependency injection"
+gemini -p "explain the concept of dependency injection"
 
 # Code generation
-gemini --jsonl "write a React component for a todo list"
+gemini -p "write a hello world function in Python"
 
-# Multi-turn conversation
-gemini --stream-json -i conversation.txt
+# Interactive mode
+gemini
 
-# Complex reasoning task
-gemini --jsonl "compare and contrast different sorting algorithms"
+# Using input file
+gemini -p "summarize this" -f document.txt
 ```
 
 ## Notes
 
-- Gemini CLI requires the `--jsonl` or `--stream-json` flag for JSONL output
-- Output format may vary between different Gemini CLI versions
-- Some versions use `--stream-json` instead of `--jsonl`
-- Check your Gemini CLI version with `gemini --version`
-- Multi-turn conversations can be provided via input file with `-i` flag
+- Gemini CLI (v0.1.x) does not have a --jsonl or --stream-json flag
+- All output is plain text streamed to stdout
+- The parser treats each non-empty line as an assistant message
+- System messages like "Loaded cached credentials." are filtered out
+- Empty lines are preserved for formatting but don't generate events

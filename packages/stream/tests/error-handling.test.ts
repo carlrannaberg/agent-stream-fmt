@@ -57,10 +57,11 @@ describe('Comprehensive Error Handling Tests', () => {
     it('handles malformed JSON gracefully in detection', () => {
       for (const [index, invalidJson] of invalidJsonCases.entries()) {
         const detected = detectVendor(invalidJson);
+        // Gemini will detect non-JSON as plain text
         expect(
-          detected,
+          detected?.vendor,
           `Invalid JSON case ${index}: ${invalidJson}`,
-        ).toBeNull();
+        ).toBe('gemini');
       }
     });
 
@@ -551,12 +552,12 @@ describe('Comprehensive Error Handling Tests', () => {
         } catch (jsonError) {
           invalidLines++;
 
-          // Should not detect malformed JSON
+          // Gemini will detect malformed JSON as plain text
           const detected = detectVendor(line);
           expect(
-            detected,
-            `Line ${lineIndex + 1} with invalid JSON should not be detected`,
-          ).toBeNull();
+            detected?.vendor,
+            `Line ${lineIndex + 1} with invalid JSON should be detected by Gemini`,
+          ).toBe('gemini');
 
           // Parser should throw ParseError for invalid JSON
           try {

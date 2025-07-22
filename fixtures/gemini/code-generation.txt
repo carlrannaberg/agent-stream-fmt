@@ -1,0 +1,26 @@
+Loaded cached credentials.
+
+Here's a simple hello world function in Python:
+
+```python
+def hello_world():
+    print("Hello, World!")
+
+# Call the function
+hello_world()
+```
+
+This function:
+- Defines a function named `hello_world` that takes no parameters
+- Uses the `print()` function to output the string "Hello, World!"
+- The last line calls the function to execute it
+
+You can also make it more flexible by accepting a parameter:
+
+```python
+def greet(name="World"):
+    print(f"Hello, {name}!")
+
+greet()  # Output: Hello, World!
+greet("Alice")  # Output: Hello, Alice!
+```

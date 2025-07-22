@@ -62,7 +62,7 @@ describe('Parser Registry Integration Tests', () => {
 
   describe('Non-Claude fixtures', () => {
     it('does not detect Gemini format as Claude', () => {
-      const fixturePath = join(fixturesDir, 'gemini/basic-content.jsonl');
+      const fixturePath = join(fixturesDir, 'gemini/basic-content.txt');
       const content = readFileSync(fixturePath, 'utf-8');
       const lines = content.split('\n').filter(Boolean);
 
@@ -117,7 +117,8 @@ describe('Parser Registry Integration Tests', () => {
     it('handles malformed JSON gracefully during detection', () => {
       const malformedLine = '{"type":"message","content":"unclosed';
       const detected = detectVendor(malformedLine);
-      expect(detected).toBeNull();
+      // Gemini parser will detect non-JSON lines as plain text
+      expect(detected?.vendor).toBe('gemini');
     });
 
     it('handles empty lines gracefully', () => {
@@ -128,7 +129,8 @@ describe('Parser Registry Integration Tests', () => {
     it('handles non-JSON lines gracefully', () => {
       const nonJsonLine = 'this is not json';
       const detected = detectVendor(nonJsonLine);
-      expect(detected).toBeNull();
+      // Gemini parser will detect non-JSON lines as plain text
+      expect(detected?.vendor).toBe('gemini');
     });
 
     it('selectParser throws appropriate errors', () => {
@@ -140,9 +142,9 @@ describe('Parser Registry Integration Tests', () => {
         selectParser('auto');
       }).toThrow('Auto-detection requires at least one line');
 
-      expect(() => {
-        selectParser('auto', '{"unknown":"format"}');
-      }).toThrow('Failed to auto-detect vendor from line');
+      // Use a non-JSON string that Gemini will detect
+      const parser = selectParser('auto', 'Hello, this is plain text');
+      expect(parser.vendor).toBe('gemini');
     });
   });
 });

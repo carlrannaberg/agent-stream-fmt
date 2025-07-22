@@ -34,7 +34,7 @@ specifications in:
    claude --json "create a React component" > tests/fixtures/claude/complex-session.jsonl
 
    # Capture Gemini CLI outputs (if available)
-   gemini --jsonl "explain recursion" > tests/fixtures/gemini/basic-content.jsonl
+   gemini --jsonl "explain recursion" > tests/fixtures/gemini/basic-content.txt
 
    # Capture Amp Code outputs (if available)
    amp-code run simple.yml -j > tests/fixtures/amp/simple-task.jsonl

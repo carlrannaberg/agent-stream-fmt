@@ -17,9 +17,9 @@ describe('Cross-Vendor Integration Tests', () => {
     it('should correctly detect different vendors in sequence', () => {
       const lines = [
         '{"type":"message","role":"user","content":"test"}', // Claude
-        '{"type":"user","content":"hello"}', // Gemini
+        'Hello, this is plain text', // Gemini
         '{"phase":"start","task":"build"}', // Amp
-        '{"type":"assistant","content":"response"}', // Gemini
+        'Another plain text message', // Gemini
         '{"type":"tool_use","id":"tool_1","name":"bash"}', // Claude
         '{"phase":"end","task":"build","exitCode":0}', // Amp
       ];
@@ -31,9 +31,9 @@ describe('Cross-Vendor Integration Tests', () => {
 
       expect(detectedVendors).toEqual([
         'claude', // Message with role
-        'gemini', // User message without role
+        'gemini', // Plain text
         'amp', // Phase-based
-        'gemini', // Assistant message
+        'gemini', // Plain text
         'claude', // Tool use
         'amp', // Phase end
       ]);
@@ -47,9 +47,9 @@ describe('Cross-Vendor Integration Tests', () => {
           minConfidence: 0.9,
         },
         {
-          line: '{"type":"metadata","usage":{"input_tokens":10,"output_tokens":5}}',
+          line: 'This is a plain text response from Gemini',
           expectedVendor: 'gemini',
-          minConfidence: 0.8,
+          minConfidence: 0.1, // Low confidence due to low priority
         },
         {
           line: '{"phase":"output","task":"test","type":"stdout","content":"data"}',
@@ -69,16 +69,16 @@ describe('Cross-Vendor Integration Tests', () => {
     });
 
     it('should use multi-line detection for better accuracy', () => {
-      // Mixed format with some ambiguous lines
-      const mixedLines = [
-        '{"type":"user","content":"What is 2+2?"}', // Could be Gemini
-        '{"type":"assistant","content":"2+2 equals 4"}', // Could be Gemini
-        '{"type":"metadata","usage":{"input_tokens":5,"output_tokens":8}}', // Clearly Gemini
-        '{"type":"user","content":"Thanks"}', // Could be Gemini
+      // Plain text lines for Gemini
+      const geminiLines = [
+        'Loaded cached credentials.',
+        'What is 2+2?',
+        '2+2 equals 4',
+        'Thanks for using Gemini CLI',
       ];
 
-      const singleLineDetection = detectVendor(mixedLines[0]);
-      const multiLineDetection = detectVendorMultiLine(mixedLines);
+      const singleLineDetection = detectVendor(geminiLines[0]);
+      const multiLineDetection = detectVendorMultiLine(geminiLines);
 
       expect(singleLineDetection?.vendor).toBe('gemini');
       expect(multiLineDetection?.vendor).toBe('gemini');
@@ -170,7 +170,7 @@ describe('Cross-Vendor Integration Tests', () => {
           expectedVendor: 'claude',
         },
         {
-          line: '{"type":"metadata","usage":{"input_tokens":5,"output_tokens":10}}',
+          line: 'This is plain text output from Gemini',
           expectedVendor: 'gemini',
         },
         {
@@ -249,9 +249,9 @@ describe('Cross-Vendor Integration Tests', () => {
   });
 
   describe('Vendor-Specific Edge Cases', () => {
-    it('should distinguish between Claude and Gemini message formats', () => {
+    it('should distinguish between Claude JSON and Gemini plain text', () => {
       const claudeMessage = '{"type":"message","role":"user","content":"test"}';
-      const geminiMessage = '{"type":"user","content":"test"}';
+      const geminiMessage = 'This is a plain text message from Gemini';
 
       const claudeDetected = detectVendor(claudeMessage);
       const geminiDetected = detectVendor(geminiMessage);
@@ -268,7 +268,7 @@ describe('Cross-Vendor Integration Tests', () => {
           expected: 'claude',
         },
         {
-          line: '{"type":"metadata","timestamp":"2025-01-01"}',
+          line: 'Loaded cached credentials.',
           expected: 'gemini',
         },
         {
@@ -290,7 +290,7 @@ describe('Cross-Vendor Integration Tests', () => {
           shouldDetect: false, // This is ambiguous, might not detect
         },
         {
-          line: '{"type":"user","content":"test"}', // Valid Gemini format
+          line: 'Hello from Gemini CLI', // Plain text for Gemini
           shouldDetect: true,
         },
         {

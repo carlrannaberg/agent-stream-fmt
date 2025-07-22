@@ -31,8 +31,9 @@ export class ParserRegistry {
   constructor() {
     // Register built-in parsers with priority
     this.registerParser(claudeParser, 100);
-    this.registerParser(geminiParser, 90);
     this.registerParser(ampParser, 80);
+    // Gemini has lowest priority since it accepts any non-JSON text
+    this.registerParser(geminiParser, 10);
   }
 
   /**
@@ -447,8 +448,8 @@ export class ParserRegistry {
  *
  * Pre-configured registry with built-in parsers registered:
  * - Claude Code parser (priority: 100)
- * - Gemini CLI parser (priority: 90)
  * - Amp Code parser (priority: 80)
+ * - Gemini CLI parser (priority: 10) - lowest priority as it accepts any non-JSON text
  *
  * This is the recommended way to access the parser registry.
  *

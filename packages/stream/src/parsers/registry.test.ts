@@ -394,15 +394,15 @@ describe('ParserRegistry', () => {
         expect(result!.confidence).toBeLessThan(1.0);
       });
 
-      it('returns high confidence for Gemini metadata with usage', () => {
-        const geminiLine =
-          '{"type":"metadata","usage":{"input_tokens":10,"output_tokens":5}}';
+      it('returns low confidence for Gemini plain text (due to low priority)', () => {
+        const geminiLine = 'Hello, how can I help you today?';
 
         const result = testRegistry.detectVendorWithConfidence(geminiLine);
         expect(result).not.toBeNull();
         expect(result!.parser.vendor).toBe('gemini');
-        expect(result!.confidence).toBeGreaterThan(0.8);
-        expect(result!.reason).toContain('Gemini format detected');
+        // Gemini has low priority (10) so confidence is low
+        expect(result!.confidence).toBeLessThan(0.3);
+        expect(result!.reason).toContain('gemini format detected');
       });
 
       it('returns high confidence for Amp tool execution with output type', () => {
@@ -733,10 +733,10 @@ describe('Integration tests with real fixtures', () => {
         expectedReason: 'Claude format detected',
       },
       {
-        line: '{"type":"user","content":"Hello"}',
+        line: 'This is plain text output from Gemini',
         expectedVendor: 'gemini',
-        minConfidence: 0.7,
-        expectedReason: 'Gemini format detected',
+        minConfidence: 0.1, // Low confidence due to low priority
+        expectedReason: 'gemini format detected',
       },
       {
         line: '{"phase":"start","task":"build"}',

@@ -29,7 +29,7 @@ export class GeminiParser implements VendorParser {
    * Detect if a line belongs to Gemini CLI output
    *
    * Since Gemini outputs plain text, we detect by checking if it's NOT JSON
-   * and contains typical Gemini CLI patterns like "Loaded cached credentials."
+   * and the line contains text content.
    *
    * @param line - Raw text line to test
    * @returns True if this parser can handle the line
@@ -46,13 +46,8 @@ export class GeminiParser implements VendorParser {
       // Not JSON, could be Gemini text
     }
 
-    // Detect Gemini CLI patterns
-    const geminiPatterns = [
-      /^Loaded cached credentials\.$/,
-      /^[A-Za-z0-9]/, // General text starting with alphanumeric
-    ];
-
-    return geminiPatterns.some(pattern => pattern.test(line.trim()));
+    // Accept any non-JSON text line
+    return true;
   }
 
   /**
@@ -78,11 +73,12 @@ export class GeminiParser implements VendorParser {
     }
 
     // Everything else is treated as an assistant message
+    // Use original line to preserve code indentation
     return [
       {
         t: 'msg',
         role: 'assistant',
-        text: trimmed,
+        text: line,
       } as MessageEvent,
     ];
   }

@@ -49,14 +49,14 @@ const TEST_CASES: TestCase[] = [
   // Gemini CLI test cases
   {
     vendor: 'gemini',
-    command: ['gemini', '--jsonl', 'explain how recursion works'],
-    output: 'basic-content.jsonl',
+    command: ['gemini', '-p', 'explain how recursion works'],
+    output: 'basic-content.txt',
     description: 'Basic content generation',
   },
   {
     vendor: 'gemini',
-    command: ['gemini', '--jsonl', 'write a sorting algorithm'],
-    output: 'code-generation.jsonl',
+    command: ['gemini', '-p', 'write a sorting algorithm'],
+    output: 'code-generation.txt',
     description: 'Code generation',
   },
 

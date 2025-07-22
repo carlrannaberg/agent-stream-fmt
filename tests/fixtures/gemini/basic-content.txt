@@ -1,0 +1,12 @@
+Loaded cached credentials.
+
+Recursion is a programming concept where a function calls itself to solve a smaller version of the same problem.
+
+It's a fundamental technique in computer science used to solve problems that can be broken down into smaller, similar sub-problems.
+
+Key characteristics of recursion:
+- A base case that stops the recursion
+- A recursive case that calls the function with modified parameters
+- Each call works on a smaller portion of the problem
+
+Common examples include calculating factorials, traversing tree structures, and implementing divide-and-conquer algorithms.
