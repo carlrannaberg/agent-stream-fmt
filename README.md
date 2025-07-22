@@ -60,11 +60,10 @@ npm install @agent-io/stream    # Full formatter
 # Auto-detect format and display in terminal
 claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
-# Specify vendor and filter output
-gemini --jsonl "complete this task" | aio-stream --vendor gemini --hide-tools
-
 # Generate HTML report
 amp-code run build.yml -j | aio-stream --html > report.html
+
+# Note: Gemini CLI (@google/gemini-cli) currently doesn't support JSONL streaming output
 ```
 
 ### Programmatic Usage
