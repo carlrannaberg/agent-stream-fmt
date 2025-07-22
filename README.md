@@ -61,7 +61,7 @@ npm install @agent-io/stream    # Full formatter
 claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
 # Specify vendor and filter output
-gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
+gemini -p "complete this task" < task.md | aio-stream --vendor gemini --hide-tools
 
 # Generate HTML report
 amp-code run build.yml -j | aio-stream --html > report.html
