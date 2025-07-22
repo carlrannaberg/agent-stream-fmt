@@ -140,11 +140,11 @@ validate_environment() {
 # Function to get current version of publishable packages
 get_current_versions() {
     print_step "Getting current package versions..."
-    
+
     # Get @agent-io/stream version (main package)
     STREAM_VERSION=$(node -p "require('./packages/stream/package.json').version")
     echo "Current @agent-io/stream version: $STREAM_VERSION"
-    
+
     # Check what packages are actually published
     PUBLISHED_STREAM=$(npm view "@agent-io/stream" version 2>/dev/null || echo "")
     if [ -n "$PUBLISHED_STREAM" ]; then
@@ -246,7 +246,7 @@ pre_compute_release_data() {
         # Smart filtering for monorepo: Focus on packages/stream and root files
         FILE_COUNT=$(echo "$ALL_CHANGED_FILES" | wc -l)
         echo "Total files changed: $FILE_COUNT"
-        
+
         if [ "$FILE_COUNT" -gt 200 ]; then
             echo "Too many files changed ($FILE_COUNT) - skipping detailed diff analysis"
             CODE_CHANGED_FILES=""
@@ -259,7 +259,7 @@ pre_compute_release_data() {
         if [ -n "$CODE_CHANGED_FILES" ]; then
             CODE_FILE_COUNT=$(echo "$CODE_CHANGED_FILES" | wc -l)
             echo "Relevant monorepo files to analyze: $CODE_FILE_COUNT"
-            
+
             if [ "$CODE_FILE_COUNT" -gt 50 ]; then
                 echo "Too many code files changed ($CODE_FILE_COUNT) - providing file list only"
                 DIFF_FULL="[DIFF TOO LARGE - $CODE_FILE_COUNT relevant files changed: $(echo "$CODE_CHANGED_FILES" | head -20 | tr '\n' ' ')...]"
@@ -319,7 +319,7 @@ pre_compute_release_data() {
 # Function to generate AI changelog and update README
 generate_ai_updates() {
     print_ai "Analyzing changes and updating CHANGELOG.md and README.md..."
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         print_info "Dry run: Skipping AI-powered CHANGELOG and README updates"
         return
@@ -327,9 +327,9 @@ generate_ai_updates() {
 
     # Check if timeout command is available
     if command -v gtimeout >/dev/null 2>&1; then
-        TIMEOUT_CMD="gtimeout 180"
+        TIMEOUT_CMD="gtimeout 600"
     elif command -v timeout >/dev/null 2>&1; then
-        TIMEOUT_CMD="timeout 180"
+        TIMEOUT_CMD="timeout 600"
     else
         print_warning "No timeout command available. Install coreutils on macOS: brew install coreutils"
         TIMEOUT_CMD=""
