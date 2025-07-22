@@ -61,7 +61,7 @@ npm install @agent-io/stream    # Full formatter
 claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
 # Process Gemini CLI plain text output
-gemini -p "Write a haiku about code" 2>/dev/null | aio-stream --vendor gemini
+gemini -p "Write a haiku about code" | aio-stream --vendor gemini
 
 # Generate HTML report
 amp-code run build.yml -j | aio-stream --html > report.html
