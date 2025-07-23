@@ -620,17 +620,42 @@ Before implementing, review these specification documents:
 
 ## CLI Interface
 
+### Correct CLI Usage Examples
+
+**Important**: These are the correct CLI usage patterns for each AI tool:
+
+#### Claude CLI
+```bash
+# Claude requires --output-format stream-json for JSONL output
+claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
+```
+
+#### Gemini CLI  
+```bash
+# Gemini outputs plain text (not JSONL), use -p flag for prompts
+gemini -p "Write a haiku about code" | aio-stream --vendor gemini
+```
+
+#### Amp CLI
+```bash
+# Amp can be used interactively or with piped input
+amp  # Interactive mode
+
+# Or pipe input directly
+echo "Build and test my project" | amp | aio-stream
+```
+
 ### Basic Usage
 
 ```bash
 # Auto-detect vendor and format for terminal
-claude --json "explain recursion" | aio-stream
+claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
 # Explicit vendor with options
-gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
+gemini -p "explain recursion" | aio-stream --vendor gemini
 
-# HTML output for web display
-amp-code run build.yml -j | aio-stream --html > build-log.html
+# Process Amp output
+echo "explain recursion" | amp | aio-stream --vendor amp
 
 # Filter specific event types
 cat session.jsonl | aio-stream --only tool,error --collapse-tools

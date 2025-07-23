@@ -47,11 +47,6 @@ agent-io/
 ```bash
 # Install the main formatter (includes CLI)
 npm install -g @agent-io/stream
-
-# Or install specific packages
-npm install @agent-io/core      # Core types only
-npm install @agent-io/jsonl     # JSONL parsers
-npm install @agent-io/stream    # Full formatter
 ```
 
 ### CLI Usage
@@ -61,10 +56,10 @@ npm install @agent-io/stream    # Full formatter
 claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
 # Process Gemini CLI plain text output
-gemini -p "Write a haiku about code" | aio-stream --vendor gemini
+gemini -p "explain recursion" | aio-stream --vendor gemini
 
-# Generate HTML report
-amp-code run build.yml -j | aio-stream --html > report.html
+# Process Amp output
+echo "explain recursion" | amp | aio-stream --vendor amp
 ```
 
 ### Programmatic Usage

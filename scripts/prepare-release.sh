@@ -316,9 +316,9 @@ pre_compute_release_data() {
     echo
 }
 
-# Function to generate AI changelog and update README
+# Function to generate AI changelog and update READMEs
 generate_ai_updates() {
-    print_ai "Analyzing changes and updating CHANGELOG.md and README.md..."
+    print_ai "Analyzing changes and updating CHANGELOG.md, README.md, and package READMEs..."
 
     if [[ "$DRY_RUN" == "true" ]]; then
         print_info "Dry run: Skipping AI-powered CHANGELOG and README updates"
@@ -392,6 +392,12 @@ TASKS:
    - Maintain consistency with the existing README structure and style
    - Focus on the main @agent-io/stream package features
 
+3. Package README Update (packages/stream/README.md):
+   - Check if the package README needs the same updates as the main README
+   - Ensure CLI examples are correct and match the current implementation
+   - Update any version-specific documentation
+   - Keep package README focused on usage as a standalone npm package
+
 IMPORTANT:
 - DO NOT update package.json files or create any git commits - those will be handled separately
 - DO NOT modify changeset files - those will be handled by the script
@@ -412,7 +418,7 @@ IMPORTANT:
         exit 1
     fi
 
-    print_success "CHANGELOG.md and README.md updated successfully!"
+    print_success "CHANGELOG.md and all READMEs updated successfully!"
 }
 
 # Function to create changeset in non-interactive mode

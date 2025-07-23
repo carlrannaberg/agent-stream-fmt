@@ -16,20 +16,39 @@ pnpm add @agent-io/stream
 
 ### CLI Usage
 
-The `aio-stream` command processes JSONL output from AI agent CLIs:
+The `aio-stream` command processes output from AI agent CLIs (JSONL for Claude/Amp, plain text for Gemini):
 
 ```bash
 # Auto-detect vendor and format for terminal
-claude --json "explain recursion" | aio-stream
+claude --output-format stream-json --verbose -p "explain recursion" | aio-stream
 
-# Explicit vendor with options
-gemini --jsonl -i task.md | aio-stream --vendor gemini --hide-tools
+# Explicit vendor with options (Gemini outputs plain text, not JSONL)
+gemini -p "explain recursion" | aio-stream --vendor gemini
 
-# HTML output for web display
-amp-code run build.yml -j | aio-stream --html > build-log.html
+# Process Amp output
+echo "explain recursion" | amp | aio-stream --vendor amp
 
 # Filter specific event types
 cat session.jsonl | aio-stream --only tool,error --collapse-tools
+```
+
+#### Advanced Usage
+
+```bash
+# Generate HTML report
+claude --output-format stream-json --verbose -p "build a web app" | aio-stream --html > report.html
+
+# Hide tool execution output
+gemini -p "analyze this code" | aio-stream --vendor gemini --hide-tools
+
+# Collapse tool output sections
+echo "run all tests" | amp | aio-stream --vendor amp --collapse-tools
+
+# Show only specific event types
+cat debug-session.jsonl | aio-stream --only msg,error
+
+# Output to file instead of stdout
+claude --output-format stream-json -p "explain quantum computing" | aio-stream -o output.txt
 ```
 
 #### CLI Options
