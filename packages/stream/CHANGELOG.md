@@ -1,5 +1,11 @@
 # @agent-io/stream
 
+## 0.1.4
+
+### Patch Changes
+
+- docs: fix CLI usage examples and improve documentation consistency
+
 ## 0.1.3
 
 ### Patch Changes
