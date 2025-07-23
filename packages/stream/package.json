@@ -15,7 +15,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "aio-stream": "./dist/cli.js"
+    "aio-stream": "./dist/cli.cjs"
   },
   "files": [
     "dist",

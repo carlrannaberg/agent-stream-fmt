@@ -134,6 +134,24 @@ validate_environment() {
         fi
     fi
 
+    # Check if aio-stream is available
+    if ! command -v aio-stream &> /dev/null; then
+        # Check if we can run it from the local project
+        if [ -f "./packages/stream/dist/cli.js" ]; then
+            print_info "Using local aio-stream from project build"
+            AIO_STREAM_CMD="node ./packages/stream/dist/cli.js"
+        else
+            print_warning "aio-stream not found. Install it for better output formatting:"
+            echo "  npm install -g @agent-io/stream"
+            echo "  or run: npm run build:stream"
+            echo ""
+            echo "Continuing without formatted output..."
+            AIO_STREAM_CMD=""
+        fi
+    else
+        AIO_STREAM_CMD="aio-stream"
+    fi
+
     print_success "Environment validation passed"
 }
 
@@ -405,13 +423,19 @@ IMPORTANT:
 - Since only @agent-io/stream is published, focus on changes to that package
 - Ensure README.md is comprehensive and up-to-date with all features in the new release"
 
-    $TIMEOUT_CMD $AI_CLI $AI_MODEL $AI_FLAGS -p "$prompt"
-
-    AI_EXIT_CODE=$?
+    # Check if aio-stream is available and AI is Claude with stream-json output
+    if [[ -n "$AIO_STREAM_CMD" ]] && [[ "$AI_CLI" == "claude" ]]; then
+        print_info "Using aio-stream for formatted output..."
+        $TIMEOUT_CMD $AI_CLI $AI_MODEL $AI_FLAGS -p "$prompt" | $AIO_STREAM_CMD --vendor claude
+        AI_EXIT_CODE=${PIPESTATUS[0]}  # Get exit code from claude, not aio-stream
+    else
+        $TIMEOUT_CMD $AI_CLI $AI_MODEL $AI_FLAGS -p "$prompt"
+        AI_EXIT_CODE=$?
+    fi
     set -e  # Re-enable exit on error
 
     if [ $AI_EXIT_CODE -eq 124 ]; then
-        print_error "$AI_CLI command timed out after 3 minutes."
+        print_error "$AI_CLI command timed out after 10 minutes."
         exit 1
     elif [ $AI_EXIT_CODE -ne 0 ]; then
         print_error "$AI_CLI command failed with exit code $AI_EXIT_CODE"
