@@ -1,5 +1,11 @@
 # @agent-io/stream
 
+## 0.1.5
+
+### Patch Changes
+
+- revert: remove aio-stream usage from prepare-release script
+
 ## 0.1.4
 
 ### Patch Changes
