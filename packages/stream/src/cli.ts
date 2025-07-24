@@ -350,7 +350,19 @@ process.on('uncaughtException', (error: Error) => {
 });
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Check if this module is the entry point.
+// In ESM: import.meta.url === `file://${process.argv[1]}`
+// In CJS after bundling, this check might fail with symlinks, so we also check
+// if no module.parent exists (CommonJS) or if this is the main module
+const isMainModule = 
+  import.meta.url === `file://${process.argv[1]}` ||
+  (typeof require !== 'undefined' && require.main === module) ||
+  // Fallback: if argv[1] ends with 'cli.js' or 'cli.cjs' or 'aio-stream'
+  process.argv[1]?.endsWith('cli.js') ||
+  process.argv[1]?.endsWith('cli.cjs') ||
+  process.argv[1]?.endsWith('aio-stream');
+
+if (isMainModule) {
   main().catch(error => {
     // Handle EPIPE errors gracefully
     if (

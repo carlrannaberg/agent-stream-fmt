@@ -1,5 +1,22 @@
 # @agent-io/stream
 
+## 0.1.6
+
+### Patch Changes
+
+- Fix CLI execution when installed globally via npm
+
+  The CLI was not producing any output when executed through npm's bin symlink due to an issue with
+  the main module detection in the CommonJS build. This fix improves the entry point detection to
+  handle:
+  - Direct execution
+  - Symlink execution (npm global installs)
+  - CommonJS require.main checks
+  - Fallback detection based on argv[1] patterns
+
+  This ensures `aio-stream --version` and other commands work correctly when the package is
+  installed globally.
+
 ## 0.1.5
 
 ### Patch Changes

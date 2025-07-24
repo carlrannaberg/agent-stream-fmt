@@ -11,4 +11,6 @@ export default defineConfig({
   metafile: true,
   treeshake: true,
   splitting: false,
+  // Add shims for better Node.js compatibility in CJS
+  shims: true,
 });
