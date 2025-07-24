@@ -39,11 +39,9 @@
     "workspace:run": "npm run --workspace",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish",
     "release:patch": "./scripts/prepare-release.sh --type patch",
     "release:minor": "./scripts/prepare-release.sh --type minor",
-    "release:major": "./scripts/prepare-release.sh --type major",
-    "prerelease": "npm-run-all build:all validate"
+    "release:major": "./scripts/prepare-release.sh --type major"
   },
   "keywords": [
     "monorepo",

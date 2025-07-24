@@ -57,8 +57,12 @@ npm run validate             # Run lint + typecheck + test
 
 # Release Management (with Changesets)
 npm run changeset            # Create changeset for version bumping
-npm run version              # Update package versions
-npm run release              # Publish packages to npm
+npm run version              # Update package versions  
+
+# Proper Release Process
+npm run release:patch        # Release patch version (bug fixes)
+npm run release:minor        # Release minor version (new features)
+npm run release:major        # Release major version (breaking changes)
 
 # CLI Usage (after build)
 aio-stream [options] [file]  # Main CLI from @agent-io/stream
@@ -609,6 +613,69 @@ Before implementing, review these specification documents:
 - `specs/implementation-roadmap.md` - Complete execution plan
 - `specs/testing-strategy.md` - Testing approach and fixture management
 - `specs/phase-*.md` - Detailed implementation phases
+
+## Release Process
+
+### IMPORTANT: Proper Release Workflow
+
+**Always use the dedicated release scripts** to ensure a proper release:
+
+```bash
+# For bug fixes (0.0.x)
+npm run release:patch
+
+# For new features (0.x.0)
+npm run release:minor
+
+# For breaking changes (x.0.0)
+npm run release:major
+```
+
+**Why use these scripts?**
+The `release:[version]` scripts automatically:
+1. Run all tests to ensure code quality
+2. Update README files across packages
+3. Generate/update CHANGELOG entries
+4. Bump version numbers appropriately
+5. Create git commits with proper messages
+6. Publish to npm registry
+7. Push changes and tags to GitHub
+
+**DO NOT use these commands directly for releases:**
+- ❌ `changeset publish` - Bypasses test validation and documentation updates
+- ❌ `npm publish` - Will not maintain version consistency across monorepo
+
+### Release Checklist
+
+Before running a release command:
+1. Ensure all changes are committed
+2. Verify you're on the main branch
+3. Pull latest changes from remote
+4. Run `npm test` locally to catch issues early
+5. Review pending changesets with `npx changeset status`
+
+### Creating Changesets
+
+For individual changes during development:
+```bash
+# Create a changeset for your changes
+npm run changeset
+
+# Select the package(s) affected
+# Choose the version bump type (patch/minor/major)
+# Write a clear description of the changes
+```
+
+### Manual Version Management (Advanced)
+
+If you need to manage versions manually:
+```bash
+# Update versions based on changesets
+npm run version
+
+# Then use the appropriate release script
+npm run release:patch|minor|major
+```
 
 ## Contributing Guidelines
 
