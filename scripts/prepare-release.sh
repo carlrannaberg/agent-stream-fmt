@@ -406,7 +406,7 @@ IMPORTANT:
 - Since only @agent-io/stream is published, focus on changes to that package
 - Ensure README.md is comprehensive and up-to-date with all features in the new release"
 
-    $TIMEOUT_CMD $AI_CLI $AI_MODEL $AI_FLAGS -p "$prompt"
+    $TIMEOUT_CMD $AI_CLI $AI_MODEL $AI_FLAGS -p "$prompt" | aio-stream
 
     AI_EXIT_CODE=$?
     set -e  # Re-enable exit on error
