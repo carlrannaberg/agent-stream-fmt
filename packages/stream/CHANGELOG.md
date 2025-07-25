@@ -1,5 +1,11 @@
 # @agent-io/stream
 
+## 0.1.7
+
+### Patch Changes
+
+- fix(stream): resolve ES module compatibility issue in CLI
+
 ## 0.1.6
 
 ### Patch Changes
