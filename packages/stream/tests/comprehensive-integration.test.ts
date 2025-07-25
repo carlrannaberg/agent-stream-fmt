@@ -544,7 +544,7 @@ describe('Comprehensive Parser Integration Tests', () => {
             events,
             `${testCase.vendor} should return events for unknown: ${line}`,
           ).toHaveLength(1);
-          
+
           if (testCase.vendor === 'gemini') {
             // Gemini treats everything as plain text messages
             expect(

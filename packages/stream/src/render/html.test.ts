@@ -125,7 +125,7 @@ describe('HtmlRenderer', () => {
       expect(result).toContain('class="tool-start"');
       expect(result).toContain('class="tool-icon">🔧</span>');
       expect(result).toContain('class="tool-name">bash</span>');
-      expect(result).toContain('class="tool-input">ls -la</span>');
+      expect(result).toContain('class="tool-params">ls -la</span>');
       expect(result).toContain('<div class="tool-output">');
     });
 
@@ -168,7 +168,7 @@ describe('HtmlRenderer', () => {
       const result = renderer.render(event);
       expect(result).toContain('class="tool-end success"');
       expect(result).toContain('class="status-icon">✅</span>');
-      expect(result).toContain('class="exit-code">Exit: 0</span>');
+      expect(result).toContain('class="tool-status">completed</span>');
     });
 
     it('should render tool end with error', () => {
@@ -182,7 +182,7 @@ describe('HtmlRenderer', () => {
       const result = renderer.render(event);
       expect(result).toContain('class="tool-end error"');
       expect(result).toContain('class="status-icon">❌</span>');
-      expect(result).toContain('class="exit-code">Exit: 1</span>');
+      expect(result).toContain('class="tool-status">failed (exit 1)</span>');
     });
 
     it('should hide tools when hideTools option is set', () => {

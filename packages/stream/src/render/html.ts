@@ -142,12 +142,15 @@ export class HtmlRenderer implements Renderer {
   /**
    * Extract key parameters from tool input
    */
-  private extractToolParams(toolName: string, inputText: string | undefined): string {
+  private extractToolParams(
+    toolName: string,
+    inputText: string | undefined,
+  ): string {
     if (!inputText) return '';
-    
+
     try {
       const input = JSON.parse(inputText);
-      
+
       // Format based on tool name
       switch (toolName.toLowerCase()) {
         case 'write':
@@ -157,7 +160,7 @@ export class HtmlRenderer implements Renderer {
             return input.file_path;
           }
           break;
-          
+
         case 'read':
         case 'notebookread':
           if (input.file_path || input.notebook_path) {
@@ -166,36 +169,37 @@ export class HtmlRenderer implements Renderer {
             return `${path}${preview}`;
           }
           break;
-          
+
         case 'bash':
           if (input.command) {
             // Truncate long commands
-            const cmd = input.command.length > 50 
-              ? input.command.substring(0, 47) + '...'
-              : input.command;
+            const cmd =
+              input.command.length > 50
+                ? input.command.substring(0, 47) + '...'
+                : input.command;
             return cmd;
           }
           break;
-          
+
         case 'glob':
           if (input.pattern) {
             return input.pattern;
           }
           break;
-          
+
         case 'grep':
           if (input.pattern) {
             const path = input.path ? ` in ${input.path}` : '';
             return `"${input.pattern}"${path}`;
           }
           break;
-          
+
         case 'ls':
           if (input.path) {
             return input.path;
           }
           break;
-          
+
         case 'webfetch':
           if (input.url) {
             // Show just the domain for brevity
@@ -207,29 +211,30 @@ export class HtmlRenderer implements Renderer {
             }
           }
           break;
-          
+
         case 'websearch':
           if (input.query) {
-            const query = input.query.length > 30
-              ? input.query.substring(0, 27) + '...'
-              : input.query;
+            const query =
+              input.query.length > 30
+                ? input.query.substring(0, 27) + '...'
+                : input.query;
             return `"${query}"`;
           }
           break;
-          
+
         case 'task':
           if (input.description) {
             return input.description;
           }
           break;
-          
+
         case 'todowrite':
           if (input.todos && Array.isArray(input.todos)) {
             return `${input.todos.length} items`;
           }
           break;
       }
-      
+
       // Generic fallback - show first meaningful value
       const keys = Object.keys(input);
       if (keys.length > 0) {
@@ -247,7 +252,7 @@ export class HtmlRenderer implements Renderer {
       }
       return inputText;
     }
-    
+
     return '';
   }
 
@@ -270,7 +275,9 @@ export class HtmlRenderer implements Renderer {
 
         // Extract and format parameters
         const params = this.extractToolParams(event.name, event.text);
-        const paramsHtml = params ? `<span class="tool-params">${this.escapeHtml(params)}</span>` : '';
+        const paramsHtml = params
+          ? `<span class="tool-params">${this.escapeHtml(params)}</span>`
+          : '';
 
         return `<div class="tool-execution" data-tool="${this.escapeHtml(event.name)}">
   <div class="tool-start">
@@ -303,7 +310,8 @@ export class HtmlRenderer implements Renderer {
         const exitCode = event.exitCode || 0;
         const statusClass = exitCode === 0 ? 'success' : 'error';
         const statusIcon = exitCode === 0 ? '✅' : '❌';
-        const statusText = exitCode === 0 ? 'completed' : `failed (exit ${exitCode})`;
+        const statusText =
+          exitCode === 0 ? 'completed' : `failed (exit ${exitCode})`;
 
         // Calculate duration if we have tracking
         let durationHtml = '';

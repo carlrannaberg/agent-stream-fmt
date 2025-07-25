@@ -132,7 +132,7 @@ describe('GeminiParser', () => {
         '',
         'Recursion is a programming concept where a function calls itself to solve a problem.',
         '',
-        'Here\'s a simple example in Python:',
+        "Here's a simple example in Python:",
         '',
         '```python',
         'def factorial(n):',
@@ -155,7 +155,7 @@ describe('GeminiParser', () => {
       // Should have parsed all non-empty lines except "Loaded cached credentials."
       const expectedMessages = [
         'Recursion is a programming concept where a function calls itself to solve a problem.',
-        'Here\'s a simple example in Python:',
+        "Here's a simple example in Python:",
         '```python',
         'def factorial(n):',
         '    if n <= 1:',
@@ -166,7 +166,7 @@ describe('GeminiParser', () => {
       ];
 
       expect(allEvents).toHaveLength(expectedMessages.length);
-      
+
       expectedMessages.forEach((text, index) => {
         expect(allEvents[index]).toEqual({
           t: 'msg',

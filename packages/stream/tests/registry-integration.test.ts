@@ -65,7 +65,8 @@ describe('Registry Integration Tests', () => {
               if (detected) {
                 const parser = selectParser('auto', line);
                 // For invalid JSON, Gemini will detect it as plain text
-                const expectedVendor = detected.vendor === 'gemini' ? 'gemini' : vendor;
+                const expectedVendor =
+                  detected.vendor === 'gemini' ? 'gemini' : vendor;
                 expect(
                   parser.vendor,
                   `selectParser auto should detect ${expectedVendor} for line ${lineIndex + 1} in ${filename}`,

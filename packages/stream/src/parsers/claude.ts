@@ -164,7 +164,9 @@ export class ClaudeParser implements VendorParser {
                     t: 'tool',
                     name: String(c.name || 'unknown'),
                     phase: 'start',
-                    text: c.input ? JSON.stringify(c.input, null, 2) : undefined,
+                    text: c.input
+                      ? JSON.stringify(c.input, null, 2)
+                      : undefined,
                   });
                 } else if (c.type === 'tool_result') {
                   // Tool result (end)

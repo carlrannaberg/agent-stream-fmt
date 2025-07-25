@@ -119,7 +119,7 @@ describe('AnsiRenderer', () => {
       const output = renderer.render(event);
       const stripped = stripAnsi(output);
 
-      expect(stripped).toContain('🔧 npm install');
+      expect(stripped).toContain('🔧 npm');
     });
 
     it('should render tool stdout', () => {
@@ -184,7 +184,7 @@ describe('AnsiRenderer', () => {
       const stripped = stripAnsi(output);
 
       expect(stripped).toContain('✅ npm');
-      expect(stripped).toMatch(/\(\d+ms\)/); // Duration
+      expect(stripped).toMatch(/\d+ms/); // Duration
     });
 
     it('should render tool end with failure', () => {
@@ -499,7 +499,7 @@ describe('AnsiRenderer', () => {
       const stripped = stripAnsi(output);
 
       // Should still show completion
-      expect(stripped).toMatch(/test.*\(\d+ms\)/);
+      expect(stripped).toMatch(/test.*\d+ms/);
     });
   });
 

@@ -15,9 +15,13 @@ describe('Enhanced Tool Display', () => {
         t: 'tool',
         name: 'Write',
         phase: 'start',
-        text: JSON.stringify({ file_path: 'hello.js', content: 'console.log("Hello");' }, null, 2),
+        text: JSON.stringify(
+          { file_path: 'hello.js', content: 'console.log("Hello");' },
+          null,
+          2,
+        ),
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('Write');
       expect(output).toContain('→ hello.js');
@@ -32,7 +36,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'start',
         text: JSON.stringify({ command: 'npm test --coverage' }, null, 2),
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('Bash');
       expect(output).toContain('→ npm test --coverage');
@@ -47,7 +51,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'start',
         text: JSON.stringify({ command: longCommand }, null, 2),
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('...');
       expect(output.length).toBeLessThan(150); // Reasonable length
@@ -61,7 +65,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'start',
         text: JSON.stringify({ file_path: 'package.json', limit: 50 }, null, 2),
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('Read');
       expect(output).toContain('→ package.json (50 lines)');
@@ -75,7 +79,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'start',
         text: JSON.stringify({ pattern: 'TODO', path: 'src/' }, null, 2),
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('Grep');
       expect(output).toContain('→ "TODO" in src/');
@@ -83,21 +87,21 @@ describe('Enhanced Tool Display', () => {
 
     it('should display completion status with duration', () => {
       const renderer = new AnsiRenderer({});
-      
+
       // Start event
       renderer.render({
         t: 'tool',
         name: 'Test',
         phase: 'start',
       });
-      
+
       // Simulate some delay
       const delay = 100;
       const startTime = Date.now();
       while (Date.now() - startTime < delay) {
         // Wait
       }
-      
+
       // End event
       const output = renderer.render({
         t: 'tool',
@@ -105,7 +109,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'end',
         exitCode: 0,
       });
-      
+
       expect(output).toContain('✅');
       expect(output).toContain('Test');
       expect(output).toContain('completed');
@@ -114,14 +118,14 @@ describe('Enhanced Tool Display', () => {
 
     it('should display failure status with exit code', () => {
       const renderer = new AnsiRenderer({});
-      
+
       // Start event
       renderer.render({
         t: 'tool',
         name: 'FailingTool',
         phase: 'start',
       });
-      
+
       // End event with failure
       const output = renderer.render({
         t: 'tool',
@@ -129,7 +133,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'end',
         exitCode: 1,
       });
-      
+
       expect(output).toContain('❌');
       expect(output).toContain('FailingTool');
       expect(output).toContain('failed (exit 1)');
@@ -143,9 +147,13 @@ describe('Enhanced Tool Display', () => {
         t: 'tool',
         name: 'Write',
         phase: 'start',
-        text: JSON.stringify({ file_path: 'hello.js', content: 'console.log("Hello");' }, null, 2),
+        text: JSON.stringify(
+          { file_path: 'hello.js', content: 'console.log("Hello");' },
+          null,
+          2,
+        ),
       };
-      
+
       const output = renderer.render(event);
       expect(output).toContain('class="tool-name">Write</span>');
       expect(output).toContain('class="tool-params">hello.js</span>');
@@ -153,14 +161,14 @@ describe('Enhanced Tool Display', () => {
 
     it('should display duration in HTML end event', () => {
       const renderer = new HtmlRenderer({});
-      
+
       // Start event
       renderer.render({
         t: 'tool',
         name: 'TestTool',
         phase: 'start',
       });
-      
+
       // End event
       const output = renderer.render({
         t: 'tool',
@@ -168,7 +176,7 @@ describe('Enhanced Tool Display', () => {
         phase: 'end',
         exitCode: 0,
       });
-      
+
       expect(output).toContain('✅');
       expect(output).toContain('class="tool-status">completed</span>');
       expect(output).toContain('class="tool-duration">');

@@ -147,7 +147,7 @@ describe('HtmlRenderer', () => {
       expect(output).toContain('<div class="tool-start">');
       expect(output).toContain('<span class="tool-icon">🔧</span>');
       expect(output).toContain('<span class="tool-name">npm</span>');
-      expect(output).toContain('<span class="tool-input">install</span>');
+      expect(output).toContain('<span class="tool-params">install</span>');
       expect(output).toContain('<div class="tool-output">');
     });
 
@@ -215,7 +215,7 @@ describe('HtmlRenderer', () => {
       expect(output).toContain('</div>'); // Close tool-output
       expect(output).toContain('<div class="tool-end success">');
       expect(output).toContain('<span class="status-icon">✅</span>');
-      expect(output).toContain('<span class="exit-code">Exit: 0</span>');
+      expect(output).toContain('<span class="tool-status">completed</span>');
       expect(output).toContain('</div>'); // Close tool-execution
     });
 
@@ -238,7 +238,9 @@ describe('HtmlRenderer', () => {
 
       expect(output).toContain('<div class="tool-end error">');
       expect(output).toContain('<span class="status-icon">❌</span>');
-      expect(output).toContain('<span class="exit-code">Exit: 1</span>');
+      expect(output).toContain(
+        '<span class="tool-status">failed (exit 1)</span>',
+      );
     });
 
     it('should track tool state across phases', () => {

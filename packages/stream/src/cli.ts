@@ -354,7 +354,7 @@ process.on('uncaughtException', (error: Error) => {
 // In ESM: import.meta.url === `file://${process.argv[1]}`
 // In CJS after bundling, this check might fail with symlinks, so we also check
 // if no module.parent exists (CommonJS) or if this is the main module
-const isMainModule = 
+const isMainModule =
   import.meta.url === `file://${process.argv[1]}` ||
   (typeof require !== 'undefined' && require.main === module) ||
   // Fallback: if argv[1] ends with 'cli.js' or 'cli.cjs' or 'aio-stream'

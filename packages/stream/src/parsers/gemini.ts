@@ -61,7 +61,7 @@ export class GeminiParser implements VendorParser {
    */
   parse(line: string): AgentEvent[] {
     const trimmed = line.trim();
-    
+
     // Skip empty lines
     if (!trimmed) {
       return [];
@@ -82,7 +82,6 @@ export class GeminiParser implements VendorParser {
       } as MessageEvent,
     ];
   }
-
 }
 
 /**

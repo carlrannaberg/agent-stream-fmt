@@ -96,7 +96,7 @@ describe('Enhanced ParseError Context', () => {
       expect(messageEvent).toBeDefined();
       expect(messageEvent.role).toBe('assistant');
       expect(messageEvent.text).toBe('MALFORMED_JSON');
-      
+
       // No error event for Gemini with plain text
       const errorEvent = events.find(e => e.t === 'error');
       expect(errorEvent).toBeUndefined();

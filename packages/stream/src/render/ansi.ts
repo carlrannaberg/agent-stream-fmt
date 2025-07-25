@@ -171,12 +171,15 @@ export class AnsiRenderer implements Renderer {
   /**
    * Extract key parameters from tool input
    */
-  private extractToolParams(toolName: string, inputText: string | undefined): string {
+  private extractToolParams(
+    toolName: string,
+    inputText: string | undefined,
+  ): string {
     if (!inputText) return '';
-    
+
     try {
       const input = JSON.parse(inputText);
-      
+
       // Format based on tool name
       switch (toolName.toLowerCase()) {
         case 'write':
@@ -186,7 +189,7 @@ export class AnsiRenderer implements Renderer {
             return ` → ${input.file_path}`;
           }
           break;
-          
+
         case 'read':
         case 'notebookread':
           if (input.file_path || input.notebook_path) {
@@ -195,36 +198,37 @@ export class AnsiRenderer implements Renderer {
             return ` → ${path}${preview}`;
           }
           break;
-          
+
         case 'bash':
           if (input.command) {
             // Truncate long commands
-            const cmd = input.command.length > 50 
-              ? input.command.substring(0, 47) + '...'
-              : input.command;
+            const cmd =
+              input.command.length > 50
+                ? input.command.substring(0, 47) + '...'
+                : input.command;
             return ` → ${cmd}`;
           }
           break;
-          
+
         case 'glob':
           if (input.pattern) {
             return ` → ${input.pattern}`;
           }
           break;
-          
+
         case 'grep':
           if (input.pattern) {
             const path = input.path ? ` in ${input.path}` : '';
             return ` → "${input.pattern}"${path}`;
           }
           break;
-          
+
         case 'ls':
           if (input.path) {
             return ` → ${input.path}`;
           }
           break;
-          
+
         case 'webfetch':
           if (input.url) {
             // Show just the domain for brevity
@@ -236,29 +240,30 @@ export class AnsiRenderer implements Renderer {
             }
           }
           break;
-          
+
         case 'websearch':
           if (input.query) {
-            const query = input.query.length > 30
-              ? input.query.substring(0, 27) + '...'
-              : input.query;
+            const query =
+              input.query.length > 30
+                ? input.query.substring(0, 27) + '...'
+                : input.query;
             return ` → "${query}"`;
           }
           break;
-          
+
         case 'task':
           if (input.description) {
             return ` → ${input.description}`;
           }
           break;
-          
+
         case 'todowrite':
           if (input.todos && Array.isArray(input.todos)) {
             return ` → ${input.todos.length} items`;
           }
           break;
       }
-      
+
       // Generic fallback - show first meaningful value
       const keys = Object.keys(input);
       if (keys.length > 0) {
@@ -272,7 +277,7 @@ export class AnsiRenderer implements Renderer {
     } catch {
       // If JSON parsing fails, just return empty
     }
-    
+
     return '';
   }
 
@@ -293,7 +298,7 @@ export class AnsiRenderer implements Renderer {
     // eslint-disable-next-line no-control-regex
     const escapedName = event.name.replace(/\x1b/g, '\\x1b');
     const toolName = kleur.bold().blue(escapedName);
-    
+
     // Extract and format key parameters
     const params = this.extractToolParams(event.name, event.text);
     const formattedParams = params ? kleur.dim().cyan(params) : '';
@@ -352,7 +357,8 @@ export class AnsiRenderer implements Renderer {
 
     // Status indicator with more descriptive text
     const statusIcon = exitCode === 0 ? '✅' : '❌';
-    const statusText = exitCode === 0 ? 'completed' : `failed (exit ${exitCode})`;
+    const statusText =
+      exitCode === 0 ? 'completed' : `failed (exit ${exitCode})`;
     const statusColor = exitCode === 0 ? kleur.green : kleur.red;
     const durationText = kleur.dim().gray(`${duration}ms`);
     // eslint-disable-next-line no-control-regex
