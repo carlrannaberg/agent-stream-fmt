@@ -140,6 +140,118 @@ export class HtmlRenderer implements Renderer {
   }
 
   /**
+   * Extract key parameters from tool input
+   */
+  private extractToolParams(toolName: string, inputText: string | undefined): string {
+    if (!inputText) return '';
+    
+    try {
+      const input = JSON.parse(inputText);
+      
+      // Format based on tool name
+      switch (toolName.toLowerCase()) {
+        case 'write':
+        case 'edit':
+        case 'multiedit':
+          if (input.file_path) {
+            return input.file_path;
+          }
+          break;
+          
+        case 'read':
+        case 'notebookread':
+          if (input.file_path || input.notebook_path) {
+            const path = input.file_path || input.notebook_path;
+            const preview = input.limit ? ` (${input.limit} lines)` : '';
+            return `${path}${preview}`;
+          }
+          break;
+          
+        case 'bash':
+          if (input.command) {
+            // Truncate long commands
+            const cmd = input.command.length > 50 
+              ? input.command.substring(0, 47) + '...'
+              : input.command;
+            return cmd;
+          }
+          break;
+          
+        case 'glob':
+          if (input.pattern) {
+            return input.pattern;
+          }
+          break;
+          
+        case 'grep':
+          if (input.pattern) {
+            const path = input.path ? ` in ${input.path}` : '';
+            return `"${input.pattern}"${path}`;
+          }
+          break;
+          
+        case 'ls':
+          if (input.path) {
+            return input.path;
+          }
+          break;
+          
+        case 'webfetch':
+          if (input.url) {
+            // Show just the domain for brevity
+            try {
+              const url = new URL(input.url);
+              return url.hostname;
+            } catch {
+              return input.url;
+            }
+          }
+          break;
+          
+        case 'websearch':
+          if (input.query) {
+            const query = input.query.length > 30
+              ? input.query.substring(0, 27) + '...'
+              : input.query;
+            return `"${query}"`;
+          }
+          break;
+          
+        case 'task':
+          if (input.description) {
+            return input.description;
+          }
+          break;
+          
+        case 'todowrite':
+          if (input.todos && Array.isArray(input.todos)) {
+            return `${input.todos.length} items`;
+          }
+          break;
+      }
+      
+      // Generic fallback - show first meaningful value
+      const keys = Object.keys(input);
+      if (keys.length > 0) {
+        const firstKey = keys[0];
+        const value = String(input[firstKey]);
+        if (value.length > 40) {
+          return `${firstKey}: ${value.substring(0, 37)}...`;
+        }
+        return `${firstKey}: ${value}`;
+      }
+    } catch {
+      // If JSON parsing fails, return raw text truncated
+      if (inputText.length > 50) {
+        return inputText.substring(0, 47) + '...';
+      }
+      return inputText;
+    }
+    
+    return '';
+  }
+
+  /**
    * Render a tool event with proper phase handling
    */
   private renderTool(event: AgentEvent & { t: 'tool' }): string {
@@ -156,11 +268,15 @@ export class HtmlRenderer implements Renderer {
           collapsed: this.options.collapseTools || false,
         });
 
+        // Extract and format parameters
+        const params = this.extractToolParams(event.name, event.text);
+        const paramsHtml = params ? `<span class="tool-params">${this.escapeHtml(params)}</span>` : '';
+
         return `<div class="tool-execution" data-tool="${this.escapeHtml(event.name)}">
   <div class="tool-start">
     <span class="tool-icon">🔧</span>
     <span class="tool-name">${this.escapeHtml(event.name)}</span>
-    ${event.text ? `<span class="tool-input">${this.escapeHtml(event.text)}</span>` : ''}
+    ${paramsHtml}
   </div>
   <div class="tool-output">
 `;
@@ -184,11 +300,19 @@ export class HtmlRenderer implements Renderer {
       }
 
       case 'end': {
-        const statusClass = (event.exitCode || 0) === 0 ? 'success' : 'error';
-        const statusIcon = (event.exitCode || 0) === 0 ? '✅' : '❌';
+        const exitCode = event.exitCode || 0;
+        const statusClass = exitCode === 0 ? 'success' : 'error';
+        const statusIcon = exitCode === 0 ? '✅' : '❌';
+        const statusText = exitCode === 0 ? 'completed' : `failed (exit ${exitCode})`;
 
-        // Remove from tracking if name exists
+        // Calculate duration if we have tracking
+        let durationHtml = '';
         if (event.name) {
+          const toolState = this.context.toolStack.get(event.name);
+          if (toolState) {
+            const duration = Date.now() - toolState.startTime;
+            durationHtml = `<span class="tool-duration">${duration}ms</span>`;
+          }
           this.context.toolStack.delete(event.name);
         }
 
@@ -196,7 +320,8 @@ export class HtmlRenderer implements Renderer {
   <div class="tool-end ${statusClass}">
     <span class="status-icon">${statusIcon}</span>
     <span class="tool-name">${this.escapeHtml(event.name)}</span>
-    ${event.exitCode !== undefined ? `<span class="exit-code">Exit: ${event.exitCode}</span>` : ''}
+    <span class="tool-status">${statusText}</span>
+    ${durationHtml}
   </div>
 </div>
 `;
