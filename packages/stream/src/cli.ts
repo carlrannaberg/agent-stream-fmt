@@ -352,15 +352,17 @@ process.on('uncaughtException', (error: Error) => {
 // Run if called directly
 // Check if this module is the entry point.
 // In ESM: import.meta.url === `file://${process.argv[1]}`
-// In CJS after bundling, this check might fail with symlinks, so we also check
-// if no module.parent exists (CommonJS) or if this is the main module
+// In CJS: require.main === module (but we can't use 'module' in ES modules)
+// So we check various fallback conditions that work in both environments
 const isMainModule =
   import.meta.url === `file://${process.argv[1]}` ||
-  (typeof require !== 'undefined' && require.main === module) ||
-  // Fallback: if argv[1] ends with 'cli.js' or 'cli.cjs' or 'aio-stream'
+  // For CJS builds, tsup transforms import.meta.url but the comparison might fail
+  // Check if being run directly via node or via the bin script
   process.argv[1]?.endsWith('cli.js') ||
   process.argv[1]?.endsWith('cli.cjs') ||
-  process.argv[1]?.endsWith('aio-stream');
+  process.argv[1]?.endsWith('aio-stream') ||
+  // Additional check for when invoked via npm/npx
+  process.argv[1]?.includes('aio-stream');
 
 if (isMainModule) {
   main().catch(error => {
